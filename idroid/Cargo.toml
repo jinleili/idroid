@@ -1,0 +1,42 @@
+[package]
+name = "idroid"
+version = "0.1.0"
+authors = ["li jinlei <grenlight@icloud.com>"]
+edition = "2018"
+
+[lib]
+name = "idroid"
+crate-type = ["rlib", "staticlib"]
+# [target.'cfg(target_os = "android")'.lib]
+# crate-type = ["cdylib"]
+
+[features]
+default = []
+
+[dependencies]
+libc = "*"
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "433ab156eaa6964e0037cb5202be4dd82790422a"  }
+
+uni-view = { path="../uni-view" }
+
+nalgebra-glm = "*"
+image = "0.22.1"
+env_logger = "0.5"
+log = "0.4"
+failure = "0.1"
+lazy_static = "*"
+
+[target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
+shaderc = "0.6.1"
+objc = "*"
+winit = "0.20.0-alpha3"
+raw-window-handle = "0.1"
+
+[build-dependencies]
+shaderc = "0.6.1"
+
+[dev-dependencies]
+env_logger = "0.5"
+lazy_static = "*"
+palette = "0.4"
+rand = "0.6"
