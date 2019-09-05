@@ -21,7 +21,7 @@ pub trait SurfaceView {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn box_obj(obj: impl SurfaceView) -> *mut libc::c_void {
+pub fn box_obj(obj: impl SurfaceView) -> *mut libc::c_void {
     let boxed_trait: Box<dyn SurfaceView> = Box::new(obj);
     let boxed_boxed_trait = Box::new(boxed_trait);
     let heap_pointer = Box::into_raw(boxed_boxed_trait);

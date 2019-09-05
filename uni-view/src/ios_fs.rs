@@ -54,7 +54,7 @@ impl FileSystem {
         p
     }
 
-    pub fn get_texture_file_path(name: &str) -> PathBuf {
+    pub fn get_texture_file_path(&self, name: &str) -> PathBuf {
         let p = get_bundle_url().to_string() + "/assets/" + name;
         PathBuf::from(&p)
     }
