@@ -194,8 +194,7 @@ fn parse_shader_source(source: &str, output: &mut String, base_path: &str) {
 // 获取通用 shader function
 // 将着色器代码预先静态加载进程序，避免打包成 .a 静态库时找不到文件
 fn get_shader_funcs(key: &str, base_path: &str) -> Option<String> {
-    let path = PathBuf::from(base_path).join("shader").join(key);
-
+    let path = PathBuf::from(base_path).join("shader").join(key.replace('"', ""));
     let shader = match read_to_string(&path) {
         Ok(code) => code,
         Err(e) => panic!("Unable to read {:?}: {:?}", path, e),
