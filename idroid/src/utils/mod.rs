@@ -123,7 +123,7 @@ where
     T: 'static + Copy,
 {
     let staging_buffer = device
-        .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST)
+        .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_SRC)
         .fill_from_slice(&[uniforms]);
     let uniform_buffer = empty_uniform_buffer(device, size);
     encoder.copy_buffer_to_buffer(&staging_buffer, 0, &uniform_buffer, 0, size);
