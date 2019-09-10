@@ -18,12 +18,12 @@ lazy_static! {
 
 fn get_bundle_url() -> &'static str {
     let cls = class!(NSBundle);
-    // Allocate an instance
-    let bundle = unsafe { StrongPtr::new(msg_send![cls, mainBundle]) };
     let path: &str = unsafe {
+        // Allocate an instance
+        let bundle: *mut Object = msg_send![cls, mainBundle];
         // let url: *mut Object = msg_send![*bundle, resourcePath];
         // 资源路径要用 resourcePath
-        let path: &NSString = msg_send![*bundle, resourcePath];
+        let path: &NSString = msg_send![bundle, resourcePath];
         path.as_str()
     };
     path
