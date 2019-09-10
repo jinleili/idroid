@@ -15,7 +15,8 @@ default = []
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "433ab156eaa6964e0037cb5202be4dd82790422a"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "f9bbfc7cf807f03b491244f01384097cb81393c2"  }
+# wgpu = { path = "../../../wgpu-rs" }
 
 uni-view = { path="../uni-view" }
 
