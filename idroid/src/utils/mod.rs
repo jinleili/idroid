@@ -158,12 +158,11 @@ where
 }
 
 #[allow(dead_code)]
-pub fn update_uniform<T>(device: &mut wgpu::Device, uniforms: T, destination: &wgpu::Buffer)
+pub fn update_uniform<T>(device:&mut wgpu::Device, queue: &mut wgpu::Queue, uniforms: T, destination: &wgpu::Buffer)
 where
     T: 'static + Copy,
 {
-    let temp_buf =
-        device.create_buffer_mapped(1, wgpu::BufferUsage::COPY_SRC).fill_from_slice(&[uniforms]);
+    let temp_buf = device.create_buffer_mapped(1, wgpu::BufferUsage::COPY_SRC).fill_from_slice(&[uniforms]);
 
     let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
     encoder.copy_buffer_to_buffer(
@@ -173,7 +172,7 @@ where
         0,
         std::mem::size_of::<T>() as wgpu::BufferAddress,
     );
-    device.get_queue().submit(&[encoder.finish()]);
+    queue.submit(&[encoder.finish()]);
 }
 
 #[allow(dead_code)]

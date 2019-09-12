@@ -4,6 +4,7 @@ pub struct AppView {
     pub view: winit::window::Window,
     pub scale_factor: f32,
     pub device: wgpu::Device,
+    pub queue: wgpu::Queue,
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
@@ -21,15 +22,15 @@ impl AppView {
             present_mode: wgpu::PresentMode::Vsync,
         };
 
-        let device = get_device();
+        let (device, queue) = request_device();
         let surface = wgpu::Surface::create(&view);
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        AppView { view, scale_factor: scale_factor as f32, device, surface, sc_desc, swap_chain }
+        AppView { view, scale_factor: scale_factor as f32, device, queue, surface, sc_desc, swap_chain }
     }
 }
 
-fn get_device() -> wgpu::Device {
+fn request_device() -> (wgpu::Device, wgpu::Queue) {
     let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::LowPower,
         backends: wgpu::BackendBit::PRIMARY,
