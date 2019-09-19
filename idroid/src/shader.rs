@@ -70,7 +70,7 @@ impl Shader {
 #[cfg(target_os = "ios")]
 #[allow(dead_code)]
 pub fn load_general_glsl(
-    name: &str, device: &mut wgpu::Device, _base_path: &str
+    name: &str, device: &mut wgpu::Device, _base_path: &str,
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_bytes = generate_shader_source(name, "vs");
     let fs_bytes = generate_shader_source(name, "fs");

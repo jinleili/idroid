@@ -26,7 +26,15 @@ impl AppView {
         let surface = wgpu::Surface::create(&view);
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        AppView { view, scale_factor: scale_factor as f32, device, queue, surface, sc_desc, swap_chain }
+        AppView {
+            view,
+            scale_factor: scale_factor as f32,
+            device,
+            queue,
+            surface,
+            sc_desc,
+            swap_chain,
+        }
     }
 }
 

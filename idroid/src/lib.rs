@@ -9,6 +9,7 @@ pub use utils::{depth_stencil, matrix_helper};
 
 pub mod shader;
 pub mod vertex;
+pub mod node;
 
 use math::Position;
 

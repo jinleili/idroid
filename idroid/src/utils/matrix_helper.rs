@@ -2,6 +2,15 @@ use nalgebra_glm as glm;
 
 #[allow(dead_code)]
 pub fn default_mvp(sc_desc: &wgpu::SwapChainDescriptor) -> [[f32; 4]; 4] {
+    perspective_mvp(sc_desc, false)
+}
+
+#[allow(dead_code)]
+pub fn fullscreen_mvp(sc_desc: &wgpu::SwapChainDescriptor) -> [[f32; 4]; 4] {
+    perspective_mvp(sc_desc, true)
+}
+
+fn perspective_mvp(sc_desc: &wgpu::SwapChainDescriptor, is_fullscreen: bool) -> [[f32; 4]; 4] {
     let fovy: f32 = 75.0 / 180.0 * std::f32::consts::PI;
     let radian: glm::TVec1<f32> = glm::vec1(fovy);
     let p_matrix: glm::TMat4<f32> =
@@ -23,6 +32,17 @@ pub fn default_mvp(sc_desc: &wgpu::SwapChainDescriptor) -> [[f32; 4]; 4] {
 
     let factor: f32 = (fovy / 2.0).tan();
     vm_matrix = glm::translate(&vm_matrix, &glm::vec3(0.0, 0.0, -(ratio / factor)));
+
+    if is_fullscreen {
+        let mut sx = 1.0;
+        let mut sy = 1.0;
+        if sc_desc.height > sc_desc.width {
+            sy = sc_desc.height as f32 / sc_desc.width as f32;
+        } else {
+            sx = sc_desc.width as f32 / sc_desc.height as f32;
+        };
+        vm_matrix = glm::scale(&vm_matrix, &glm::vec3(sx, sy, 1.0));
+    }
 
     (p_matrix * vm_matrix).into()
 }
