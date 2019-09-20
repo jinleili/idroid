@@ -74,7 +74,6 @@ impl BindingGroupSettingNode {
                 resource: wgpu::BindingResource::Sampler(samplers[i]),
             });
         }
-        println!("{:?}", bingdings);
 
         let bind_group_layout = device
             .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts });
