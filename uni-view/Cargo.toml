@@ -6,16 +6,14 @@ authors = ["Li Jinlei <grenlight@icloud.com>"]
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "5edb6ecf13c9b21c60e41477eb64837c5445dfd8"  }
-# 本地版本设置了 metal-auto-capture，且解决了 iOS 设备上 Undefined symbols for architecture arm64:
-#  "_MTLCopyAllDevices" bug
-# wgpu = { path = "../../../wgpu-rs" }
+# wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "012d08d64de924da93289c2b51fb06b22d7348cf"  }
+wgpu = { path = "../../../wgpu-rs" }
 
 lazy_static = "*"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-winit = "0.20.0-alpha3"
-raw-window-handle = "0.1"
+winit = "0.20.0-alpha4"
+raw-window-handle = "0.3"
 
 [target.wasm32-unknown-emscripten.dependencies]
 stdweb =  "*"
