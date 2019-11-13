@@ -77,7 +77,7 @@ pub fn load_general_glsl(
     let vs_module = device
         .create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&vs_bytes[..])).unwrap());
     let fs_module = device
-        .create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&fs_bytes[..])).unwrap());;
+        .create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&fs_bytes[..])).unwrap());
 
     (vs_module, fs_module)
 }

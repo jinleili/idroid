@@ -53,8 +53,7 @@ impl ComputeNode {
             layouts.push(wgpu::BindGroupLayoutBinding {
                 binding: b_index,
                 visibility: wgpu::ShaderStage::COMPUTE,
-                ty: wgpu::BindingType::SampledTexture {
-                    multisampled: false,
+                ty: wgpu::BindingType::StorageTexture {
                     dimension: wgpu::TextureViewDimension::D2,
                 },
             });
