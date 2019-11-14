@@ -53,9 +53,7 @@ impl ComputeNode {
             layouts.push(wgpu::BindGroupLayoutBinding {
                 binding: b_index,
                 visibility: wgpu::ShaderStage::COMPUTE,
-                ty: wgpu::BindingType::StorageTexture {
-                    dimension: wgpu::TextureViewDimension::D2,
-                },
+                ty: wgpu::BindingType::StorageTexture { dimension: wgpu::TextureViewDimension::D2 },
             });
             bingdings.push(wgpu::Binding {
                 binding: b_index,
@@ -73,8 +71,7 @@ impl ComputeNode {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        let shader =
-            crate::shader::Shader::new_by_compute(shader.0, device, shader.1);
+        let shader = crate::shader::Shader::new_by_compute(shader.0, device, shader.1);
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             layout: &pipeline_layout,
             compute_stage: shader.cs_stage(),

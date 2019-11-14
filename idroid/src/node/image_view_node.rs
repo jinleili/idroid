@@ -17,18 +17,19 @@ pub struct ImageViewNode {
 impl ImageViewNode {
     pub fn new(
         sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device,
-        src_view: &wgpu::TextureView, mvp: MVPUniform, shader: (&str, &str)
+        src_view: (&wgpu::TextureView, bool), mvp: MVPUniform, shader: (&str, &str),
     ) -> Self {
         let mvp_buf = create_uniform_buffer(device, mvp);
-
+        let sampler = crate::texture::default_sampler(device);
+        
         let setting_node = BindingGroupSettingNode::new(
             device,
-            &mvp_buf,
-            16 * 4,
+            vec![&mvp_buf],
+            vec![16 * 4],
             vec![],
             vec![],
             vec![src_view],
-            vec![&crate::texture::default_sampler(device)],
+            if src_view.1 { vec![] } else { vec![&sampler] },
             vec![
                 wgpu::ShaderStage::VERTEX,
                 wgpu::ShaderStage::FRAGMENT,

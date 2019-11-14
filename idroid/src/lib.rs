@@ -7,9 +7,9 @@ pub mod texture;
 pub mod utils;
 pub use utils::{depth_stencil, matrix_helper};
 
+pub mod node;
 pub mod shader;
 pub mod vertex;
-pub mod node;
 
 use math::Position;
 

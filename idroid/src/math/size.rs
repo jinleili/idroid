@@ -6,7 +6,7 @@ pub struct Size {
 
 impl Size {
     pub fn new(x: u32, y: u32) -> Self {
-        Size {x, y}
+        Size { x, y }
     }
 
     pub fn count(&self) -> u32 {
