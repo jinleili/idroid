@@ -42,7 +42,7 @@ impl AppView {
 fn request_device() -> (wgpu::Device, wgpu::Queue) {
     let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
         // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
-        power_preference: wgpu::PowerPreference::HighPerformance,
+        power_preference: wgpu::PowerPreference::Default,
         backends: wgpu::BackendBit::PRIMARY,
     })
     .unwrap();

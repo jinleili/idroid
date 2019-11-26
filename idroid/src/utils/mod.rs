@@ -144,14 +144,12 @@ where
     let staging_buffer = device
         .create_buffer_mapped(
             slice.len(),
-            wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_DST | wgpu::BufferUsage::COPY_SRC,
+            wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_SRC,
         )
         .fill_from_slice(slice);
     let storage_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         size,
-        usage: wgpu::BufferUsage::STORAGE
-            | wgpu::BufferUsage::COPY_DST
-            | wgpu::BufferUsage::COPY_SRC,
+        usage: wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST,
     });
     encoder.copy_buffer_to_buffer(&staging_buffer, 0, &storage_buffer, 0, size);
 
