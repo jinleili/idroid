@@ -40,11 +40,13 @@ impl AppView {
 }
 
 fn request_device() -> (wgpu::Device, wgpu::Queue) {
-    let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
-        // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
-        power_preference: wgpu::PowerPreference::Default,
-        backends: wgpu::BackendBit::PRIMARY,
-    })
+    let adapter = wgpu::Adapter::request(
+        &wgpu::RequestAdapterOptions {
+            // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
+            power_preference: wgpu::PowerPreference::Default,
+        },
+        wgpu::BackendBit::PRIMARY,
+    )
     .unwrap();
     adapter.request_device(&wgpu::DeviceDescriptor {
         extensions: wgpu::Extensions { anisotropic_filtering: false },

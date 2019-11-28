@@ -1,10 +1,14 @@
 #[allow(dead_code)]
 
+use zerocopy::{AsBytes, FromBytes};
+
+
 pub trait Pos {
     fn attri_descriptor(offset: u32) -> Vec<wgpu::VertexAttributeDescriptor>;
 }
 
-#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
 pub struct PosTex {
     pos: [f32; 3],
     tex_coord: [f32; 2],
@@ -64,7 +68,8 @@ impl Pos for PosTex {
 
 //     }
 // }
-#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
 pub struct PosWeight {
     pub pos: [f32; 3],
     // 离数学中心位置的权重
@@ -99,7 +104,8 @@ impl Pos for PosWeight {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
 pub struct PosBrush {
     pos: [f32; 3],
     uv: [f32; 2],

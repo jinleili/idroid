@@ -2,6 +2,7 @@ use crate::geometry::plane::Plane;
 use crate::node::BindingGroupSettingNode;
 use crate::utils::{create_uniform_buffer, MVPUniform};
 use crate::vertex::{Pos, PosTex};
+use zerocopy::AsBytes;
 
 #[allow(dead_code)]
 pub struct ImageViewNode {
@@ -21,7 +22,6 @@ impl ImageViewNode {
     ) -> Self {
         let mvp_buf = create_uniform_buffer(device, mvp);
         let sampler = crate::texture::default_sampler(device);
-        
         let setting_node = BindingGroupSettingNode::new(
             device,
             vec![&mvp_buf],
@@ -39,13 +39,11 @@ impl ImageViewNode {
 
         // Create the vertex and index buffers
         let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices();
-        let vertex_buf = device
-            .create_buffer_mapped(vertex_data.len(), wgpu::BufferUsage::VERTEX)
-            .fill_from_slice(&vertex_data);
+        let vertex_buf =
+            device.create_buffer_with_data(&vertex_data.as_bytes(), wgpu::BufferUsage::VERTEX);
 
-        let index_buf = device
-            .create_buffer_mapped(index_data.len(), wgpu::BufferUsage::INDEX)
-            .fill_from_slice(&index_data);
+        let index_buf =
+            device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
         // Create the render pipeline
         let shader = crate::shader::Shader::new(shader.0, device, shader.1);

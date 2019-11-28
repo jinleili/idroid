@@ -1,5 +1,6 @@
 pub mod depth_stencil;
 pub mod matrix_helper;
+use zerocopy::{AsBytes, FromBytes};
 
 mod hud;
 pub use hud::HUD;
@@ -90,7 +91,7 @@ pub fn color_blend_subtract() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) 
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, AsBytes, FromBytes)]
 pub struct MVPUniform {
     pub mvp_matrix: [[f32; 4]; 4],
 }
@@ -107,11 +108,12 @@ pub fn empty_uniform_buffer(device: &mut wgpu::Device, size: wgpu::BufferAddress
 #[allow(dead_code)]
 pub fn create_uniform_buffer<T>(device: &mut wgpu::Device, uniforms: T) -> wgpu::Buffer
 where
-    T: 'static + Copy,
+    T: 'static + AsBytes + Copy,
 {
-    device
-        .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST)
-        .fill_from_slice(&[uniforms])
+    device.create_buffer_with_data(
+        &[uniforms].as_bytes(),
+        wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+    )
 }
 
 #[allow(dead_code)]
@@ -120,11 +122,12 @@ pub fn create_uniform_buffer2<T>(
     size: wgpu::BufferAddress,
 ) -> wgpu::Buffer
 where
-    T: 'static + Copy,
+    T: 'static + AsBytes + Copy,
 {
-    let staging_buffer = device
-        .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_SRC)
-        .fill_from_slice(&[uniforms]);
+    let staging_buffer = device.create_buffer_with_data(
+        &[uniforms].as_bytes(),
+        wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_SRC,
+    );
 
     let uniform_buffer = empty_uniform_buffer(device, size);
     encoder.copy_buffer_to_buffer(&staging_buffer, 0, &uniform_buffer, 0, size);
@@ -138,15 +141,11 @@ pub fn create_storage_buffer<T>(
     size: wgpu::BufferAddress,
 ) -> (wgpu::Buffer, wgpu::Buffer)
 where
-    T: 'static + Copy,
+    T: 'static + AsBytes + Copy,
 {
     // store buffer 不能直接创建并填充数据？
     let staging_buffer = device
-        .create_buffer_mapped(
-            slice.len(),
-            wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_SRC,
-        )
-        .fill_from_slice(slice);
+        .create_buffer_with_data(slice.as_bytes(), wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_SRC);
     let storage_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         size,
         usage: wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST,
@@ -160,10 +159,10 @@ where
 pub fn update_uniform<T>(
     device: &mut wgpu::Device, queue: &mut wgpu::Queue, uniforms: T, destination: &wgpu::Buffer,
 ) where
-    T: 'static + Copy,
+    T: 'static + AsBytes + Copy,
 {
     let temp_buf =
-        device.create_buffer_mapped(1, wgpu::BufferUsage::COPY_SRC).fill_from_slice(&[uniforms]);
+        device.create_buffer_with_data(&[uniforms].as_bytes(), wgpu::BufferUsage::COPY_SRC);
 
     let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
     encoder.copy_buffer_to_buffer(
@@ -181,10 +180,10 @@ pub fn update_buffer_use_encoder<T>(
     encoder: &mut wgpu::CommandEncoder, device: &mut wgpu::Device, uniforms: T,
     destination: &wgpu::Buffer,
 ) where
-    T: 'static + Copy,
+    T: 'static + AsBytes + Copy,
 {
     let temp_buf =
-        device.create_buffer_mapped(1, wgpu::BufferUsage::COPY_SRC).fill_from_slice(&[uniforms]);
+        device.create_buffer_with_data(&[uniforms].as_bytes(), wgpu::BufferUsage::COPY_SRC);
 
     encoder.copy_buffer_to_buffer(
         &temp_buf,

@@ -79,10 +79,10 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
 }
 
 fn request_device() -> (wgpu::Device, wgpu::Queue) {
-    let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
-        power_preference: wgpu::PowerPreference::LowPower,
-        backends: wgpu::BackendBit::PRIMARY,
-    })
+    let adapter = wgpu::Adapter::request(
+        &wgpu::RequestAdapterOptions { power_preference: wgpu::PowerPreference::LowPower },
+        wgpu::BackendBit::PRIMARY,
+    )
     .unwrap();
     adapter.request_device(&wgpu::DeviceDescriptor {
         extensions: wgpu::Extensions { anisotropic_filtering: false },

@@ -59,9 +59,8 @@ pub fn from_path(
     let texture_view = texture.create_default_view();
 
     let texels: Vec<u8> = img_raw;
-    let temp_buf = device
-        .create_buffer_mapped(texels.len(), wgpu::BufferUsage::COPY_SRC)
-        .fill_from_slice(&texels);
+    let temp_buf = device.create_buffer_with_data(&texels, wgpu::BufferUsage::COPY_SRC);
+
     encoder.copy_buffer_to_texture(
         wgpu::BufferCopyView {
             buffer: &temp_buf,
