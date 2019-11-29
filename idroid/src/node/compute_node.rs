@@ -31,9 +31,12 @@ impl ComputeNode {
             visibilitys,
         );
 
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            bind_group_layouts: &[&setting_node.bind_group_layout],
+        });
         let shader = crate::shader::Shader::new_by_compute(shader.0, device, shader.1);
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            layout: &setting_node.pipeline_layout,
+            layout: &pipeline_layout,
             compute_stage: shader.cs_stage(),
         });
 

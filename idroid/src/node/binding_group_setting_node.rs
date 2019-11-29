@@ -2,8 +2,7 @@ use std::vec::Vec;
 
 #[allow(dead_code)]
 pub struct BindingGroupSettingNode {
-    bind_group_layout: wgpu::BindGroupLayout,
-    pub pipeline_layout: wgpu::PipelineLayout,
+    pub bind_group_layout: wgpu::BindGroupLayout,
     pub bind_group: wgpu::BindGroup,
 }
 
@@ -89,15 +88,11 @@ impl BindingGroupSettingNode {
         let bind_group_layout = device
             .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts });
 
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            bind_group_layouts: &[&bind_group_layout],
-        });
-
         let bind_group: wgpu::BindGroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
             bindings: &bingdings,
         });
 
-        BindingGroupSettingNode { bind_group_layout, bind_group, pipeline_layout }
+        BindingGroupSettingNode { bind_group_layout, bind_group }
     }
 }

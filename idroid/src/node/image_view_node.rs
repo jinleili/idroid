@@ -45,10 +45,13 @@ impl ImageViewNode {
         let index_buf =
             device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            bind_group_layouts: &[&setting_node.bind_group_layout],
+        });
         // Create the render pipeline
         let shader = crate::shader::Shader::new(shader.0, device, shader.1);
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            layout: &setting_node.pipeline_layout,
+            layout: &pipeline_layout,
             vertex_stage: shader.vertex_stage(),
             fragment_stage: shader.fragment_stage(),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
