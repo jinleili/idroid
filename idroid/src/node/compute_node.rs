@@ -45,6 +45,10 @@ impl ComputeNode {
 
     pub fn compute(&mut self, _device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder) {
         let mut cpass = encoder.begin_compute_pass();
+        self.dispatch(&mut cpass);
+    }
+
+    pub fn dispatch(&mut self, cpass: &mut wgpu::ComputePass) {
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);

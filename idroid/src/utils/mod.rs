@@ -16,11 +16,12 @@ pub fn black_color() -> wgpu::Color {
 }
 
 // 混合：https://vulkan.lunarg.com/doc/view/1.0.26.0/linux/vkspec.chunked/ch26s01.html
+// alpha_blend(), color_blend() 的配置为 @kvark 在 gitter 中推荐
 #[allow(dead_code)]
 pub fn alpha_blend() -> wgpu::BlendDescriptor {
     wgpu::BlendDescriptor {
         src_factor: wgpu::BlendFactor::One,
-        dst_factor: wgpu::BlendFactor::Zero,
+        dst_factor: wgpu::BlendFactor::One,
         operation: wgpu::BlendOperation::Add,
     }
 }
@@ -144,8 +145,10 @@ where
     T: 'static + AsBytes + Copy,
 {
     // store buffer 不能直接创建并填充数据？
-    let staging_buffer = device
-        .create_buffer_with_data(slice.as_bytes(), wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_SRC);
+    let staging_buffer = device.create_buffer_with_data(
+        slice.as_bytes(),
+        wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_SRC,
+    );
     let storage_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         size,
         usage: wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST,
