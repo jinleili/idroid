@@ -1,3 +1,4 @@
+use crate::buffer::BufferObj;
 use std::vec::Vec;
 
 #[allow(dead_code)]
@@ -9,10 +10,9 @@ pub struct BindingGroupSettingNode {
 #[allow(dead_code)]
 impl BindingGroupSettingNode {
     pub fn new(
-        device: &mut wgpu::Device, uniforms: Vec<&wgpu::Buffer>,
-        uniform_ranges: Vec<wgpu::BufferAddress>, inout_buffer: Vec<&wgpu::Buffer>,
-        inout_buffer_range: Vec<wgpu::BufferAddress>, textures: Vec<(&wgpu::TextureView, bool)>,
-        samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
+        device: &mut wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
+        textures: Vec<(&wgpu::TextureView, bool)>, samplers: Vec<&wgpu::Sampler>,
+        visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutBinding> = vec![];
 
@@ -20,6 +20,7 @@ impl BindingGroupSettingNode {
 
         let mut b_index = 0_u32;
         for i in 0..uniforms.len() {
+            let buffer_obj = uniforms[i];
             layouts.push(wgpu::BindGroupLayoutBinding {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
@@ -28,14 +29,15 @@ impl BindingGroupSettingNode {
             bingdings.push(wgpu::Binding {
                 binding: b_index,
                 resource: wgpu::BindingResource::Buffer {
-                    buffer: uniforms[i],
-                    range: 0..uniform_ranges[i],
+                    buffer: &buffer_obj.buffer,
+                    range: 0..buffer_obj.size,
                 },
             });
             b_index += 1;
         }
 
-        for i in 0..inout_buffer.len() {
+        for i in 0..inout_buffers.len() {
+            let buffer_obj = inout_buffers[i];
             layouts.push(wgpu::BindGroupLayoutBinding {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
@@ -44,8 +46,8 @@ impl BindingGroupSettingNode {
             bingdings.push(wgpu::Binding {
                 binding: b_index,
                 resource: wgpu::BindingResource::Buffer {
-                    buffer: inout_buffer[i],
-                    range: 0..inout_buffer_range[i],
+                    buffer: &buffer_obj.buffer,
+                    range: 0..buffer_obj.size,
                 },
             });
             b_index += 1;

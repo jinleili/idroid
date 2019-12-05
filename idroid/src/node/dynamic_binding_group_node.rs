@@ -1,3 +1,4 @@
+use crate::buffer::BufferObj;
 use std::vec::Vec;
 
 #[allow(dead_code)]
@@ -8,9 +9,7 @@ pub struct DynamicBindingGroupNode {
 
 impl DynamicBindingGroupNode {
     pub fn new(
-        device: &mut wgpu::Device, uniforms: Vec<&wgpu::Buffer>,
-        uniform_ranges: Vec<wgpu::BufferAddress>,
-        visibilitys: Vec<wgpu::ShaderStage>,
+        device: &mut wgpu::Device, uniforms: Vec<&BufferObj>, visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutBinding> = vec![];
 
@@ -18,6 +17,8 @@ impl DynamicBindingGroupNode {
 
         let mut b_index = 0;
         for i in 0..uniforms.len() {
+            let buffer_obj = uniforms[i];
+
             layouts.push(wgpu::BindGroupLayoutBinding {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
@@ -26,8 +27,8 @@ impl DynamicBindingGroupNode {
             bingdings.push(wgpu::Binding {
                 binding: b_index,
                 resource: wgpu::BindingResource::Buffer {
-                    buffer: uniforms[i],
-                    range: 0..uniform_ranges[i],
+                    buffer: &buffer_obj.buffer,
+                    range: 0..buffer_obj.size,
                 },
             });
             b_index += 1;

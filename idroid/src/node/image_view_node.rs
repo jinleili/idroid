@@ -1,7 +1,8 @@
+use crate::buffer::{BufferObj, MVPUniform};
 use crate::geometry::plane::Plane;
 use crate::node::BindingGroupSettingNode;
-use crate::utils::{create_uniform_buffer, MVPUniform};
 use crate::vertex::{Pos, PosTex};
+
 use zerocopy::AsBytes;
 
 #[allow(dead_code)]
@@ -10,7 +11,6 @@ pub struct ImageViewNode {
     index_buf: wgpu::Buffer,
     index_count: usize,
     setting_node: BindingGroupSettingNode,
-    mvp_buf: wgpu::Buffer,
     pipeline: wgpu::RenderPipeline,
 }
 
@@ -20,13 +20,11 @@ impl ImageViewNode {
         sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device,
         src_view: (&wgpu::TextureView, bool), mvp: MVPUniform, shader: (&str, &str),
     ) -> Self {
-        let mvp_buf = create_uniform_buffer(device, mvp);
+        let mvp_buf = BufferObj::create_uniform_buffer(device, &mvp);
         let sampler = crate::texture::default_sampler(device);
         let setting_node = BindingGroupSettingNode::new(
             device,
             vec![&mvp_buf],
-            vec![16 * 4],
-            vec![],
             vec![],
             vec![src_view],
             if src_view.1 { vec![] } else { vec![&sampler] },
@@ -88,7 +86,6 @@ impl ImageViewNode {
             index_count: index_data.len(),
             setting_node,
             pipeline,
-            mvp_buf,
         }
     }
 

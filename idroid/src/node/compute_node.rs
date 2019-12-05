@@ -1,4 +1,6 @@
 use super::BindingGroupSettingNode;
+use crate::buffer::BufferObj;
+
 use std::vec::Vec;
 
 #[allow(dead_code)]
@@ -11,21 +13,18 @@ pub struct ComputeNode {
 #[allow(dead_code)]
 impl ComputeNode {
     pub fn new(
-        device: &mut wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&wgpu::Buffer>,
-        uniform_ranges: Vec<wgpu::BufferAddress>, inout_buffer: Vec<&wgpu::Buffer>,
-        inout_buffer_range: Vec<wgpu::BufferAddress>, inout_tv: Vec<(&wgpu::TextureView, bool)>,
+        device: &mut wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
+        inout_buffers: Vec<&BufferObj>, inout_tv: Vec<(&wgpu::TextureView, bool)>,
         shader: (&str, &str),
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStage> = vec![];
-        for _ in 0..(uniforms.len() + inout_buffer.len() + inout_tv.len()) {
+        for _ in 0..(uniforms.len() + inout_buffers.len() + inout_tv.len()) {
             visibilitys.push(wgpu::ShaderStage::COMPUTE);
         }
         let setting_node = BindingGroupSettingNode::new(
             device,
             uniforms,
-            uniform_ranges,
-            inout_buffer,
-            inout_buffer_range,
+            inout_buffers,
             inout_tv,
             vec![],
             visibilitys,
