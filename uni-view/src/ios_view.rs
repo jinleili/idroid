@@ -71,6 +71,11 @@ impl crate::GPUContext for AppView {
             height: (s.size.height as f32 * self.scale_factor) as u32,
         }
     }
+
+    fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32) {
+        let size = self.get_view_size();
+        (touch_point_x * self.scale_factor / size.width as f32, touch_point_y * self.scale_factor / size.height as f32)
+    }
 }
 
 fn get_scale_factor(obj: *mut Object) -> f32 {

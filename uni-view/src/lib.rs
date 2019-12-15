@@ -40,6 +40,7 @@ pub struct TouchPoint {
 pub trait GPUContext {
     fn get_view_size(&self) -> ViewSize;
     fn update_swap_chain(&mut self);
+    fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32);
 }
 
 // 元组结构类型，默认的构造方法只能在当前模块访问，除非将元组参数添加 pub

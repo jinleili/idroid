@@ -11,7 +11,7 @@ pub struct Plane {
 
 impl Plane {
     pub fn new(h_segments: u32, v_segments: u32) -> Self {
-        Plane { width: 2.0, height: 2.0, h_segments: h_segments, v_segments: v_segments }
+        Plane { width: 2.0, height: 2.0, h_segments, v_segments }
     }
 
     pub fn new_by_pixel(width: f32, height: f32, h_segments: u32, v_segments: u32) -> Self {
@@ -69,8 +69,7 @@ impl Plane {
                     indices.push(left);
                     indices.push(current);
                 } else {
-                    let mut lines: Vec<u32> =
-                        vec![current, left, current, left - 1, current, current - 1];
+                    let mut lines: Vec<u32> = vec![current, left, current, left - 1, current, current - 1];
                     indices.append(&mut lines);
                 }
             }
@@ -91,8 +90,7 @@ impl Plane {
                 let current: u32 = num + v;
                 // 找到上一列同一行位置的索引
                 let left: u32 = current - v_point_num;
-                let mut lines: Vec<u32> =
-                    vec![current, left, left - 1, current, left - 1, current - 1];
+                let mut lines: Vec<u32> = vec![current, left, left - 1, current, left - 1, current - 1];
                 indices.append(&mut lines);
             }
         }

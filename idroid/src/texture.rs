@@ -12,8 +12,8 @@ pub fn from_img_name(
 // is_gray_pic: 是否为单通道灰度纹理
 #[allow(dead_code)]
 pub fn from_img_name_and_usage_write(
-    image_path: &str, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-    usage_write: bool, is_gray_pic: bool,
+    image_path: &str, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder, usage_write: bool,
+    is_gray_pic: bool,
 ) -> (TextureView, Extent3d, Sampler) {
     // 动态加载本地文件
     let path = PathBuf::from(image_path);
@@ -22,8 +22,7 @@ pub fn from_img_name_and_usage_write(
 
 #[allow(dead_code)]
 pub fn from_path(
-    path: PathBuf, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-    usage_write: bool, is_gray_pic: bool,
+    path: PathBuf, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder, is_storage: bool, is_gray_pic: bool,
 ) -> (TextureView, Extent3d, Sampler) {
     let image_bytes = match std::fs::read(&path) {
         Ok(code) => code,
@@ -31,21 +30,18 @@ pub fn from_path(
     };
 
     let img_load = image::load_from_memory(&image_bytes).expect("Failed to load image.");
-    let img_raw =
-        if is_gray_pic { img_load.to_luma().into_raw() } else { img_load.to_rgba().into_raw() };
+    let img_raw = if is_gray_pic { img_load.to_luma().into_raw() } else { img_load.to_rgba().into_raw() };
 
     let (width, height) = img_load.dimensions();
-    let texture_extent = wgpu::Extent3d { width: width, height: height, depth: 1 };
-    let usage = if usage_write {
-        wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::WRITE_ALL
+    let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
+    let usage = if is_storage {
+        println!("wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::STORAGE");
+        wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::STORAGE
     } else {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED
     };
-    let (format, channel_count) = if is_gray_pic {
-        (wgpu::TextureFormat::R8Unorm, 1)
-    } else {
-        (wgpu::TextureFormat::Rgba8Unorm, 4)
-    };
+    let (format, channel_count) =
+        if is_gray_pic { (wgpu::TextureFormat::R8Unorm, 1) } else { (wgpu::TextureFormat::Rgba8Unorm, 4) };
 
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
@@ -53,8 +49,8 @@ pub fn from_path(
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
-        format: format,
-        usage: usage,
+        format,
+        usage,
     });
     let texture_view = texture.create_default_view();
 
@@ -62,12 +58,7 @@ pub fn from_path(
     let temp_buf = device.create_buffer_with_data(&texels, wgpu::BufferUsage::COPY_SRC);
 
     encoder.copy_buffer_to_texture(
-        wgpu::BufferCopyView {
-            buffer: &temp_buf,
-            offset: 0,
-            row_pitch: channel_count * width,
-            image_height: height,
-        },
+        wgpu::BufferCopyView { buffer: &temp_buf, offset: 0, row_pitch: channel_count * width, image_height: height },
         wgpu::TextureCopyView {
             texture: &texture,
             mip_level: 0,
@@ -82,10 +73,10 @@ pub fn from_path(
 
 #[allow(dead_code)]
 pub fn from_buffer_and_usage_write(
-    buffer: &wgpu::Buffer, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-    width: u32, height: u32, pixel_size: u32, usage_write: bool,
+    buffer: &wgpu::Buffer, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32,
+    pixel_size: u32, usage_write: bool,
 ) -> (TextureView, Extent3d, Sampler) {
-    let texture_extent = wgpu::Extent3d { width: width, height: height, depth: 1 };
+    let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
     let usage = if usage_write {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::WRITE_ALL
     } else {
@@ -98,18 +89,13 @@ pub fn from_buffer_and_usage_write(
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
         format: wgpu::TextureFormat::Rgba32Float,
-        usage: usage,
+        usage,
     });
     let texture_view = texture.create_default_view();
 
     // BufferCopyView 必须 >= TextureCopyView
     encoder.copy_buffer_to_texture(
-        wgpu::BufferCopyView {
-            buffer: buffer,
-            offset: 0,
-            row_pitch: pixel_size * width,
-            image_height: height,
-        },
+        wgpu::BufferCopyView { buffer, offset: 0, row_pitch: pixel_size * width, image_height: height },
         wgpu::TextureCopyView {
             texture: &texture,
             mip_level: 0,
@@ -124,16 +110,14 @@ pub fn from_buffer_and_usage_write(
 
 // empty texture as a OUTPUT_ATTACHMENT
 #[allow(dead_code)]
-pub fn empty(
-    device: &mut wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d,
-) -> TextureView {
+pub fn empty(device: &mut wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d) -> TextureView {
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         size: extent,
         array_layer_count: 1,
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
-        format: format,
+        format,
         usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT
             | wgpu::TextureUsage::COPY_DST
             | wgpu::TextureUsage::SAMPLED
@@ -145,21 +129,13 @@ pub fn empty(
 
 #[allow(dead_code)]
 pub fn empty_view(device: &mut wgpu::Device, width: u32, height: u32) -> TextureView {
-    crate::texture::empty(
-        device,
-        wgpu::TextureFormat::Bgra8Unorm,
-        wgpu::Extent3d { width: width, height: height, depth: 1 },
-    )
+    crate::texture::empty(device, wgpu::TextureFormat::Bgra8Unorm, wgpu::Extent3d { width, height, depth: 1 })
 }
 
 // 32位浮点纹理
 #[allow(dead_code)]
 pub fn empty_f32_view(device: &mut wgpu::Device, width: u32, height: u32) -> TextureView {
-    crate::texture::empty(
-        device,
-        wgpu::TextureFormat::Rgba32Float,
-        wgpu::Extent3d { width: width, height: height, depth: 1 },
-    )
+    crate::texture::empty(device, wgpu::TextureFormat::Rgba32Float, wgpu::Extent3d { width, height, depth: 1 })
 }
 
 #[allow(dead_code)]

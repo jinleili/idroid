@@ -14,21 +14,13 @@ pub struct ComputeNode {
 impl ComputeNode {
     pub fn new(
         device: &mut wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
-        inout_buffers: Vec<&BufferObj>, inout_tv: Vec<(&wgpu::TextureView, bool)>,
-        shader: (&str, &str),
+        inout_buffers: Vec<&BufferObj>, inout_tv: Vec<(&wgpu::TextureView, bool)>, shader: (&str, &str),
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStage> = vec![];
         for _ in 0..(uniforms.len() + inout_buffers.len() + inout_tv.len()) {
             visibilitys.push(wgpu::ShaderStage::COMPUTE);
         }
-        let setting_node = BindingGroupSettingNode::new(
-            device,
-            uniforms,
-            inout_buffers,
-            inout_tv,
-            vec![],
-            visibilitys,
-        );
+        let setting_node = BindingGroupSettingNode::new(device, uniforms, inout_buffers, inout_tv, vec![], visibilitys);
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&setting_node.bind_group_layout],

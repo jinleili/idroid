@@ -24,9 +24,6 @@ impl Line {
         let s = PosWeight::new([self.start.x, self.start.y, 0.0], 0.0);
         let e = PosWeight::new([self.end.x, self.end.y, 0.0], 0.0);
 
-        (
-            vec![left_top, s, right_top, e, left_bottom, right_bottom],
-            vec![0, 1, 2, 2, 3, 1, 3, 1, 4, 4, 5, 3],
-        )
+        (vec![left_top, s, right_top, e, left_bottom, right_bottom], vec![0, 1, 2, 2, 3, 1, 3, 1, 4, 4, 5, 3])
     }
 }

@@ -10,12 +10,7 @@ pub struct Rect {
 
 impl Rect {
     pub fn new(width: f32, height: f32, center_to: ViewSize) -> Self {
-        Rect {
-            left: (center_to.width - width) / 2.0,
-            top: (center_to.height - height) / 2.0,
-            width,
-            height,
-        }
+        Rect { left: (center_to.width - width) / 2.0, top: (center_to.height - height) / 2.0, width, height }
     }
 
     pub fn center_x(&self) -> f32 {
@@ -32,11 +27,7 @@ impl Rect {
         let x_right = self.center_x();
         let y_top = self.center_y();
         let y_bottom = -self.center_y();
-        if ortho_point.x >= x_left
-            && ortho_point.x <= x_right
-            && ortho_point.y >= y_bottom
-            && ortho_point.y <= y_top
-        {
+        if ortho_point.x >= x_left && ortho_point.x <= x_right && ortho_point.y >= y_bottom && ortho_point.y <= y_top {
             true
         } else {
             false

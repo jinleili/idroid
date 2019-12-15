@@ -8,9 +8,7 @@ pub struct DynamicBindingGroupNode {
 }
 
 impl DynamicBindingGroupNode {
-    pub fn new(
-        device: &mut wgpu::Device, uniforms: Vec<&BufferObj>, visibilitys: Vec<wgpu::ShaderStage>,
-    ) -> Self {
+    pub fn new(device: &mut wgpu::Device, uniforms: Vec<&BufferObj>, visibilitys: Vec<wgpu::ShaderStage>) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutBinding> = vec![];
 
         let mut bingdings: Vec<wgpu::Binding> = vec![];
@@ -26,20 +24,15 @@ impl DynamicBindingGroupNode {
             });
             bingdings.push(wgpu::Binding {
                 binding: b_index,
-                resource: wgpu::BindingResource::Buffer {
-                    buffer: &buffer_obj.buffer,
-                    range: 0..buffer_obj.size,
-                },
+                resource: wgpu::BindingResource::Buffer { buffer: &buffer_obj.buffer, range: 0..buffer_obj.size },
             });
             b_index += 1;
         }
-        let bind_group_layout = device
-            .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts });
+        let bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts });
 
-        let bind_group: wgpu::BindGroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            bindings: &bingdings,
-        });
+        let bind_group: wgpu::BindGroup =
+            device.create_bind_group(&wgpu::BindGroupDescriptor { layout: &bind_group_layout, bindings: &bingdings });
 
         DynamicBindingGroupNode { bind_group_layout, bind_group }
     }

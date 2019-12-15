@@ -33,8 +33,7 @@ impl Shader {
     #[cfg(target_os = "ios")]
     pub fn new_by_compute(name: &str, device: &mut wgpu::Device, base_path: &str) -> Self {
         let bytes = generate_shader_source(name, "comp");
-        let module = device
-            .create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&bytes[..])).unwrap());
+        let module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&bytes[..])).unwrap());
         Shader { vs_module: module, fs_module: None }
     }
 
@@ -59,9 +58,7 @@ impl Shader {
 
     pub fn fragment_stage(&self) -> Option<wgpu::ProgrammableStageDescriptor> {
         match &self.fs_module {
-            Some(fs_module) => {
-                Some(wgpu::ProgrammableStageDescriptor { module: fs_module, entry_point: "main" })
-            }
+            Some(fs_module) => Some(wgpu::ProgrammableStageDescriptor { module: fs_module, entry_point: "main" }),
             None => None,
         }
     }
@@ -74,10 +71,8 @@ pub fn load_general_glsl(
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_bytes = generate_shader_source(name, "vs");
     let fs_bytes = generate_shader_source(name, "fs");
-    let vs_module = device
-        .create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&vs_bytes[..])).unwrap());
-    let fs_module = device
-        .create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&fs_bytes[..])).unwrap());
+    let vs_module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&vs_bytes[..])).unwrap());
+    let fs_module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&fs_bytes[..])).unwrap());
 
     (vs_module, fs_module)
 }
@@ -108,9 +103,7 @@ pub fn load_general_glsl(
 }
 
 #[cfg(not(target_os = "ios"))]
-fn generate_shader_source(
-    name: &str, ty: ShaderKind, base_path: &str,
-) -> shaderc::CompilationArtifact {
+fn generate_shader_source(name: &str, ty: ShaderKind, base_path: &str) -> shaderc::CompilationArtifact {
     let suffix = match ty {
         ShaderKind::Vertex => ".vs.glsl",
         ShaderKind::Fragment => ".fs.glsl",
@@ -135,9 +128,7 @@ fn generate_shader_source(
 
     let mut compiler = shaderc::Compiler::new().unwrap();
     let options = shaderc::CompileOptions::new().unwrap();
-    let binary_result = compiler
-        .compile_into_spirv(&shader_source, ty, "shader.glsl", "main", Some(&options))
-        .unwrap();
+    let binary_result = compiler.compile_into_spirv(&shader_source, ty, "shader.glsl", "main", Some(&options)).unwrap();
 
     // print spirv text
     // let binary_result2 = compiler.compile_into_spirv_assembly(

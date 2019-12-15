@@ -1,7 +1,5 @@
 #[allow(dead_code)]
-
 use zerocopy::{AsBytes, FromBytes};
-
 
 pub trait Pos {
     fn attri_descriptor(offset: u32) -> Vec<wgpu::VertexAttributeDescriptor>;
@@ -17,10 +15,7 @@ pub struct PosTex {
 impl PosTex {
     #[allow(dead_code)]
     pub fn vertex_i(pos: [i8; 3], tc: [i8; 2]) -> PosTex {
-        PosTex {
-            pos: [pos[0] as f32, pos[1] as f32, pos[2] as f32],
-            tex_coord: [tc[0] as f32, tc[1] as f32],
-        }
+        PosTex { pos: [pos[0] as f32, pos[1] as f32, pos[2] as f32], tex_coord: [tc[0] as f32, tc[1] as f32] }
     }
 
     pub fn vertex_f32(pos: [f32; 3], tex_coord: [f32; 2]) -> PosTex {

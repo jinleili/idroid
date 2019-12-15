@@ -27,15 +27,7 @@ impl AppView {
         let surface = wgpu::Surface::create(&view);
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        AppView {
-            view,
-            scale_factor: scale_factor as f32,
-            device,
-            queue,
-            surface,
-            sc_desc,
-            swap_chain,
-        }
+        AppView { view, scale_factor: scale_factor as f32, device, queue, surface, sc_desc, swap_chain }
     }
 }
 
@@ -68,5 +60,10 @@ impl crate::GPUContext for AppView {
         let physical = self.view.inner_size().to_physical(scale_factor);
 
         crate::ViewSize { width: physical.width as u32, height: physical.height as u32 }
+    }
+
+    fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32) {
+        let size = self.get_view_size();
+        (touch_point_x * self.scale_factor / size.width as f32, touch_point_y * self.scale_factor / size.height as f32)
     }
 }

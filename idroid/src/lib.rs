@@ -7,17 +7,19 @@ pub mod texture;
 pub mod utils;
 pub use utils::{depth_stencil, matrix_helper};
 
+pub mod buffer;
 pub mod node;
 pub mod shader;
 pub mod vertex;
-pub mod buffer;
 
-use math::Position;
+use math::TouchPoint;
 
 pub trait SurfaceView {
     fn resize(&mut self);
     fn scale(&mut self, scale: f32);
-    fn touch_moved(&mut self, position: Position);
+    fn touch_start(&mut self, point: TouchPoint);
+    fn touch_moved(&mut self, point: TouchPoint);
+    fn touch_end(&mut self, point: TouchPoint);
 
     fn enter_frame(&mut self);
 }
@@ -46,7 +48,7 @@ pub unsafe extern "C" fn enter_frame(obj: *mut libc::c_void) -> *mut libc::c_voi
 #[no_mangle]
 pub unsafe extern "C" fn touch_move(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
-    obj.touch_moved(crate::math::Position::new(p.x, p.y));
+    obj.touch_moved(p);
 
     // 重新将所有权移出
     let _ = Box::into_raw(obj) as *mut libc::c_void;
