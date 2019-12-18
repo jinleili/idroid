@@ -56,6 +56,26 @@ pub unsafe extern "C" fn touch_move(obj: *mut libc::c_void, p: TouchPoint) {
 
 #[cfg(not(target_os = "macos"))]
 #[no_mangle]
+pub unsafe extern "C" fn touch_start(obj: *mut libc::c_void, p: TouchPoint) {
+    let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
+    obj.touch_start(p);
+
+    // 重新将所有权移出
+    let _ = Box::into_raw(obj) as *mut libc::c_void;
+}
+
+#[cfg(not(target_os = "macos"))]
+#[no_mangle]
+pub unsafe extern "C" fn touch_end(obj: *mut libc::c_void, p: TouchPoint) {
+    let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
+    obj.touch_end(p);
+
+    // 重新将所有权移出
+    let _ = Box::into_raw(obj) as *mut libc::c_void;
+}
+
+#[cfg(not(target_os = "macos"))]
+#[no_mangle]
 pub unsafe extern "C" fn resize(obj: *mut libc::c_void, _p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.resize();
