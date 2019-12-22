@@ -12,13 +12,32 @@ pub fn fullscreen_mvp(sc_desc: &wgpu::SwapChainDescriptor) -> [[f32; 4]; 4] {
     (p_matrix * mv_matrix).into()
 }
 
-pub fn perspective_mvp(sc_desc: &wgpu::SwapChainDescriptor, is_fullscreen: bool) -> (glm::TMat4<f32>, glm::TMat4<f32>) {
+pub fn perspective_mvp(
+    sc_desc: &wgpu::SwapChainDescriptor,
+    is_fullscreen: bool,
+) -> (glm::TMat4<f32>, glm::TMat4<f32>) {
     let fovy: f32 = 75.0 / 180.0 * std::f32::consts::PI;
     let radian: glm::TVec1<f32> = glm::vec1(fovy);
-    let p_matrix: glm::TMat4<f32> =
-        glm::perspective_fov(radian[0], sc_desc.width as f32, sc_desc.height as f32, 0.1, 1000.0);
-    let mut vm_matrix: glm::TMat4<f32> = glm::TMat4::identity();
+    let p_matrix: glm::TMat4<f32> = glm::perspective_fov(
+        radian[0],
+        sc_desc.width as f32,
+        sc_desc.height as f32,
+        0.1,
+        1000.0,
+    );
+    let factor = fullscreen_factor(sc_desc);
 
+    let mut vm_matrix: glm::TMat4<f32> = glm::TMat4::identity();
+    vm_matrix = glm::translate(&vm_matrix, &glm::vec3(0.0, 0.0, factor.0));
+
+    if is_fullscreen {
+        vm_matrix = glm::scale(&vm_matrix, &glm::vec3(factor.1, factor.2, 1.0));
+    }
+
+    (p_matrix, vm_matrix)
+}
+
+pub fn fullscreen_factor(sc_desc: &wgpu::SwapChainDescriptor) -> (f32, f32, f32) {
     // 缩放到贴合屏幕
     //
     // 移动近裁剪平面,屏幕上的投影并不会缩放,
@@ -26,23 +45,22 @@ pub fn perspective_mvp(sc_desc: &wgpu::SwapChainDescriptor, is_fullscreen: bool)
     // 相当于是 裁剪平面与其上的投影在整体缩放, 而裁剪平面始终是等于屏幕空间平面的, 所以映射到屏幕上就是没有缩放
     // 满屏效果: 利用 fovy 计算 tan (近裁剪平面 x | y 与 camera 原点的距离之比) 得出 z 轴平移距离
     // 屏幕 h > w 时，才需要计算 ratio, w > h 时， ration = 1
-    let ratio = if sc_desc.height > sc_desc.width { sc_desc.height as f32 / sc_desc.width as f32 } else { 1.0 };
-
+    let ratio = if sc_desc.height > sc_desc.width {
+        sc_desc.height as f32 / sc_desc.width as f32
+    } else {
+        1.0
+    };
+    let fovy: f32 = 75.0 / 180.0 * std::f32::consts::PI;
     let factor: f32 = (fovy / 2.0).tan();
-    vm_matrix = glm::translate(&vm_matrix, &glm::vec3(0.0, 0.0, -(ratio / factor)));
 
-    if is_fullscreen {
-        let mut sx = 1.0;
-        let mut sy = 1.0;
-        if sc_desc.height > sc_desc.width {
-            sy = sc_desc.height as f32 / sc_desc.width as f32;
-        } else {
-            sx = sc_desc.width as f32 / sc_desc.height as f32;
-        };
-        vm_matrix = glm::scale(&vm_matrix, &glm::vec3(sx, sy, 1.0));
-    }
-
-    (p_matrix, vm_matrix)
+    let mut sx = 1.0;
+    let mut sy = 1.0;
+    if sc_desc.height > sc_desc.width {
+        sy = sc_desc.height as f32 / sc_desc.width as f32;
+    } else {
+        sx = sc_desc.width as f32 / sc_desc.height as f32;
+    };
+    (-(ratio / factor), sx, sy)
 }
 
 #[allow(dead_code)]
@@ -65,7 +83,14 @@ pub fn ortho_pixel(width: f32, height: f32) -> glm::TMat4<f32> {
     // https://nalgebra.org/projections/
     // 在计算机中通常使用的是左手坐标系，而数学中则通常使用右手坐标系。
     // 左手坐标系，z 轴方向指向屏幕内
-    glm::ortho(-width / 2.0, width / 2.0, -height / 2.0, height / 2.0, -1000.0, 1000.0)
+    glm::ortho(
+        -width / 2.0,
+        width / 2.0,
+        -height / 2.0,
+        height / 2.0,
+        -1000.0,
+        1000.0,
+    )
 }
 
 #[allow(dead_code)]
