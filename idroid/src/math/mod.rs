@@ -7,6 +7,9 @@ pub use rect::Rect;
 mod position;
 pub use position::Position;
 
+mod point3d;
+pub use point3d::Point3D;
+
 mod touch_point;
 pub use touch_point::TouchPoint;
 

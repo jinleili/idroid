@@ -2,20 +2,22 @@ use nalgebra_glm as glm;
 
 #[allow(dead_code)]
 pub fn default_mvp(sc_desc: &wgpu::SwapChainDescriptor) -> [[f32; 4]; 4] {
-    perspective_mvp(sc_desc, false)
+    let (p_matrix, mv_matrix) = perspective_mvp(sc_desc, false);
+    (p_matrix * mv_matrix).into()
 }
 
 #[allow(dead_code)]
 pub fn fullscreen_mvp(sc_desc: &wgpu::SwapChainDescriptor) -> [[f32; 4]; 4] {
-    perspective_mvp(sc_desc, true)
+    let (p_matrix, mv_matrix) = perspective_mvp(sc_desc, true);
+    (p_matrix * mv_matrix).into()
 }
 
-fn perspective_mvp(sc_desc: &wgpu::SwapChainDescriptor, is_fullscreen: bool) -> [[f32; 4]; 4] {
+pub fn perspective_mvp(sc_desc: &wgpu::SwapChainDescriptor, is_fullscreen: bool) -> (glm::TMat4<f32>, glm::TMat4<f32>) {
     let fovy: f32 = 75.0 / 180.0 * std::f32::consts::PI;
     let radian: glm::TVec1<f32> = glm::vec1(fovy);
     let p_matrix: glm::TMat4<f32> =
         glm::perspective_fov(radian[0], sc_desc.width as f32, sc_desc.height as f32, 0.1, 1000.0);
-    let mut vm_matrix = glm::TMat4::identity();
+    let mut vm_matrix: glm::TMat4<f32> = glm::TMat4::identity();
 
     // 缩放到贴合屏幕
     //
@@ -40,7 +42,7 @@ fn perspective_mvp(sc_desc: &wgpu::SwapChainDescriptor, is_fullscreen: bool) -> 
         vm_matrix = glm::scale(&vm_matrix, &glm::vec3(sx, sy, 1.0));
     }
 
-    (p_matrix * vm_matrix).into()
+    (p_matrix, vm_matrix)
 }
 
 #[allow(dead_code)]
