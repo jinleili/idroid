@@ -45,9 +45,17 @@ impl Position {
         Position::new(self.x + dx, self.y + dy)
     }
 
+    // 取整
+    pub fn round(&self) -> Self {
+        Position::new(self.x.round(), self.y.round());
+    }
+
     // 基于斜率及距离，计算点的坐标
     pub fn new_by_slope_n_dis(&self, slope: f32, distance: f32) -> Self {
-        Position::new(self.x + distance * slope.cos(), self.y + distance * slope.sin())
+        Position::new(
+            self.x + distance * slope.cos(),
+            self.y + distance * slope.sin(),
+        )
     }
 
     // 求矢量的模

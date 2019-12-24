@@ -47,7 +47,6 @@ impl BindingGroupSettingNode {
         }
 
         for i in 0..textures.len() {
-            println!("tex id: {}", b_index);
             let is_storage_texture = textures[i].1;
             layouts.push(wgpu::BindGroupLayoutBinding {
                 binding: b_index,
