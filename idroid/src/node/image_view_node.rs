@@ -17,24 +17,45 @@ pub struct ImageViewNode {
 #[allow(dead_code)]
 impl ImageViewNode {
     pub fn new(
-        sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-        src_view: (&wgpu::TextureView, bool), mvp: MVPUniform, shader: (&str, &str),
+        sc_desc: &wgpu::SwapChainDescriptor,
+        device: &mut wgpu::Device,
+        encoder: &mut wgpu::CommandEncoder,
+        src_views: Vec<(&wgpu::TextureView, bool)>,
+        samplers: Vec<&wgpu::Sampler>,
+        mvp: MVPUniform,
+        shader: (&str, &str),
     ) -> Self {
         let mvp_buf = BufferObj::create_uniform_buffer(device, encoder, &mvp);
+
+        let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
+        for _ in 0..src_views.len() {
+            stages.push(wgpu::ShaderStage::FRAGMENT)
+        }
         let sampler = crate::texture::default_sampler(device);
+        let new_samplers: Vec<&wgpu::Sampler> = if samplers.len() > 0 {
+            for _ in 0..samplers.len() {
+                stages.push(wgpu::ShaderStage::FRAGMENT);
+            }
+            samplers
+        } else {
+            stages.push(wgpu::ShaderStage::FRAGMENT);
+            vec![&sampler]
+        };
         let setting_node = BindingGroupSettingNode::new(
             device,
             vec![&mvp_buf],
             vec![],
-            vec![src_view],
-            if src_view.1 { vec![] } else { vec![&sampler] },
-            vec![wgpu::ShaderStage::VERTEX, wgpu::ShaderStage::FRAGMENT, wgpu::ShaderStage::FRAGMENT],
+            src_views,
+            new_samplers,
+            stages,
         );
 
         // Create the vertex and index buffers
         let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices();
-        let vertex_buf = device.create_buffer_with_data(&vertex_data.as_bytes(), wgpu::BufferUsage::VERTEX);
-        let index_buf = device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
+        let vertex_buf =
+            device.create_buffer_with_data(&vertex_data.as_bytes(), wgpu::BufferUsage::VERTEX);
+        let index_buf =
+            device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&setting_node.bind_group_layout],
@@ -73,10 +94,20 @@ impl ImageViewNode {
             alpha_to_coverage_enabled: false,
         });
 
-        ImageViewNode { vertex_buf, index_buf, index_count: index_data.len(), setting_node, pipeline }
+        ImageViewNode {
+            vertex_buf,
+            index_buf,
+            index_count: index_data.len(),
+            setting_node,
+            pipeline,
+        }
     }
 
-    pub fn begin_render_pass(&self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder) {
+    pub fn begin_render_pass(
+        &self,
+        frame_view: &wgpu::TextureView,
+        encoder: &mut wgpu::CommandEncoder,
+    ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: frame_view,
@@ -87,6 +118,10 @@ impl ImageViewNode {
             }],
             depth_stencil_attachment: None,
         });
+        self.draw_render_pass(&mut rpass);
+    }
+
+    pub fn draw_render_pass(&self, rpass: &mut wgpu::RenderPass) {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(&self.index_buf, 0);

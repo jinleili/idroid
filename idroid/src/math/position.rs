@@ -47,7 +47,7 @@ impl Position {
 
     // 取整
     pub fn round(&self) -> Self {
-        Position::new(self.x.round(), self.y.round());
+        Position::new(self.x.round(), self.y.round())
     }
 
     // 基于斜率及距离，计算点的坐标

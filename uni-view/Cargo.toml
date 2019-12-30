@@ -6,7 +6,7 @@ authors = ["Li Jinlei <grenlight@icloud.com>"]
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "44fa1bc2fa208fa92f80944253e0da56cb7ac1fe"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "4984c6ab6c727309e0a1f24a4fcb1a79bba2afbd"  }
 # wgpu = { path = "../../../wgpu-rs" }
 
 lazy_static = "*"
