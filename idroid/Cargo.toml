@@ -15,7 +15,7 @@ default = []
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "4984c6ab6c727309e0a1f24a4fcb1a79bba2afbd"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "8f083e54c57f7411c60b53fc8366be254bace093"  }
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 
@@ -27,7 +27,7 @@ zerocopy = "0.2"
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
 shaderc = "0.6.1"
 objc = "*"
-winit = "0.20.0-alpha4"
+winit = "0.20.0-alpha5"
 raw-window-handle = "0.3"
 
 [build-dependencies]

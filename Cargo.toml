@@ -5,9 +5,9 @@ members = [
 ]
 
 # patch doc: https://doc.rust-lang.org/cargo/reference/manifest.html#the-patch-section
-[patch."https://github.com/gfx-rs/wgpu"]
-wgn = {git = "https://github.com/grenlight/wgpu", package = "wgpu-native", rev = "7a57b4590b8a0ea1f608d54b901f09593f0f3d3c"}
-wgc = {git = "https://github.com/grenlight/wgpu", package = "wgpu-core", rev = "7a57b4590b8a0ea1f608d54b901f09593f0f3d3c"}
+# [patch."https://github.com/gfx-rs/wgpu"]
+# wgn = {git = "https://github.com/grenlight/wgpu", package = "wgpu-native", rev = "7a57b4590b8a0ea1f608d54b901f09593f0f3d3c"}
+# wgc = {git = "https://github.com/grenlight/wgpu", package = "wgpu-core", rev = "7a57b4590b8a0ea1f608d54b901f09593f0f3d3c"}
 
 # [patch.crates-io]
 # gfx-backend-vulkan = { git = "https://github.com/gfx-rs/gfx",  rev = "4130c574ce274f4afd114005046cc10380805f7e" }
