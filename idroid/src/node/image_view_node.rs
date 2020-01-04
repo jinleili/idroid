@@ -20,6 +20,7 @@ impl ImageViewNode {
         sc_desc: &wgpu::SwapChainDescriptor,
         device: &mut wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
+        inout_buffers: Vec<&BufferObj>,
         src_views: Vec<(&wgpu::TextureView, bool)>,
         samplers: Vec<&wgpu::Sampler>,
         mvp: MVPUniform,
@@ -28,23 +29,24 @@ impl ImageViewNode {
         let mvp_buf = BufferObj::create_uniform_buffer(device, encoder, &mvp);
 
         let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
-        for _ in 0..src_views.len() {
+        for _ in 0..(inout_buffers.len() + src_views.len() + samplers.len()) {
             stages.push(wgpu::ShaderStage::FRAGMENT)
         }
         let sampler = crate::texture::default_sampler(device);
-        let new_samplers: Vec<&wgpu::Sampler> = if samplers.len() > 0 {
-            for _ in 0..samplers.len() {
+        let new_samplers: Vec<&wgpu::Sampler> = if src_views.len() > 0 {
+            if samplers.len() > 0 {
+                samplers
+            } else {
                 stages.push(wgpu::ShaderStage::FRAGMENT);
+                vec![&sampler]
             }
-            samplers
         } else {
-            stages.push(wgpu::ShaderStage::FRAGMENT);
-            vec![&sampler]
+            vec![]
         };
         let setting_node = BindingGroupSettingNode::new(
             device,
             vec![&mvp_buf],
-            vec![],
+            inout_buffers,
             src_views,
             new_samplers,
             stages,
