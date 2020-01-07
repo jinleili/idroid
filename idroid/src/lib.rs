@@ -8,6 +8,10 @@ pub mod utils;
 pub use utils::{depth_stencil, matrix_helper};
 
 pub mod buffer;
+pub use buffer::BufferObj;
+// mod dynamic_buffer;
+// pub use dynamic_buffer::DynamicBufferObj;
+
 pub mod node;
 pub mod shader;
 pub mod vertex;

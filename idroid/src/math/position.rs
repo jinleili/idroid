@@ -1,6 +1,7 @@
 use super::view_size::ViewSize;
 use nalgebra_glm as glm;
 
+
 #[derive(Copy, Clone, Debug)]
 pub struct Position {
     pub x: f32,
@@ -83,7 +84,6 @@ impl Position {
     pub fn slope_ridian(&self, last: &Position) -> f32 {
         // atan2 求出的θ取值范围是[-PI, PI]
         let radian = (self.y - last.y).atan2(self.x - last.x);
-        // println!("radian: {}", radian);
         radian
     }
 
