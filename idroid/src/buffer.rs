@@ -3,11 +3,6 @@ use std::path::PathBuf;
 use wgpu::CreateBufferMapped;
 use zerocopy::{AsBytes, FromBytes};
 
-#[repr(C)]
-#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
-pub struct MVPUniform {
-    pub mvp_matrix: [[f32; 4]; 4],
-}
 
 pub struct BufferObj {
     pub buffer: wgpu::Buffer,

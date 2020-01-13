@@ -7,8 +7,11 @@ pub mod texture;
 pub mod utils;
 pub use utils::{depth_stencil, matrix_helper};
 
-pub mod buffer;
+mod buffer;
 pub use buffer::BufferObj;
+
+mod mvp_uniform_obj;
+pub use mvp_uniform_obj::{MVPUniform, MVPUniformObj};
 // mod dynamic_buffer;
 // pub use dynamic_buffer::DynamicBufferObj;
 
