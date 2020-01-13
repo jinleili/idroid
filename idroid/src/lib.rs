@@ -20,7 +20,8 @@ use math::TouchPoint;
 
 pub trait SurfaceView {
     fn resize(&mut self);
-    fn scale(&mut self, scale: f32);
+    fn pintch_start(&mut self, location: TouchPoint, scale: f32);
+    fn pintch_changed(&mut self, location: TouchPoint, scale: f32);
     fn touch_start(&mut self, point: TouchPoint);
     fn touch_moved(&mut self, point: TouchPoint);
     fn touch_end(&mut self, point: TouchPoint);
@@ -89,9 +90,18 @@ pub unsafe extern "C" fn resize(obj: *mut libc::c_void, _p: TouchPoint) {
 
 #[cfg(not(target_os = "macos"))]
 #[no_mangle]
-pub unsafe extern "C" fn scale(obj: *mut libc::c_void, scale: f32) {
+pub unsafe extern "C" fn pintch_start(obj: *mut libc::c_void, location: TouchPoint, scale: f32) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
-    obj.scale(scale);
+    obj.pintch_start(location, scale);
+
+    let _ = Box::into_raw(obj) as *mut libc::c_void;
+}
+
+#[cfg(not(target_os = "macos"))]
+#[no_mangle]
+pub unsafe extern "C" fn pintch_changed(obj: *mut libc::c_void, location: TouchPoint, scale: f32) {
+    let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
+    obj.pintch_changed(location, scale);
 
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
