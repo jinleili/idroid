@@ -12,8 +12,10 @@ pub struct AppView {
 
 impl AppView {
     pub fn new(view: winit::window::Window) -> Self {
-        let scale_factor = view.hidpi_factor();
-        let physical = view.inner_size().to_physical(scale_factor);
+        let scale_factor = view.scale_factor();
+        // let physical = view.inner_size().to_physical(scale_factor);
+        let physical = view.inner_size();
+
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             // supported list: [Bgra8Unorm, Bgra8Srgb, Rgba16Sfloat]
@@ -65,9 +67,9 @@ impl crate::GPUContext for AppView {
     }
 
     fn get_view_size(&self) -> crate::ViewSize {
-        let scale_factor = self.view.hidpi_factor();
+        // let scale_factor = self.view.hidpi_factor();
         // let physical = size.to_physical(scale_factor);
-        let physical = self.view.inner_size().to_physical(scale_factor);
+        let physical = self.view.inner_size();
 
         crate::ViewSize {
             width: physical.width as u32,

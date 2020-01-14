@@ -81,6 +81,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b20b618342cf9891c292c4f5ac2cde7287cc5c87e87e9c769d617793607dec1"
 
 [[package]]
+name = "battery"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36a698e449024a5d18994a815998bf5e2e4bc1883e35a7d7ba95b6b69ee45907"
+dependencies = [
+ "cfg-if",
+ "core-foundation 0.6.4",
+ "lazycell",
+ "libc",
+ "mach",
+ "nix 0.15.0",
+ "num-traits",
+ "uom",
+ "winapi 0.3.8",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -121,7 +138,7 @@ checksum = "7aa2097be53a00de9e8fc349fea6d76221f398f5c4fa550d420669906962d160"
 dependencies = [
  "mio",
  "mio-extras",
- "nix",
+ "nix 0.14.1",
 ]
 
 [[package]]
@@ -730,6 +747,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d947cbb889ed21c2a84be6ffbaebf5b4e0f4340638cba0444907e38b56be084"
 
 [[package]]
+name = "mach"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86dd2487cdfea56def77b88438a2c915fb45113c5319bfe7e14306ca4cd0b0e1"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -876,6 +902,19 @@ name = "nix"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c722bee1037d430d0f8e687bbdbf222f27cc6e4e68d5caf630857bb2b6dbdce"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if",
+ "libc",
+ "void",
+]
+
+[[package]]
+name = "nix"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b2e0b4f3320ed72aaedb9a5ac838690a8047c7b275da22711fddff4f8a14229"
 dependencies = [
  "bitflags",
  "cc",
@@ -1426,7 +1465,7 @@ dependencies = [
  "dlib",
  "lazy_static",
  "memmap",
- "nix",
+ "nix 0.14.1",
  "wayland-client",
  "wayland-protocols",
 ]
@@ -1592,6 +1631,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 
 [[package]]
+name = "uom"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cec796ec5f7ac557631709079168286056205c51c60aac33f51764bdc7b8dc4"
+dependencies = [
+ "num-traits",
+ "typenum",
+]
+
+[[package]]
 name = "vec_map"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1685,7 +1734,7 @@ dependencies = [
  "downcast-rs",
  "libc",
  "mio",
- "nix",
+ "nix 0.14.1",
  "wayland-commons",
  "wayland-scanner",
  "wayland-sys",
@@ -1697,7 +1746,7 @@ version = "0.23.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb66b0d1a27c39bbce712b6372131c6e25149f03ffb0cd017cf8f7de8d66dbdb"
 dependencies = [
- "nix",
+ "nix 0.14.1",
  "wayland-sys",
 ]
 
@@ -1737,7 +1786,6 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=8f083e54c57f7411c60b53fc8366be254bace093#8f083e54c57f7411c60b53fc8366be254bace093"
 dependencies = [
  "arrayvec",
  "raw-window-handle",
@@ -1749,9 +1797,10 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c293d6dcea0170bfa3835cfbd919f300560e0da6#c293d6dcea0170bfa3835cfbd919f300560e0da6"
+source = "git+https://github.com/gfx-rs/wgpu?rev=87f011fe717b9c692f219fdd6556cfe1063eef21#87f011fe717b9c692f219fdd6556cfe1063eef21"
 dependencies = [
  "arrayvec",
+ "battery",
  "bitflags",
  "copyless",
  "fxhash",
@@ -1772,7 +1821,7 @@ dependencies = [
 [[package]]
 name = "wgpu-native"
 version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c293d6dcea0170bfa3835cfbd919f300560e0da6#c293d6dcea0170bfa3835cfbd919f300560e0da6"
+source = "git+https://github.com/gfx-rs/wgpu?rev=87f011fe717b9c692f219fdd6556cfe1063eef21#87f011fe717b9c692f219fdd6556cfe1063eef21"
 dependencies = [
  "lazy_static",
  "libc",
@@ -1826,13 +1875,12 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "winit"
-version = "0.20.0-alpha5"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14fbf7c84c8c1ff9d72982cb382c1a78fbe0f7556f49b1ca98de212d018c5b82"
+checksum = "3ba128780050481f453bec2a115b916dbc6ae79c303dee9bad8b9080bdccd4f5"
 dependencies = [
  "android_glue",
  "bitflags",
- "calloop",
  "cocoa",
  "core-foundation 0.6.4",
  "core-graphics 0.17.3",
@@ -1842,6 +1890,8 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
+ "mio",
+ "mio-extras",
  "objc",
  "parking_lot 0.10.0",
  "percent-encoding",
