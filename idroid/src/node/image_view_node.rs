@@ -9,7 +9,7 @@ use zerocopy::AsBytes;
 
 #[allow(dead_code)]
 pub struct ImageViewNode {
-    vertex_buf: wgpu::Buffer,
+    vertex_buf: BufferObj,
     index_buf: wgpu::Buffer,
     index_count: usize,
     setting_node: BindingGroupSettingNode,
@@ -29,8 +29,8 @@ impl ImageViewNode {
         samplers: Vec<&wgpu::Sampler>,
         mvp_obj: &MVPUniformObj,
         shader: (&str, &str),
+        tex_rect: Option<crate::math::Rect>,
     ) -> Self {
-
         let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
         for _ in 0..(inout_buffers.len() + src_views.len() + samplers.len()) {
             stages.push(wgpu::ShaderStage::FRAGMENT)
@@ -56,9 +56,18 @@ impl ImageViewNode {
         );
 
         // Create the vertex and index buffers
-        let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices();
-        let vertex_buf =
-            device.create_buffer_with_data(&vertex_data.as_bytes(), wgpu::BufferUsage::VERTEX);
+        let (vertex_data, index_data) = if let Some(rect) = tex_rect {
+            Plane::new(1, 1).generate_vertices_by_texcoord(rect)
+        } else {
+            Plane::new(1, 1).generate_vertices()
+        };
+        let vertex_buf = BufferObj::create_buffer(
+            device,
+            encoder,
+            Some(&vertex_data.as_bytes()),
+            None,
+            wgpu::BufferUsage::VERTEX,
+        );
         let index_buf =
             device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
@@ -110,6 +119,22 @@ impl ImageViewNode {
         }
     }
 
+    // 视口的宽高发生变化
+    pub fn resize(
+        &mut self,
+        sc_desc: &wgpu::SwapChainDescriptor,
+        device: &mut wgpu::Device,
+        encoder: &mut wgpu::CommandEncoder,
+        tex_rect: Option<crate::math::Rect>,
+    ) {
+        let (vertex_data, _) = if let Some(rect) = tex_rect {
+            Plane::new(1, 1).generate_vertices_by_texcoord(rect)
+        } else {
+            Plane::new(1, 1).generate_vertices()
+        };
+        self.vertex_buf.update_buffers(encoder, device, &vertex_data);
+    }
+
     pub fn begin_render_pass(
         &self,
         frame_view: &wgpu::TextureView,
@@ -132,8 +157,7 @@ impl ImageViewNode {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(&self.index_buf, 0);
-        rpass.set_vertex_buffers(0, &[(&self.vertex_buf, 0)]);
+        rpass.set_vertex_buffers(0, &[(&self.vertex_buf.buffer, 0)]);
         rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
     }
-
 }

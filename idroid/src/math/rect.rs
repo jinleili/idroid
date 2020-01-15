@@ -2,15 +2,15 @@ use crate::math::{Position, ViewSize};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Rect {
-    pub left: f32,
-    pub top: f32,
+    pub x: f32,
+    pub y: f32,
     pub width: f32,
     pub height: f32,
 }
 
 impl Rect {
     pub fn new(width: f32, height: f32, center_to: ViewSize) -> Self {
-        Rect { left: (center_to.width - width) / 2.0, top: (center_to.height - height) / 2.0, width, height }
+        Rect { x: (center_to.width - width) / 2.0, y: (center_to.height - height) / 2.0, width, height }
     }
 
     pub fn center_x(&self) -> f32 {

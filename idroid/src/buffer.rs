@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use wgpu::CreateBufferMapped;
 use zerocopy::{AsBytes, FromBytes};
 
-
 pub struct BufferObj {
     pub buffer: wgpu::Buffer,
     pub size: wgpu::BufferAddress,
@@ -112,7 +111,7 @@ impl BufferObj {
          * if need to update an existing buffer every frame, ```map_write``` or ```copy_buffer_to_buffer``` which is the best choice?
          * as [gpuweb docs mentioned](https://github.com/gpuweb/gpuweb/blob/a43fbad0f01fbc122b97b005a57b0f5c27d03dc6/design/BufferOperations.md),
          * user can reusing upload buffers to reduces overhead, is it possible or appropriate in wgpu-rs?
-         * 
+         *
          * kvark:  re-using upload buffers is pretty much blocked on #9, so creating a new upload buffer and copying from it is the way to go, for now
          */
         let temp_buf =
@@ -120,7 +119,7 @@ impl BufferObj {
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
 
-    fn create_buffer<T>(
+    pub fn create_buffer<T>(
         device: &mut wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
         slice: Option<&[T]>,
