@@ -29,9 +29,9 @@ pub fn create_depth_texture_view(sc_desc: &wgpu::SwapChainDescriptor, device: &m
 
 #[allow(dead_code)]
 // 创建 render_pass 的 depth_stencil_attachment 描述符
-pub fn create_attachment_descriptor(
-    depth_textue_view: &wgpu::TextureView,
-) -> wgpu::RenderPassDepthStencilAttachmentDescriptor<&wgpu::TextureView> {
+pub fn create_attachment_descriptor<'a>(
+    depth_textue_view: &'a wgpu::TextureView,
+) -> wgpu::RenderPassDepthStencilAttachmentDescriptor<'a> {
     wgpu::RenderPassDepthStencilAttachmentDescriptor {
         attachment: depth_textue_view,
         depth_load_op: wgpu::LoadOp::Clear,

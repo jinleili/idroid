@@ -39,7 +39,7 @@ impl ComputeNode {
         self.dispatch(&mut cpass);
     }
 
-    pub fn dispatch(&mut self, cpass: &mut wgpu::ComputePass) {
+    pub fn dispatch<'a, 'b: 'a>(&'b mut self, cpass: &mut wgpu::ComputePass<'a>) {
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);

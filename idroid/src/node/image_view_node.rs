@@ -153,7 +153,7 @@ impl ImageViewNode {
         self.draw_render_pass(&mut rpass);
     }
 
-    pub fn draw_render_pass(&self, rpass: &mut wgpu::RenderPass) {
+    pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(&self.index_buf, 0);

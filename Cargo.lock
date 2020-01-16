@@ -1094,6 +1094,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "peek-poke"
+version = "0.2.0"
+source = "git+https://github.com/kvark/peek-poke?rev=969bd7fe2be1a83f87916dc8b388c63cfd457075#969bd7fe2be1a83f87916dc8b388c63cfd457075"
+dependencies = [
+ "peek-poke-derive",
+]
+
+[[package]]
+name = "peek-poke-derive"
+version = "0.2.0"
+source = "git+https://github.com/kvark/peek-poke?rev=969bd7fe2be1a83f87916dc8b388c63cfd457075#969bd7fe2be1a83f87916dc8b388c63cfd457075"
+dependencies = [
+ "proc-macro2 1.0.7",
+ "quote 1.0.2",
+ "syn 1.0.12",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1786,6 +1804,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.4.0"
+source = "git+https://github.com/gfx-rs/wgpu-rs?rev=911fb30046f26d607e38e80119cff82cb5336204#911fb30046f26d607e38e80119cff82cb5336204"
 dependencies = [
  "arrayvec",
  "raw-window-handle",
@@ -1797,7 +1816,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=87f011fe717b9c692f219fdd6556cfe1063eef21#87f011fe717b9c692f219fdd6556cfe1063eef21"
+source = "git+https://github.com/gfx-rs/wgpu?rev=3a41272cbac25477659f4b1413159da90d26e081#3a41272cbac25477659f4b1413159da90d26e081"
 dependencies = [
  "arrayvec",
  "battery",
@@ -1812,6 +1831,7 @@ dependencies = [
  "gfx-hal",
  "log",
  "parking_lot 0.9.0",
+ "peek-poke",
  "rendy-descriptor",
  "rendy-memory",
  "smallvec 1.1.0",
@@ -1821,8 +1841,9 @@ dependencies = [
 [[package]]
 name = "wgpu-native"
 version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=87f011fe717b9c692f219fdd6556cfe1063eef21#87f011fe717b9c692f219fdd6556cfe1063eef21"
+source = "git+https://github.com/gfx-rs/wgpu?rev=3a41272cbac25477659f4b1413159da90d26e081#3a41272cbac25477659f4b1413159da90d26e081"
 dependencies = [
+ "arrayvec",
  "lazy_static",
  "libc",
  "parking_lot 0.9.0",
