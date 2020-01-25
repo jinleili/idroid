@@ -57,7 +57,6 @@ pub unsafe extern "C" fn enter_frame(obj: *mut libc::c_void) -> *mut libc::c_voi
 pub unsafe extern "C" fn touch_move(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.touch_moved(p);
-
     // 重新将所有权移出
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
@@ -67,8 +66,6 @@ pub unsafe extern "C" fn touch_move(obj: *mut libc::c_void, p: TouchPoint) {
 pub unsafe extern "C" fn touch_start(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.touch_start(p);
-
-    // 重新将所有权移出
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
@@ -77,8 +74,6 @@ pub unsafe extern "C" fn touch_start(obj: *mut libc::c_void, p: TouchPoint) {
 pub unsafe extern "C" fn touch_end(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.touch_end(p);
-
-    // 重新将所有权移出
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
@@ -87,7 +82,6 @@ pub unsafe extern "C" fn touch_end(obj: *mut libc::c_void, p: TouchPoint) {
 pub unsafe extern "C" fn resize(obj: *mut libc::c_void, _p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.resize();
-
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
@@ -96,7 +90,6 @@ pub unsafe extern "C" fn resize(obj: *mut libc::c_void, _p: TouchPoint) {
 pub unsafe extern "C" fn pintch_start(obj: *mut libc::c_void, location: TouchPoint, scale: f32) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.pintch_start(location, scale);
-
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
@@ -105,6 +98,5 @@ pub unsafe extern "C" fn pintch_start(obj: *mut libc::c_void, location: TouchPoi
 pub unsafe extern "C" fn pintch_changed(obj: *mut libc::c_void, location: TouchPoint, scale: f32) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
     obj.pintch_changed(location, scale);
-
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }

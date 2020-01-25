@@ -14,7 +14,8 @@ use self::core_graphics::{base::CGFloat, geometry::CGRect};
 pub struct AppViewObj {
     pub view: *mut Object,
     pub metal_layer: *mut c_void,
-    // pub get_inner_size: extern "C" fn() -> crate::ViewSize,
+    pub maximum_frames: i32,
+    pub callback_to_swift: extern "C" fn(arg: i32),
 }
 
 pub struct AppView {
@@ -25,6 +26,8 @@ pub struct AppView {
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
+    pub maximum_frames: i32,
+    pub callback_to_swift: extern "C" fn(arg: i32),
 }
 
 impl AppView {
@@ -46,11 +49,17 @@ impl AppView {
         let surface = wgpu::Surface::create_surface_from_core_animation_layer(obj.metal_layer);
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        AppView { view: obj.view, scale_factor, device, queue, surface, sc_desc, swap_chain }
-    }
-
-    pub fn test(&self) {
-        println!("AppView fn in rust");
+        AppView {
+            view: obj.view,
+            scale_factor,
+            device,
+            queue,
+            surface,
+            sc_desc,
+            swap_chain,
+            callback_to_swift: obj.callback_to_swift,
+            maximum_frames: obj.maximum_frames,
+        }
     }
 }
 
@@ -61,7 +70,6 @@ impl crate::GPUContext for AppView {
         self.sc_desc.width = size.width;
         self.sc_desc.height = size.height;
         self.swap_chain = self.device.create_swap_chain(&self.surface, &self.sc_desc);
-        println!("swap_chain: {:?}", self.swap_chain);
     }
 
     fn get_view_size(&self) -> crate::ViewSize {

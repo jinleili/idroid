@@ -8,6 +8,7 @@ pub struct AppView {
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
+    pub maximum_frames: i32,
 }
 
 impl AppView {
@@ -37,6 +38,7 @@ impl AppView {
             surface,
             sc_desc,
             swap_chain,
+            maximum_frames: 60,
         }
     }
 }
@@ -51,9 +53,7 @@ fn request_device() -> (wgpu::Device, wgpu::Queue) {
     )
     .unwrap();
     adapter.request_device(&wgpu::DeviceDescriptor {
-        extensions: wgpu::Extensions {
-            anisotropic_filtering: false,
-        },
+        extensions: wgpu::Extensions { anisotropic_filtering: false },
         limits: wgpu::Limits::default(),
     })
 }
@@ -71,17 +71,11 @@ impl crate::GPUContext for AppView {
         // let physical = size.to_physical(scale_factor);
         let physical = self.view.inner_size();
 
-        crate::ViewSize {
-            width: physical.width as u32,
-            height: physical.height as u32,
-        }
+        crate::ViewSize { width: physical.width as u32, height: physical.height as u32 }
     }
 
     fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32) {
         let size = self.get_view_size();
-        (
-            touch_point_x * self.scale_factor / size.width as f32,
-            touch_point_y * self.scale_factor / size.height as f32,
-        )
+        (touch_point_x * self.scale_factor / size.width as f32, touch_point_y * self.scale_factor / size.height as f32)
     }
 }

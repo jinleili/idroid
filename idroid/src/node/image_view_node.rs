@@ -1,7 +1,7 @@
 use crate::geometry::plane::Plane;
 use crate::math::TouchPoint;
 use crate::node::BindingGroupSettingNode;
-use crate::vertex::{Pos, PosTex};
+use crate::vertex::{Pos, PosTex, PosTex2};
 use crate::{BufferObj, MVPUniform, MVPUniformObj};
 use nalgebra_glm as glm;
 
@@ -56,21 +56,45 @@ impl ImageViewNode {
         );
 
         // Create the vertex and index buffers
-        let (vertex_data, index_data) = if let Some(rect) = tex_rect {
-            Plane::new(1, 1).generate_vertices_by_texcoord(rect)
+        let (vertex_buf, index_data) = if let Some(rect) = tex_rect {
+            let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices_by_texcoord2(rect, None);
+            let vertex_buf = BufferObj::create_buffer(
+                device,
+                encoder,
+                Some(&vertex_data.as_bytes()),
+                None,
+                wgpu::BufferUsage::VERTEX,
+            );
+            (vertex_buf, index_data)
         } else {
-            Plane::new(1, 1).generate_vertices()
+            let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices();
+            let vertex_buf = BufferObj::create_buffer(
+                device,
+                encoder,
+                Some(&vertex_data.as_bytes()),
+                None,
+                wgpu::BufferUsage::VERTEX,
+            );
+            (vertex_buf, index_data)
         };
-        let vertex_buf = BufferObj::create_buffer(
-            device,
-            encoder,
-            Some(&vertex_data.as_bytes()),
-            None,
-            wgpu::BufferUsage::VERTEX,
-        );
         let index_buf =
             device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
+        let attri_descriptor1 = PosTex2::attri_descriptor(0);
+        let attri_descriptor0 = PosTex::attri_descriptor(0);
+        let pipeline_vertex_buffers = if let Some(_) = tex_rect {
+            [wgpu::VertexBufferDescriptor {
+                stride: std::mem::size_of::<PosTex2>() as wgpu::BufferAddress,
+                step_mode: wgpu::InputStepMode::Vertex,
+                attributes: &attri_descriptor1,
+            }]
+        } else {
+            [wgpu::VertexBufferDescriptor {
+                stride: std::mem::size_of::<PosTex>() as wgpu::BufferAddress,
+                step_mode: wgpu::InputStepMode::Vertex,
+                attributes: &attri_descriptor0,
+            }]
+        };
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&setting_node.bind_group_layout],
         });
@@ -98,11 +122,7 @@ impl ImageViewNode {
             // ??????
             depth_stencil_state: None,
             index_format: wgpu::IndexFormat::Uint32,
-            vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                stride: std::mem::size_of::<PosTex>() as wgpu::BufferAddress,
-                step_mode: wgpu::InputStepMode::Vertex,
-                attributes: &PosTex::attri_descriptor(0),
-            }],
+            vertex_buffers: &pipeline_vertex_buffers,
             sample_count: 1,
             sample_mask: !0,
             alpha_to_coverage_enabled: false,
@@ -127,12 +147,15 @@ impl ImageViewNode {
         encoder: &mut wgpu::CommandEncoder,
         tex_rect: Option<crate::math::Rect>,
     ) {
-        let (vertex_data, _) = if let Some(rect) = tex_rect {
-            Plane::new(1, 1).generate_vertices_by_texcoord(rect)
+        if let Some(rect) = tex_rect {
+            let (vertex_data, _) = Plane::new(1, 1).generate_vertices_by_texcoord(rect);
+            self.vertex_buf
+                .update_buffers(encoder, device, &vertex_data);
         } else {
-            Plane::new(1, 1).generate_vertices()
+            let (vertex_data, _) = Plane::new(1, 1).generate_vertices();
+            self.vertex_buf
+                .update_buffers(encoder, device, &vertex_data);
         };
-        self.vertex_buf.update_buffers(encoder, device, &vertex_data);
     }
 
     pub fn begin_render_pass(
@@ -146,7 +169,7 @@ impl ImageViewNode {
                 resolve_target: None,
                 load_op: wgpu::LoadOp::Clear,
                 store_op: wgpu::StoreOp::Store,
-                clear_color: crate::utils::clear_color(),
+                clear_color: crate::utils::alpha_color(),
             }],
             depth_stencil_attachment: None,
         });

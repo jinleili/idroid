@@ -10,6 +10,11 @@ pub fn clear_color() -> wgpu::Color {
 }
 
 #[allow(dead_code)]
+pub fn alpha_color() -> wgpu::Color {
+    wgpu::Color { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+}
+
+#[allow(dead_code)]
 pub fn black_color() -> wgpu::Color {
     wgpu::Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 }
 }
@@ -47,9 +52,10 @@ pub fn color_alpha_blend() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) {
             dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
             operation: wgpu::BlendOperation::Add,
         },
+        // 下边的 alpha_blend 能兼容 iOS
         wgpu::BlendDescriptor {
             src_factor: wgpu::BlendFactor::One,
-            dst_factor: wgpu::BlendFactor::Zero,
+            dst_factor: wgpu::BlendFactor::One,
             operation: wgpu::BlendOperation::Add,
         },
     )

@@ -15,24 +15,47 @@ pub struct TouchPoint {
     // ty = 1: 表示为结束点
     // 开始点通过是不是第一二个点能识别出来，不需要单独标记
     pub ty: i32,
+    // 笔刷大小 缩放因子：
+    // 为了实现细锋起笔及原地扩散
+    pub stamp_scale: f32,
 }
 
 impl TouchPoint {
-    pub fn new(pos: crate::math::Position, force: f32, interval: f32) -> Self {
-        TouchPoint { pos, force, stamp: 0.0, distance: 0.0, interval, speed: 0.0, ty: -1 }
+    pub fn new(pos: crate::math::Position, force: f32, interval: f32, stamp_scale: f32) -> Self {
+        TouchPoint {
+            pos,
+            force,
+            stamp: 0.0,
+            distance: 0.0,
+            interval,
+            speed: 0.0,
+            ty: -1,
+            stamp_scale: stamp_scale,
+        }
     }
 
     // 生成结束点
     pub fn new_end(pos: crate::math::Position) -> Self {
-        TouchPoint { pos, force: 0.0, stamp: 0.0, distance: 0.0, interval: 0.0, speed: 0.0, ty: 1 }
+        TouchPoint {
+            pos,
+            force: 0.0,
+            stamp: 0.0,
+            distance: 0.0,
+            interval: 0.0,
+            speed: 0.0,
+            ty: 1,
+            stamp_scale: 1.0,
+        }
     }
 
     // 通过上一点更新当前点的信息
     pub fn update(&mut self, last: &TouchPoint) {
         // let interval = self.timestamp - last.timestamp;
         let dis = self.pos.distance(&last.pos);
-        self.speed = dis / self.interval;
-        self.distance = dis;
+        if dis > 0.0 {
+            self.speed = dis / self.interval;
+            self.distance = dis;
+        }
         // println!("interval: {}, speed: {}", last.interval, self.speed);
     }
 

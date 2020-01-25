@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::math::Rect;
-use crate::vertex::PosTex;
+use crate::vertex::{PosTex, PosTex2};
 
 pub struct Plane {
     width: f32,
@@ -12,21 +12,11 @@ pub struct Plane {
 
 impl Plane {
     pub fn new(h_segments: u32, v_segments: u32) -> Self {
-        Plane {
-            width: 2.0,
-            height: 2.0,
-            h_segments,
-            v_segments,
-        }
+        Plane { width: 2.0, height: 2.0, h_segments, v_segments }
     }
 
     pub fn new_by_pixel(width: f32, height: f32, h_segments: u32, v_segments: u32) -> Self {
-        Plane {
-            width,
-            height,
-            h_segments,
-            v_segments,
-        }
+        Plane { width, height, h_segments, v_segments }
     }
 
     // 支持指定纹理区域
@@ -56,13 +46,47 @@ impl Plane {
         // (vertices, self.get_line_indices())
     }
 
+    // 支持指定纹理区域
+    pub fn generate_vertices_by_texcoord2(&self, tex_rect: Rect, rect2: Option<Rect>) -> (Vec<PosTex2>, Vec<u32>) {
+        let segment_width = self.width / self.h_segments as f32;
+        let segment_height = self.height / self.v_segments as f32;
+        let h_gap = tex_rect.width / (self.h_segments as f32);
+        let v_gap = tex_rect.height / (self.v_segments as f32);
+        let (h_gap1, v_gap1, rect2_x, rect2_y) = if let Some(rect2) = rect2 {
+            (rect2.width / (self.h_segments as f32), rect2.height / (self.v_segments as f32), rect2.x, rect2.y)
+        } else {
+            (1.0 / (self.h_segments as f32), 1.0 / (self.v_segments as f32), 0.0, 0.0)
+        };
+
+        let mut vertices: Vec<PosTex2> = Vec::new();
+
+        // 从左下角开始，按列遍历
+        // 下边的写法等同于 for (let h=0; h<(h_segments + 1); h++) {}
+        for h in 0..=self.h_segments {
+            let x: f32 = -self.half_width() + segment_width * (h as f32);
+            let tex_coord_u: f32 = tex_rect.x + h_gap * (h as f32);
+            let tex_coord_u1: f32 = rect2_x + h_gap1 * (h as f32);
+
+            for v in 0..=self.v_segments {
+                let y: f32 = -self.half_height() + segment_height * (v as f32);
+                let tex_coord_v: f32 = tex_rect.y + v_gap * (v as f32);
+                let tex_coord_v1: f32 = rect2_y + v_gap1 * (v as f32);
+
+                // println!("tex_coord: {}, {} ", tex_coord_u, tex_coord_v);
+                vertices.push(PosTex2::vertex_f32(
+                    [x, y, 0.0],
+                    [tex_coord_u, tex_coord_v],
+                    [tex_coord_u1, tex_coord_v1],
+                ));
+            }
+        }
+
+        (vertices, self.get_element_indices())
+        // (vertices, self.get_line_indices())
+    }
+
     pub fn generate_vertices(&self) -> (Vec<PosTex>, Vec<u32>) {
-        self.generate_vertices_by_texcoord(Rect {
-            x: 0.0,
-            y: 0.0,
-            width: 1.0,
-            height: 1.0,
-        })
+        self.generate_vertices_by_texcoord(Rect { x: 0.0, y: 0.0, width: 1.0, height: 1.0 })
     }
 
     // 返回的是线断列表，而不是线段条带
@@ -90,8 +114,7 @@ impl Plane {
                     indices.push(left);
                     indices.push(current);
                 } else {
-                    let mut lines: Vec<u32> =
-                        vec![current, left, current, left - 1, current, current - 1];
+                    let mut lines: Vec<u32> = vec![current, left, current, left - 1, current, current - 1];
                     indices.append(&mut lines);
                 }
             }
@@ -112,8 +135,7 @@ impl Plane {
                 let current: u32 = num + v;
                 // 找到上一列同一行位置的索引
                 let left: u32 = current - v_point_num;
-                let mut lines: Vec<u32> =
-                    vec![current, left, left - 1, current, left - 1, current - 1];
+                let mut lines: Vec<u32> = vec![current, left, left - 1, current, left - 1, current - 1];
                 indices.append(&mut lines);
             }
         }
