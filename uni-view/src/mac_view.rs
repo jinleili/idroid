@@ -8,7 +8,9 @@ pub struct AppView {
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
+    pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub maximum_frames: i32,
+    pub temporary_directory: &'static str,
 }
 
 impl AppView {
@@ -39,6 +41,8 @@ impl AppView {
             sc_desc,
             swap_chain,
             maximum_frames: 60,
+            callback_to_app: None,
+            temporary_directory: ""
         }
     }
 }

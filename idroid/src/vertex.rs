@@ -205,3 +205,26 @@ impl Pos for PosParticleIndex {
         }]
     }
 }
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
+pub struct PosParticle {
+    pos: [f32; 3],
+}
+
+#[allow(dead_code)]
+impl PosParticle {
+    pub fn new(pos: [f32; 3]) -> Self {
+        PosParticle { pos }
+    }
+}
+
+impl Pos for PosParticle {
+    fn attri_descriptor(offset: u32) -> Vec<wgpu::VertexAttributeDescriptor> {
+        vec![wgpu::VertexAttributeDescriptor {
+            shader_location: offset + 0,
+            format: wgpu::VertexFormat::Float3,
+            offset: 0,
+        }]
+    }
+}

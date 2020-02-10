@@ -21,7 +21,7 @@ pub mod fs;
 #[path = "mac_fs.rs"]
 pub mod fs;
 
-mod ffi;
+pub mod ffi;
 
 #[repr(C)]
 #[derive(Debug)]
