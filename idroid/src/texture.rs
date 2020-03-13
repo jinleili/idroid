@@ -250,6 +250,22 @@ pub fn default_sampler(device: &wgpu::Device) -> Sampler {
     })
 }
 
+// 瓦片式平铺采样
+#[allow(dead_code)]
+pub fn tile_sampler(device: &wgpu::Device) -> Sampler {
+    device.create_sampler(&wgpu::SamplerDescriptor {
+        address_mode_u: wgpu::AddressMode::Repeat,
+        address_mode_v: wgpu::AddressMode::Repeat,
+        address_mode_w: wgpu::AddressMode::ClampToEdge,
+        mag_filter: wgpu::FilterMode::Nearest,
+        min_filter: wgpu::FilterMode::Nearest,
+        mipmap_filter: wgpu::FilterMode::Nearest,
+        lod_min_clamp: -100.0,
+        lod_max_clamp: 100.0,
+        compare_function: wgpu::CompareFunction::Always,
+    })
+}
+
 // 双线性插值
 // https://vulkan-tutorial.com/Texture_mapping/Image_view_and_sampler
 #[allow(dead_code)]

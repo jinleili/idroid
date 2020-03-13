@@ -1,5 +1,6 @@
 use crate::geometry::plane::Plane;
 use crate::math::TouchPoint;
+use crate::shader::Shader;
 use crate::node::BindingGroupSettingNode;
 use crate::vertex::{Pos, PosTex, PosTex2};
 use crate::{BufferObj, MVPUniform, MVPUniformObj};
@@ -28,7 +29,7 @@ impl ImageViewNode {
         src_views: Vec<(&wgpu::TextureView, bool)>,
         samplers: Vec<&wgpu::Sampler>,
         mvp_obj: &MVPUniformObj,
-        shader: (&str, &str),
+        shader: &Shader,
         tex_rect: Option<crate::math::Rect>,
     ) -> Self {
         let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
@@ -99,7 +100,6 @@ impl ImageViewNode {
             bind_group_layouts: &[&setting_node.bind_group_layout],
         });
         // Create the render pipeline
-        let shader = crate::shader::Shader::new(shader.0, device, shader.1);
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &pipeline_layout,
             vertex_stage: shader.vertex_stage(),
