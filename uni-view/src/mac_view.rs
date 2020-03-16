@@ -25,7 +25,7 @@ impl AppView {
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: physical.width as u32,
             height: physical.height as u32,
-            present_mode: wgpu::PresentMode::Vsync,
+            present_mode: wgpu::PresentMode::Mailbox,
         };
 
         let (device, queue) = request_device();

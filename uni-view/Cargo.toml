@@ -1,12 +1,12 @@
 [package]
 name = "uni-view"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Li Jinlei <grenlight@icloud.com>"]
 
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "35dae838d4590909170eb8618e8b1a0df946d93b"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "a96a5faa246c9f6643bf38557dc7206091d6f1e0"  }
 # wgpu = { path = "../../../wgpu-rs" }
 
 lazy_static = "*"

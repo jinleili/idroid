@@ -1,6 +1,6 @@
 [package]
 name = "idroid"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["li jinlei <grenlight@icloud.com>"]
 edition = "2018"
 
@@ -15,17 +15,17 @@ default = []
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "35dae838d4590909170eb8618e8b1a0df946d93b"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.4", rev = "a96a5faa246c9f6643bf38557dc7206091d6f1e0"  }
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 
 nalgebra-glm = "*"
-image = "0.22.1"
+image = "0.23.1"
 lazy_static = "*"
 zerocopy = "0.2"
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
-shaderc = "0.6.1"
+shaderc = "0.6.2"
 objc = "*"
 winit = "0.20"
 raw-window-handle = "0.3"

@@ -47,7 +47,7 @@ impl AppView {
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: physical.width,
             height: physical.height,
-            present_mode: wgpu::PresentMode::Vsync,
+            present_mode: wgpu::PresentMode::Mailbox,
         };
         let (device, queue) = request_device();
         let surface = wgpu::Surface::create_surface_from_core_animation_layer(obj.metal_layer);
@@ -99,8 +99,8 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
 
 fn request_device() -> (wgpu::Device, wgpu::Queue) {
     let adapter = wgpu::Adapter::request(
-        &wgpu::RequestAdapterOptions { power_preference: wgpu::PowerPreference::LowPower },
-        wgpu::BackendBit::PRIMARY,
+        &wgpu::RequestAdapterOptions { power_preference: wgpu::PowerPreference::Default },
+        wgpu::BackendBit::METAL,
     )
     .unwrap();
     adapter.request_device(&wgpu::DeviceDescriptor {
