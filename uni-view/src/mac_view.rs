@@ -11,6 +11,7 @@ pub struct AppView {
     pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub maximum_frames: i32,
     pub temporary_directory: &'static str,
+    pub library_directory: &'static str,
 }
 
 impl AppView {
@@ -42,7 +43,8 @@ impl AppView {
             swap_chain,
             maximum_frames: 60,
             callback_to_app: None,
-            temporary_directory: ""
+            temporary_directory: "",
+            library_directory: "",
         }
     }
 }

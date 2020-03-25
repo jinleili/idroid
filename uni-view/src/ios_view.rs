@@ -32,6 +32,7 @@ pub struct AppView {
     pub maximum_frames: i32,
     pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub temporary_directory: &'static str,
+    pub library_directory: &'static str,
 }
 
 impl AppView {
@@ -65,6 +66,7 @@ impl AppView {
             callback_to_app: Some(obj.callback_to_swift),
             maximum_frames: obj.maximum_frames,
             temporary_directory,
+            library_directory: "",
         }
     }
 }

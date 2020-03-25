@@ -12,7 +12,7 @@ pub struct TouchPoint {
     // 每 0.016 秒移动的距离，
     // 速度用于计算笔画粗细及下墨的多少
     pub speed: f32,
-    // ty = 1: 表示为结束点
+    // ty = -1: 无压感， 0: touch 结束点, 1: pencil, 2: 3D touch
     // 开始点通过是不是第一二个点能识别出来，不需要单独标记
     pub ty: i32,
     // 笔刷大小 缩放因子：
@@ -43,7 +43,7 @@ impl TouchPoint {
             distance: 0.0,
             interval: 0.0,
             speed: 0.0,
-            ty: 1,
+            ty: 0,
             stamp_scale: 1.0,
         }
     }
@@ -61,7 +61,7 @@ impl TouchPoint {
 
     // 是否为结束点
     pub fn is_the_end(&self) -> bool {
-        if self.ty == 1 {
+        if self.ty == 0 {
             true
         } else {
             false
