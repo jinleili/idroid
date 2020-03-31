@@ -209,6 +209,8 @@ pub fn bilinear_sampler(device: &wgpu::Device) -> Sampler {
         mipmap_filter: wgpu::FilterMode::Nearest,
         lod_min_clamp: -100.0,
         lod_max_clamp: 100.0,
-        compare: Some(&wgpu::CompareFunction::Always),
+        // iOS 上设置了 compare 值会 crash
+        // compare: Some(&wgpu::CompareFunction::Always),
+        compare: None,
     })
 }

@@ -17,6 +17,7 @@ pub struct ImageViewNode {
     pipeline: wgpu::RenderPipeline,
     view_width: f32,
     view_height: f32,
+    pub clear_color: wgpu::Color,
 }
 
 #[allow(dead_code)]
@@ -25,15 +26,15 @@ impl ImageViewNode {
         sc_desc: &wgpu::SwapChainDescriptor,
         device: &mut wgpu::Device,
         encoder: &mut wgpu::CommandEncoder,
+        uniform_buffers: Vec<&BufferObj>,
         inout_buffers: Vec<&BufferObj>,
         src_views: Vec<(&wgpu::TextureView, bool)>,
         samplers: Vec<&wgpu::Sampler>,
-        mvp_obj: &MVPUniformObj,
         shader: &Shader,
         tex_rect: Option<crate::math::Rect>,
     ) -> Self {
         let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
-        for _ in 0..(inout_buffers.len() + src_views.len() + samplers.len()) {
+        for _ in 0..(uniform_buffers.len() + inout_buffers.len() + src_views.len() + samplers.len()) {
             stages.push(wgpu::ShaderStage::FRAGMENT)
         }
         let sampler = crate::texture::default_sampler(device);
@@ -49,7 +50,7 @@ impl ImageViewNode {
         };
         let setting_node = BindingGroupSettingNode::new(
             device,
-            vec![&mvp_obj.buffer],
+            uniform_buffers,
             inout_buffers,
             src_views,
             new_samplers,
@@ -136,6 +137,7 @@ impl ImageViewNode {
             index_count: index_data.len(),
             setting_node,
             pipeline,
+            clear_color: crate::utils::alpha_color(),
         }
     }
 
@@ -169,7 +171,7 @@ impl ImageViewNode {
                 resolve_target: None,
                 load_op: wgpu::LoadOp::Clear,
                 store_op: wgpu::StoreOp::Store,
-                clear_color: crate::utils::alpha_color(),
+                clear_color: self.clear_color,
             }],
             depth_stencil_attachment: None,
         });
