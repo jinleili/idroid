@@ -1,7 +1,7 @@
 use crate::geometry::plane::Plane;
 use crate::math::TouchPoint;
-use crate::shader::Shader;
 use crate::node::BindingGroupSettingNode;
+use crate::shader::Shader;
 use crate::vertex::{Pos, PosTex, PosTex2};
 use crate::{BufferObj, MVPUniform, MVPUniformObj};
 use nalgebra_glm as glm;
@@ -23,15 +23,9 @@ pub struct ImageViewNode {
 #[allow(dead_code)]
 impl ImageViewNode {
     pub fn new(
-        sc_desc: &wgpu::SwapChainDescriptor,
-        device: &mut wgpu::Device,
-        encoder: &mut wgpu::CommandEncoder,
-        uniform_buffers: Vec<&BufferObj>,
-        inout_buffers: Vec<&BufferObj>,
-        src_views: Vec<(&wgpu::TextureView, bool)>,
-        samplers: Vec<&wgpu::Sampler>,
-        shader: &Shader,
-        tex_rect: Option<crate::math::Rect>,
+        sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+        uniform_buffers: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>, src_views: Vec<(&wgpu::TextureView, bool)>,
+        samplers: Vec<&wgpu::Sampler>, shader: &Shader, tex_rect: Option<crate::math::Rect>,
     ) -> Self {
         let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
         for _ in 0..(uniform_buffers.len() + inout_buffers.len() + src_views.len() + samplers.len()) {
@@ -48,14 +42,8 @@ impl ImageViewNode {
         } else {
             vec![]
         };
-        let setting_node = BindingGroupSettingNode::new(
-            device,
-            uniform_buffers,
-            inout_buffers,
-            src_views,
-            new_samplers,
-            stages,
-        );
+        let setting_node =
+            BindingGroupSettingNode::new(device, uniform_buffers, inout_buffers, src_views, new_samplers, stages);
 
         // Create the vertex and index buffers
         let (vertex_buf, index_data) = if let Some(rect) = tex_rect {
@@ -79,8 +67,7 @@ impl ImageViewNode {
             );
             (vertex_buf, index_data)
         };
-        let index_buf =
-            device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
+        let index_buf = device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
         let attri_descriptor1 = PosTex2::attri_descriptor(0);
         let attri_descriptor0 = PosTex::attri_descriptor(0);
@@ -122,8 +109,10 @@ impl ImageViewNode {
             }],
             // ??????
             depth_stencil_state: None,
-            index_format: wgpu::IndexFormat::Uint32,
-            vertex_buffers: &pipeline_vertex_buffers,
+            vertex_state: wgpu::VertexStateDescriptor {
+                index_format: wgpu::IndexFormat::Uint32,
+                vertex_buffers: &pipeline_vertex_buffers,
+            },
             sample_count: 1,
             sample_mask: !0,
             alpha_to_coverage_enabled: false,
@@ -143,28 +132,19 @@ impl ImageViewNode {
 
     // 视口的宽高发生变化
     pub fn resize(
-        &mut self,
-        sc_desc: &wgpu::SwapChainDescriptor,
-        device: &mut wgpu::Device,
-        encoder: &mut wgpu::CommandEncoder,
+        &mut self, sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
         tex_rect: Option<crate::math::Rect>,
     ) {
         if let Some(rect) = tex_rect {
             let (vertex_data, _) = Plane::new(1, 1).generate_vertices_by_texcoord(rect);
-            self.vertex_buf
-                .update_buffers(encoder, device, &vertex_data);
+            self.vertex_buf.update_buffers(encoder, device, &vertex_data);
         } else {
             let (vertex_data, _) = Plane::new(1, 1).generate_vertices();
-            self.vertex_buf
-                .update_buffers(encoder, device, &vertex_data);
+            self.vertex_buf.update_buffers(encoder, device, &vertex_data);
         };
     }
 
-    pub fn begin_render_pass(
-        &self,
-        frame_view: &wgpu::TextureView,
-        encoder: &mut wgpu::CommandEncoder,
-    ) {
+    pub fn begin_render_pass(&self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: frame_view,

@@ -29,7 +29,7 @@ impl AppView {
             present_mode: wgpu::PresentMode::Mailbox,
         };
 
-        let (device, queue) = request_device();
+        let (device, queue) = futures::executor::block_on(request_device());
         let surface = wgpu::Surface::create(&view);
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
@@ -49,7 +49,7 @@ impl AppView {
     }
 }
 
-fn request_device() -> (wgpu::Device, wgpu::Queue) {
+async fn request_device() -> (wgpu::Device, wgpu::Queue) {
     let adapter = wgpu::Adapter::request(
         &wgpu::RequestAdapterOptions {
             // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
@@ -57,11 +57,12 @@ fn request_device() -> (wgpu::Device, wgpu::Queue) {
         },
         wgpu::BackendBit::PRIMARY,
     )
+    .await
     .unwrap();
     adapter.request_device(&wgpu::DeviceDescriptor {
         extensions: wgpu::Extensions { anisotropic_filtering: false },
         limits: wgpu::Limits::default(),
-    })
+    }).await
 }
 
 impl crate::GPUContext for AppView {

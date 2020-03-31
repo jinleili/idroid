@@ -50,7 +50,7 @@ impl AppView {
             height: physical.height,
             present_mode: wgpu::PresentMode::Mailbox,
         };
-        let (device, queue) = request_device();
+        let (device, queue) = futures::executor::block_on(request_device());
         let surface = wgpu::Surface::create_surface_from_core_animation_layer(obj.metal_layer);
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
         // 这样传递过来的字符串为空
@@ -99,14 +99,17 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
     s as f32
 }
 
-fn request_device() -> (wgpu::Device, wgpu::Queue) {
+async fn request_device() -> (wgpu::Device, wgpu::Queue) {
     let adapter = wgpu::Adapter::request(
         &wgpu::RequestAdapterOptions { power_preference: wgpu::PowerPreference::Default },
         wgpu::BackendBit::METAL,
     )
+    .await
     .unwrap();
-    adapter.request_device(&wgpu::DeviceDescriptor {
-        extensions: wgpu::Extensions { anisotropic_filtering: false },
-        limits: wgpu::Limits::default(),
-    })
+    adapter
+        .request_device(&wgpu::DeviceDescriptor {
+            extensions: wgpu::Extensions { anisotropic_filtering: false },
+            limits: wgpu::Limits::default(),
+        })
+        .await
 }

@@ -23,6 +23,7 @@ pub fn create_depth_texture_view(sc_desc: &wgpu::SwapChainDescriptor, device: &m
         dimension: wgpu::TextureDimension::D2,
         format: wgpu::TextureFormat::Depth32Float,
         usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+        label: None,
     });
     depth_texture.create_default_view()
 }

@@ -29,10 +29,13 @@ impl DynamicBindingGroupNode {
             b_index += 1;
         }
         let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts });
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts, label: None });
 
-        let bind_group: wgpu::BindGroup =
-            device.create_bind_group(&wgpu::BindGroupDescriptor { layout: &bind_group_layout, bindings: &bingdings });
+        let bind_group: wgpu::BindGroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
+            bindings: &bingdings,
+            label: None,
+        });
 
         DynamicBindingGroupNode { bind_group_layout, bind_group }
     }

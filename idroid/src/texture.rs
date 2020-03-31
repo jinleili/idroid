@@ -37,6 +37,7 @@ pub fn from_path_for_usage(
         dimension: wgpu::TextureDimension::D2,
         format,
         usage,
+        label: None,
     });
     let texture_view = texture.create_default_view();
 
@@ -122,6 +123,7 @@ pub fn from_buffer_and_usage_write(
         dimension: wgpu::TextureDimension::D2,
         format: wgpu::TextureFormat::Rgba32Float,
         usage,
+        label: None,
     });
     let texture_view = texture.create_default_view();
 
@@ -149,6 +151,7 @@ pub fn empty(device: &mut wgpu::Device, format: wgpu::TextureFormat, extent: Ext
             | wgpu::TextureUsage::COPY_DST
             | wgpu::TextureUsage::SAMPLED
             | wgpu::TextureUsage::WRITE_ALL,
+            label: None,
     });
     let texture_view = texture.create_default_view();
     texture_view
@@ -176,7 +179,7 @@ pub fn default_sampler(device: &wgpu::Device) -> Sampler {
         mipmap_filter: wgpu::FilterMode::Nearest,
         lod_min_clamp: -100.0,
         lod_max_clamp: 100.0,
-        compare: None,
+        compare: wgpu::CompareFunction::Undefined,
     })
 }
 
@@ -192,7 +195,7 @@ pub fn tile_sampler(device: &wgpu::Device) -> Sampler {
         mipmap_filter: wgpu::FilterMode::Nearest,
         lod_min_clamp: -100.0,
         lod_max_clamp: 100.0,
-        compare: None,
+        compare: wgpu::CompareFunction::Undefined,
     })
 }
 
@@ -211,6 +214,6 @@ pub fn bilinear_sampler(device: &wgpu::Device) -> Sampler {
         lod_max_clamp: 100.0,
         // iOS 上设置了 compare 值会 crash
         // compare: Some(&wgpu::CompareFunction::Always),
-        compare: None,
+        compare: wgpu::CompareFunction::Undefined,
     })
 }

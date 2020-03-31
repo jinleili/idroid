@@ -53,12 +53,17 @@ impl BindingGroupSettingNode {
                 visibility: visibilitys[b_index as usize],
                 ty: if is_storage_texture {
                     wgpu::BindingType::StorageTexture {
+                        component_type: wgpu::TextureComponentType::Float,
                         dimension: wgpu::TextureViewDimension::D2,
                         readonly: false,
                         format: wgpu::TextureFormat::Rgb10a2Unorm,
                     }
                 } else {
-                    wgpu::BindingType::SampledTexture { multisampled: false, dimension: wgpu::TextureViewDimension::D2 }
+                    wgpu::BindingType::SampledTexture {
+                        component_type: wgpu::TextureComponentType::Float,
+                        multisampled: false,
+                        dimension: wgpu::TextureViewDimension::D2,
+                    }
                 },
             });
             bingdings
@@ -77,10 +82,13 @@ impl BindingGroupSettingNode {
         }
 
         let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts });
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts, label: None });
 
-        let bind_group: wgpu::BindGroup =
-            device.create_bind_group(&wgpu::BindGroupDescriptor { layout: &bind_group_layout, bindings: &bingdings });
+        let bind_group: wgpu::BindGroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
+            bindings: &bingdings,
+            label: None,
+        });
 
         BindingGroupSettingNode { bind_group_layout, bind_group }
     }

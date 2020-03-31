@@ -27,6 +27,7 @@ impl BufferObj {
             } else {
                 wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST
             },
+        label: None,
         });
         BufferObj { buffer, size }
     }
@@ -50,7 +51,7 @@ impl BufferObj {
         T: 'static + AsBytes + Copy,
     {
         let temp_buf = device.create_buffer_with_data(data.as_bytes(), wgpu::BufferUsage::COPY_SRC);
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
         queue.submit(&[encoder.finish()]);
     }
@@ -68,7 +69,7 @@ impl BufferObj {
         T: 'static + AsBytes + Copy,
     {
         let temp_buf = device.create_buffer_with_data(slice.as_bytes(), wgpu::BufferUsage::COPY_SRC);
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
         queue.submit(&[encoder.finish()]);
     }
@@ -104,7 +105,11 @@ impl BufferObj {
             data = item.unwrap().as_bytes();
         }
         let temp_buffer = device.create_buffer_with_data(data, wgpu::BufferUsage::COPY_SRC);
-        let buffer = device.create_buffer(&wgpu::BufferDescriptor { size, usage: usage | wgpu::BufferUsage::COPY_DST });
+        let buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            size,
+            usage: usage | wgpu::BufferUsage::COPY_DST,
+            label: None,
+        });
         encoder.copy_buffer_to_buffer(&temp_buffer, 0, &buffer, 0, size);
         BufferObj { buffer, size }
     }
