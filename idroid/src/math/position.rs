@@ -1,7 +1,6 @@
 use super::view_size::ViewSize;
 use nalgebra_glm as glm;
 
-
 #[derive(Copy, Clone, Debug)]
 pub struct Position {
     pub x: f32,
@@ -51,12 +50,14 @@ impl Position {
         Position::new(self.x.round(), self.y.round())
     }
 
+    // 翻转 y 坐标
+    pub fn flip_y(&self, viewport_height: u32) -> Self {
+        Position::new(self.x, viewport_height as f32 - self.y)
+    }
+
     // 基于斜率及距离，计算点的坐标
     pub fn new_by_slope_n_dis(&self, slope: f32, distance: f32) -> Self {
-        Position::new(
-            self.x + distance * slope.cos(),
-            self.y + distance * slope.sin(),
-        )
+        Position::new(self.x + distance * slope.cos(), self.y + distance * slope.sin())
     }
 
     // 求矢量的模

@@ -35,8 +35,8 @@ impl Plane {
             let tex_coord_u: f32 = tex_rect.x + h_gap * (h as f32);
 
             for v in 0..=self.v_segments {
-                let y: f32 = self.half_height() - segment_height * (v as f32);
-                let tex_coord_v: f32 = tex_rect.y + v_gap * (v as f32);
+                let y: f32 = -self.half_height() + segment_height * (v as f32);
+                let tex_coord_v: f32 = tex_rect.y + tex_rect.height - v_gap * (v as f32);
                 // println!("tex_coord: {}, {} ", tex_coord_u, tex_coord_v);
                 vertices.push(PosTex::vertex_f32([x, y, 0.0], [tex_coord_u, tex_coord_v]));
             }
@@ -68,9 +68,9 @@ impl Plane {
             let tex_coord_u1: f32 = rect2_x + h_gap1 * (h as f32);
 
             for v in 0..=self.v_segments {
-                let y: f32 = self.half_height() - segment_height * (v as f32);
-                let tex_coord_v: f32 = tex_rect.y + v_gap * (v as f32);
-                let tex_coord_v1: f32 = rect2_y + v_gap1 * (v as f32);
+                let y: f32 = -self.half_height() + segment_height * (v as f32);
+                let tex_coord_v: f32 = tex_rect.y + v_gap * (self.h_segments - v) as f32;
+                let tex_coord_v1: f32 = rect2_y + v_gap1 * (self.h_segments - v) as f32;
 
                 // println!("tex_coord: {}, {} ", tex_coord_u, tex_coord_v);
                 vertices.push(PosTex2::vertex_f32(
