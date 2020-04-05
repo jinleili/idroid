@@ -46,7 +46,7 @@ impl MVPUniformObj {
         }
     }
 
-    pub fn pintch_start(&mut self, location: (f32, f32), scale: f32) {
+    pub fn pintch_start(&mut self, location: (f32, f32), _scale: f32) {
         // 缩放并拖拽始终是以 start 为中心的
         // 可以计算出 start 相对中心点的偏移坐标，无论如何缩放，其偏移坐标是不变的;
         // change 时，直接计算 changed 相对中心点的偏移，缩放完成后，再执行些偏移就能得到正确的位置

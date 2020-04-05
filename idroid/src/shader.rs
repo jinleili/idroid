@@ -31,7 +31,7 @@ impl Shader {
 
     // 计算着色
     #[cfg(target_os = "ios")]
-    pub fn new_by_compute(name: &str, device: &mut wgpu::Device, base_path: &str) -> Self {
+    pub fn new_by_compute(name: &str, device: &mut wgpu::Device, _base_path: &str) -> Self {
         let bytes = generate_shader_source(name, "comp");
         let module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&bytes[..])).unwrap());
         Shader { vs_module: module, fs_module: None }
@@ -141,6 +141,7 @@ fn generate_shader_source(name: &str, ty: ShaderKind, base_path: &str) -> shader
     binary_result
 }
 
+#[allow(dead_code)]
 fn load_common_vertex_shader(base_path: &str) -> String {
     let path = PathBuf::from(base_path).join("shader").join("common.vs.glsl");
 
@@ -154,6 +155,7 @@ fn load_common_vertex_shader(base_path: &str) -> String {
 
 // Parse a shader string for imports. Imports are recursively processed, and
 // prepended to the list of outputs.
+#[allow(dead_code)]
 fn parse_shader_source(source: &str, output: &mut String, base_path: &str) {
     for line in source.lines() {
         if line.starts_with(SHADER_IMPORT) {
@@ -184,6 +186,7 @@ fn parse_shader_source(source: &str, output: &mut String, base_path: &str) {
 
 // 获取通用 shader function
 // 将着色器代码预先静态加载进程序，避免打包成 .a 静态库时找不到文件
+#[allow(dead_code)]
 fn get_shader_funcs(key: &str, base_path: &str) -> Option<String> {
     let path = PathBuf::from(base_path).join("shader").join(key.replace('"', ""));
     let shader = match read_to_string(&path) {

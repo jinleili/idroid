@@ -1808,7 +1808,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=02f7ac9c02bf2e7313fa1b17a996b1a882a39a27#02f7ac9c02bf2e7313fa1b17a996b1a882a39a27"
+source = "git+https://github.com/gfx-rs/wgpu-rs?rev=0751806044ae74e99df795655581eed41008b49b#0751806044ae74e99df795655581eed41008b49b"
 dependencies = [
  "arrayvec",
  "parking_lot",
@@ -1822,7 +1822,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=306554600ab7479ec3e54d0c076c71f02474237a#306554600ab7479ec3e54d0c076c71f02474237a"
+source = "git+https://github.com/gfx-rs/wgpu?rev=902a0ebca397ee0414130b5b48e8126c2b437597#902a0ebca397ee0414130b5b48e8126c2b437597"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1847,7 +1847,7 @@ dependencies = [
 [[package]]
 name = "wgpu-native"
 version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=306554600ab7479ec3e54d0c076c71f02474237a#306554600ab7479ec3e54d0c076c71f02474237a"
+source = "git+https://github.com/gfx-rs/wgpu?rev=902a0ebca397ee0414130b5b48e8126c2b437597#902a0ebca397ee0414130b5b48e8126c2b437597"
 dependencies = [
  "arrayvec",
  "lazy_static",
@@ -1862,7 +1862,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=306554600ab7479ec3e54d0c076c71f02474237a#306554600ab7479ec3e54d0c076c71f02474237a"
+source = "git+https://github.com/gfx-rs/wgpu?rev=902a0ebca397ee0414130b5b48e8126c2b437597#902a0ebca397ee0414130b5b48e8126c2b437597"
 dependencies = [
  "bitflags",
  "peek-poke",
