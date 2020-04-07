@@ -1159,19 +1159,23 @@ dependencies = [
 [[package]]
 name = "peek-poke"
 version = "0.2.0"
-source = "git+https://github.com/kvark/peek-poke?rev=969bd7fe2be1a83f87916dc8b388c63cfd457075#969bd7fe2be1a83f87916dc8b388c63cfd457075"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d93fd6a575ebf1ac2668d08443c97a22872cfb463fd8b7ddd141e9f6be59af2f"
 dependencies = [
  "peek-poke-derive",
 ]
 
 [[package]]
 name = "peek-poke-derive"
-version = "0.2.0"
-source = "git+https://github.com/kvark/peek-poke?rev=969bd7fe2be1a83f87916dc8b388c63cfd457075#969bd7fe2be1a83f87916dc8b388c63cfd457075"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fb44a25c5bba983be0fc8592dfaf3e6d0935ce8be0c6b15b2a39507af34a926"
 dependencies = [
  "proc-macro2 1.0.9",
  "quote 1.0.3",
  "syn",
+ "synstructure",
+ "unicode-xid 0.2.0",
 ]
 
 [[package]]
@@ -1807,8 +1811,8 @@ dependencies = [
 
 [[package]]
 name = "wgpu"
-version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=2003e6be1355a28ad9ba2eeb3238c06dfd24be22#2003e6be1355a28ad9ba2eeb3238c06dfd24be22"
+version = "0.5.0"
+source = "git+https://github.com/gfx-rs/wgpu-rs?rev=efe44f616c6df7b2fd50ffe57c038d957eee07b1#efe44f616c6df7b2fd50ffe57c038d957eee07b1"
 dependencies = [
  "arrayvec",
  "parking_lot",
@@ -1821,8 +1825,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-core"
-version = "0.1.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=05ba7a50b4645f6ac6c65edbae295a31c0d7ebef#05ba7a50b4645f6ac6c65edbae295a31c0d7ebef"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b10402ab7da35a3f0423ecf40693402945346b0600d538e6b6b86b4d04ea0e97"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1846,8 +1851,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-native"
-version = "0.4.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=05ba7a50b4645f6ac6c65edbae295a31c0d7ebef#05ba7a50b4645f6ac6c65edbae295a31c0d7ebef"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19a5051a357d071fd69c24671e0ea6d644a83c7418e47eac3511427379007403"
 dependencies = [
  "arrayvec",
  "lazy_static",
@@ -1861,8 +1867,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-types"
-version = "0.1.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=05ba7a50b4645f6ac6c65edbae295a31c0d7ebef#05ba7a50b4645f6ac6c65edbae295a31c0d7ebef"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67b69dfe001a8a6b78810c7e479717cd1898b9177dbf646611fa1f258f5a2512"
 dependencies = [
  "bitflags",
  "peek-poke",
