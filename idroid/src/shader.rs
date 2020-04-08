@@ -24,26 +24,26 @@ pub struct Shader {
 
 #[allow(dead_code)]
 impl Shader {
-    pub fn new(name: &str, device: &mut wgpu::Device, base_path: &str) -> Self {
+    pub fn new(name: &str, device: &wgpu::Device, base_path: &str) -> Self {
         let (vs_module, fs_module) = load_general_glsl(name, device, base_path);
         Shader { vs_module, fs_module: Some(fs_module) }
     }
 
     // 计算着色
     #[cfg(target_os = "ios")]
-    pub fn new_by_compute(name: &str, device: &mut wgpu::Device, _base_path: &str) -> Self {
+    pub fn new_by_compute(name: &str, device: &wgpu::Device, _base_path: &str) -> Self {
         let bytes = generate_shader_source(name, "comp");
         let module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&bytes[..])).unwrap());
         Shader { vs_module: module, fs_module: None }
     }
 
     #[cfg(not(target_os = "ios"))]
-    pub fn new_by_compute(name: &str, device: &mut wgpu::Device, base_path: &str) -> Self {
+    pub fn new_by_compute(name: &str, device: &wgpu::Device, base_path: &str) -> Self {
         let binary_result = generate_shader_source(name, ShaderKind::Compute, &base_path);
         Shader::shader_by_bytes(binary_result.as_binary(), device)
     }
 
-    fn shader_by_bytes(bytes: &[u32], device: &mut wgpu::Device) -> Self {
+    fn shader_by_bytes(bytes: &[u32], device: &wgpu::Device) -> Self {
         let module = device.create_shader_module(bytes);
         Shader { vs_module: module, fs_module: None }
     }
@@ -67,7 +67,7 @@ impl Shader {
 #[cfg(target_os = "ios")]
 #[allow(dead_code)]
 pub fn load_general_glsl(
-    name: &str, device: &mut wgpu::Device, _base_path: &str,
+    name: &str, device: &wgpu::Device, _base_path: &str,
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_bytes = generate_shader_source(name, "vs");
     let fs_bytes = generate_shader_source(name, "fs");
@@ -92,7 +92,7 @@ fn generate_shader_source(name: &str, suffix: &str) -> Vec<u8> {
 #[cfg(not(target_os = "ios"))]
 #[allow(dead_code)]
 pub fn load_general_glsl(
-    name: &str, device: &mut wgpu::Device, base_path: &str,
+    name: &str, device: &wgpu::Device, base_path: &str,
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_binary = generate_shader_source(name, ShaderKind::Vertex, &base_path);
     let fs_binary = generate_shader_source(name, ShaderKind::Fragment, &base_path);

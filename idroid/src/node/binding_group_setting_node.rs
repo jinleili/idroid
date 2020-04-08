@@ -10,7 +10,7 @@ pub struct BindingGroupSettingNode {
 #[allow(dead_code)]
 impl BindingGroupSettingNode {
     pub fn new(
-        device: &mut wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
+        device: &wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
         textures: Vec<(&wgpu::TextureView, bool)>, samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];

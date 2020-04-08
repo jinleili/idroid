@@ -13,7 +13,7 @@ pub struct ComputeNode {
 #[allow(dead_code)]
 impl ComputeNode {
     pub fn new(
-        device: &mut wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
+        device: &wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
         inout_buffers: Vec<&BufferObj>, inout_tv: Vec<(&wgpu::TextureView, bool)>, shader: &crate::shader::Shader,
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStage> = vec![];
@@ -33,7 +33,7 @@ impl ComputeNode {
         ComputeNode { setting_node, pipeline, threadgroup_count }
     }
 
-    pub fn compute(&mut self, _device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder) {
+    pub fn compute(&mut self, _device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) {
         let mut cpass = encoder.begin_compute_pass();
         self.dispatch(&mut cpass);
     }

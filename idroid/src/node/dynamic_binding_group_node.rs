@@ -8,7 +8,7 @@ pub struct DynamicBindingGroupNode {
 }
 
 impl DynamicBindingGroupNode {
-    pub fn new(device: &mut wgpu::Device, uniforms: Vec<&BufferObj>, visibilitys: Vec<wgpu::ShaderStage>) -> Self {
+    pub fn new(device: &wgpu::Device, uniforms: Vec<&BufferObj>, visibilitys: Vec<wgpu::ShaderStage>) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
 
         let mut bingdings: Vec<wgpu::Binding> = vec![];

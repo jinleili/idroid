@@ -23,7 +23,7 @@ pub struct ImageViewNode {
 #[allow(dead_code)]
 impl ImageViewNode {
     pub fn new(
-        sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+        sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
         uniform_buffers: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>, src_views: Vec<(&wgpu::TextureView, bool)>,
         samplers: Vec<&wgpu::Sampler>, shader: &Shader, tex_rect: Option<crate::math::Rect>,
     ) -> Self {
@@ -132,7 +132,7 @@ impl ImageViewNode {
 
     // 视口的宽高发生变化
     pub fn resize(
-        &mut self, sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+        &mut self, _sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
         tex_rect: Option<crate::math::Rect>,
     ) {
         if let Some(rect) = tex_rect {

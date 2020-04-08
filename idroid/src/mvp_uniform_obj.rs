@@ -21,19 +21,12 @@ pub struct MVPUniformObj {
 }
 
 impl MVPUniformObj {
-    pub fn new(
-        sc_desc: &wgpu::SwapChainDescriptor,
-        device: &mut wgpu::Device,
-        encoder: &mut wgpu::CommandEncoder,
-    ) -> Self {
-        let (p_matrix, base_mv_matrix) =
-            crate::utils::matrix_helper::perspective_mvp(sc_desc, true);
+    pub fn new(sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> Self {
+        let (p_matrix, base_mv_matrix) = crate::utils::matrix_helper::perspective_mvp(sc_desc, true);
         let buffer = BufferObj::create_uniform_buffer(
             device,
             encoder,
-            &MVPUniform {
-                mvp_matrix: (p_matrix * base_mv_matrix).into(),
-            },
+            &MVPUniform { mvp_matrix: (p_matrix * base_mv_matrix).into() },
         );
         MVPUniformObj {
             buffer,
@@ -57,11 +50,7 @@ impl MVPUniformObj {
     // 再将质心移到到实际位置
     // scale 小于 0 时，只按中心缩放
     pub fn pintch_changed(
-        &mut self,
-        encoder: &mut wgpu::CommandEncoder,
-        device: &mut wgpu::Device,
-        location: (f32, f32),
-        scale: f32,
+        &mut self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, location: (f32, f32), scale: f32,
     ) {
         if let Some(start_location) = self.pintch_start_location {
             let mut vm_matrix = self.base_mv_matrix;
@@ -85,25 +74,11 @@ impl MVPUniformObj {
                 vm_matrix = glm::translate(&vm_matrix, &glm::vec3(-offset_x, -offset_y, 0.0));
                 vm_matrix = glm::scale(&vm_matrix, &glm::vec3(self.scale, self.scale, 1.0));
                 // 平移到 pintch changed 质心
-                println!(
-                    "translate x: {}, y: {}, scale: {}",
-                    offset_x + target_x,
-                    offset_y + target_y,
-                    self.scale,
-                );
+                println!("translate x: {}, y: {}, scale: {}", offset_x + target_x, offset_y + target_y, self.scale,);
 
-                vm_matrix = glm::translate(
-                    &vm_matrix,
-                    &glm::vec3(offset_x + target_x, offset_y + target_y, 0.0),
-                );
+                vm_matrix = glm::translate(&vm_matrix, &glm::vec3(offset_x + target_x, offset_y + target_y, 0.0));
             }
-            self.buffer.update_buffer(
-                encoder,
-                device,
-                &MVPUniform {
-                    mvp_matrix: (self.p_matrix * vm_matrix).into(),
-                },
-            );
+            self.buffer.update_buffer(encoder, device, &MVPUniform { mvp_matrix: (self.p_matrix * vm_matrix).into() });
         }
     }
 }

@@ -14,7 +14,7 @@ pub fn create_state_descriptor() -> wgpu::DepthStencilStateDescriptor {
 }
 
 #[allow(dead_code)]
-pub fn create_depth_texture_view(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device) -> wgpu::TextureView {
+pub fn create_depth_texture_view(sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device) -> wgpu::TextureView {
     let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
         size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth: 1 },
         array_layer_count: 1,
