@@ -46,7 +46,7 @@ impl BufferObj {
         BufferObj::create_buffer(device, encoder, Some(slice), None, wgpu::BufferUsage::UNIFORM)
     }
 
-    pub fn update_buffer_immediately<T>(&mut self, device: &wgpu::Device, queue: &mut wgpu::Queue, data: &T)
+    pub fn update_buffer_immediately<T>(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, data: &T)
     where
         T: 'static + AsBytes + Copy,
     {
@@ -64,7 +64,7 @@ impl BufferObj {
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
 
-    pub fn update_buffers_immediately<T>(&mut self, device: &wgpu::Device, queue: &mut wgpu::Queue, slice: &[T])
+    pub fn update_buffers_immediately<T>(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, slice: &[T])
     where
         T: 'static + AsBytes + Copy,
     {
