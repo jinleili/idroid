@@ -8,6 +8,9 @@ pub struct AppView {
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
+    //  一个像素在标准设备坐标中对应的量
+    pub pixel_on_ndc_x: f32,
+    pub pixel_on_ndc_y: f32,
     pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub maximum_frames: i32,
     pub temporary_directory: &'static str,
@@ -32,6 +35,9 @@ impl AppView {
         let (device, queue) = futures::executor::block_on(request_device(&surface));
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
+        let pixel_on_ndc_x = 2.0 / physical.width as f32;
+        let pixel_on_ndc_y = 2.0 / physical.height as f32;
+
         AppView {
             view,
             scale_factor: scale_factor as f32,
@@ -40,6 +46,8 @@ impl AppView {
             surface,
             sc_desc,
             swap_chain,
+            pixel_on_ndc_x,
+            pixel_on_ndc_y,
             maximum_frames: 60,
             callback_to_app: None,
             temporary_directory: "",
@@ -73,6 +81,8 @@ impl crate::GPUContext for AppView {
         self.sc_desc.width = size.width;
         self.sc_desc.height = size.height;
         self.swap_chain = self.device.create_swap_chain(&self.surface, &self.sc_desc);
+        self.pixel_on_ndc_x = 2.0 / size.width as f32;
+        self.pixel_on_ndc_y = 2.0 / size.height as f32;
     }
 
     fn get_view_size(&self) -> crate::ViewSize {
