@@ -6,17 +6,24 @@ use crate::vertex::{PosTex, PosTex2};
 pub struct Plane {
     width: f32,
     height: f32,
+    x_offset: f32,
+    y_offset: f32,
     h_segments: u32,
     v_segments: u32,
 }
 
 impl Plane {
     pub fn new(h_segments: u32, v_segments: u32) -> Self {
-        Plane { width: 2.0, height: 2.0, h_segments, v_segments }
+        Plane { width: 2.0, height: 2.0, x_offset: 0.0, y_offset: 0.0, h_segments, v_segments }
     }
 
     pub fn new_by_pixel(width: f32, height: f32, h_segments: u32, v_segments: u32) -> Self {
-        Plane { width, height, h_segments, v_segments }
+        Plane { width, height, x_offset: 0.0, y_offset: 0.0, h_segments, v_segments }
+    }
+
+    // 指定矩形坐标区域来生成平面对象
+    pub fn new_by_rect(rect: Rect, h_segments: u32, v_segments: u32) -> Self {
+        Plane { width: rect.width, height: rect.height, x_offset: rect.x, y_offset: rect.y, h_segments, v_segments }
     }
 
     // 支持指定纹理区域
@@ -31,11 +38,11 @@ impl Plane {
         // 从左下角开始，按列遍历
         // 下边的写法等同于 for (let h=0; h<(h_segments + 1); h++) {}
         for h in 0..=self.h_segments {
-            let x: f32 = -self.half_width() + segment_width * (h as f32);
+            let x: f32 = self.most_left_x() + segment_width * (h as f32);
             let tex_coord_u: f32 = tex_rect.x + h_gap * (h as f32);
 
             for v in 0..=self.v_segments {
-                let y: f32 = -self.half_height() + segment_height * (v as f32);
+                let y: f32 = self.most_bottom_y() + segment_height * (v as f32);
                 let tex_coord_v: f32 = tex_rect.y + tex_rect.height - v_gap * (v as f32);
                 // println!("tex_coord: {}, {} ", tex_coord_u, tex_coord_v);
                 vertices.push(PosTex::vertex_f32([x, y, 0.0], [tex_coord_u, tex_coord_v]));
@@ -44,6 +51,23 @@ impl Plane {
 
         (vertices, self.get_element_indices())
         // (vertices, self.get_line_indices())
+    }
+
+    //  最左边的 x 坐标
+    fn most_left_x(&self) -> f32 {
+        if self.x_offset != 0.0 {
+            self.x_offset
+        } else {
+            -self.half_width()
+        }
+    }
+    // 最下边的 y 坐标
+    fn most_bottom_y(&self) -> f32 {
+        if self.y_offset != 0.0 {
+            self.y_offset - self.height
+        } else {
+            -self.half_height()
+        }
     }
 
     // 支持指定纹理区域
@@ -63,12 +87,12 @@ impl Plane {
         // 从左下角开始，按列遍历
         // 下边的写法等同于 for (let h=0; h<(h_segments + 1); h++) {}
         for h in 0..=self.h_segments {
-            let x: f32 = -self.half_width() + segment_width * (h as f32);
+            let x: f32 = self.most_left_x() + segment_width * (h as f32);
             let tex_coord_u: f32 = tex_rect.x + h_gap * (h as f32);
             let tex_coord_u1: f32 = rect2_x + h_gap1 * (h as f32);
 
             for v in 0..=self.v_segments {
-                let y: f32 = -self.half_height() + segment_height * (v as f32);
+                let y: f32 = self.most_bottom_y() + segment_height * (v as f32);
                 let tex_coord_v: f32 = tex_rect.y + v_gap * (self.v_segments - v) as f32;
                 let tex_coord_v1: f32 = rect2_y + v_gap1 * (self.v_segments - v) as f32;
 

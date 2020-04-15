@@ -33,12 +33,12 @@ impl ComputeNode {
         ComputeNode { setting_node, pipeline, threadgroup_count }
     }
 
-    pub fn compute(&mut self, _device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) {
+    pub fn compute(&self, _device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) {
         let mut cpass = encoder.begin_compute_pass();
         self.dispatch(&mut cpass);
     }
 
-    pub fn dispatch<'a, 'b: 'a>(&'b mut self, cpass: &mut wgpu::ComputePass<'a>) {
+    pub fn dispatch<'a, 'b: 'a>(&'b self, cpass: &mut wgpu::ComputePass<'a>) {
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);

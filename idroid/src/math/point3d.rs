@@ -1,4 +1,3 @@
-use super::view_size::ViewSize;
 use nalgebra_glm as glm;
 
 #[derive(Copy, Clone, Debug)]

@@ -1,7 +1,4 @@
-use image::GenericImageView;
-use std::path::PathBuf;
-use wgpu::CreateBufferMapped;
-use zerocopy::{AsBytes, FromBytes};
+use zerocopy::AsBytes;
 
 pub struct BufferObj {
     pub buffer: wgpu::Buffer,
@@ -17,9 +14,7 @@ impl BufferObj {
         BufferObj::create_buffer(device, encoder, Some(slice), None, wgpu::BufferUsage::STORAGE)
     }
 
-    pub fn create_empty_storage_buffer(
-        device: &wgpu::Device, size: wgpu::BufferAddress, can_read_back: bool,
-    ) -> Self {
+    pub fn create_empty_storage_buffer(device: &wgpu::Device, size: wgpu::BufferAddress, can_read_back: bool) -> Self {
         let buffer = device.create_buffer(&wgpu::BufferDescriptor {
             size,
             usage: if can_read_back {
@@ -27,7 +22,7 @@ impl BufferObj {
             } else {
                 wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST
             },
-        label: None,
+            label: None,
         });
         BufferObj { buffer, size }
     }
@@ -46,7 +41,7 @@ impl BufferObj {
         BufferObj::create_buffer(device, encoder, Some(slice), None, wgpu::BufferUsage::UNIFORM)
     }
 
-    pub fn update_buffer_immediately<T>(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, data: &T)
+    pub fn update_buffer_immediately<T>(&self, device: &wgpu::Device, queue: &wgpu::Queue, data: &T)
     where
         T: 'static + AsBytes + Copy,
     {
@@ -56,7 +51,7 @@ impl BufferObj {
         queue.submit(&[encoder.finish()]);
     }
 
-    pub fn update_buffer<T>(&mut self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)
+    pub fn update_buffer<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)
     where
         T: 'static + AsBytes + Copy,
     {
@@ -64,7 +59,7 @@ impl BufferObj {
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
 
-    pub fn update_buffers_immediately<T>(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, slice: &[T])
+    pub fn update_buffers_immediately<T>(&self, device: &wgpu::Device, queue: &wgpu::Queue, slice: &[T])
     where
         T: 'static + AsBytes + Copy,
     {
@@ -74,7 +69,7 @@ impl BufferObj {
         queue.submit(&[encoder.finish()]);
     }
 
-    pub fn update_buffers<T>(&mut self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, slice: &[T])
+    pub fn update_buffers<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, slice: &[T])
     where
         T: 'static + AsBytes + Copy,
     {
