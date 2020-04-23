@@ -1,5 +1,5 @@
 use crate::buffer::BufferObj;
-use crate::math::TouchPoint;
+use crate::math::Size;
 use nalgebra_glm as glm;
 use zerocopy::{AsBytes, FromBytes};
 
@@ -21,8 +21,8 @@ pub struct MVPUniformObj {
 }
 
 impl MVPUniformObj {
-    pub fn new(sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> Self {
-        let (p_matrix, base_mv_matrix) = crate::utils::matrix_helper::perspective_mvp(sc_desc, true);
+    pub fn new(viewport_size: Size<f32>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> Self {
+        let (p_matrix, base_mv_matrix) = crate::utils::matrix_helper::perspective_mvp(viewport_size, true);
         let buffer = BufferObj::create_uniform_buffer(
             device,
             encoder,
@@ -32,8 +32,8 @@ impl MVPUniformObj {
             buffer,
             p_matrix,
             base_mv_matrix,
-            view_width: sc_desc.width as f32,
-            view_height: sc_desc.height as f32,
+            view_width: viewport_size.width,
+            view_height: viewport_size.height,
             scale: 1.0,
             pintch_start_location: None,
         }

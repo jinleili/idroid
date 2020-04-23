@@ -18,3 +18,7 @@ pub use size::Size;
 
 mod line_segment;
 pub use line_segment::LineSegment;
+
+mod edge_inset;
+pub use edge_inset::EdgeInset;
+

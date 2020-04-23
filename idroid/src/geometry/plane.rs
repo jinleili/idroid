@@ -110,7 +110,7 @@ impl Plane {
     }
 
     pub fn generate_vertices(&self) -> (Vec<PosTex>, Vec<u32>) {
-        self.generate_vertices_by_texcoord(Rect { x: 0.0, y: 0.0, width: 1.0, height: 1.0 })
+        self.generate_vertices_by_texcoord(Rect::from_origin_n_size(0.0, 0.0, 1.0, 1.0))
     }
 
     // 返回的是线断列表，而不是线段条带

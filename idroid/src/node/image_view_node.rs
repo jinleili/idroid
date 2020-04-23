@@ -1,5 +1,5 @@
 use crate::geometry::plane::Plane;
-use crate::math::TouchPoint;
+use crate::math::Size;
 use crate::node::BindingGroupSettingNode;
 use crate::shader::Shader;
 use crate::vertex::{Pos, PosTex, PosTex2};
@@ -10,7 +10,7 @@ use zerocopy::AsBytes;
 
 #[allow(dead_code)]
 pub struct ImageViewNode {
-    vertex_buf: BufferObj,
+    pub vertex_buf: BufferObj,
     index_buf: wgpu::Buffer,
     index_count: usize,
     setting_node: BindingGroupSettingNode,
@@ -23,7 +23,7 @@ pub struct ImageViewNode {
 #[allow(dead_code)]
 impl ImageViewNode {
     pub fn new(
-        sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+        size: Size<f32>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
         uniform_buffers: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>, src_views: Vec<(&wgpu::TextureView, bool)>,
         samplers: Vec<&wgpu::Sampler>, shader: &Shader, tex_rect: Option<crate::math::Rect>,
     ) -> Self {
@@ -102,7 +102,7 @@ impl ImageViewNode {
             primitive_topology: wgpu::PrimitiveTopology::TriangleList,
             // primitive_topology: wgpu::PrimitiveTopology::LineList,
             color_states: &[wgpu::ColorStateDescriptor {
-                format: sc_desc.format,
+                format: wgpu::TextureFormat::Bgra8Unorm,
                 color_blend: crate::utils::color_blend(),
                 alpha_blend: crate::utils::alpha_blend(),
                 write_mask: wgpu::ColorWrite::ALL,
@@ -119,8 +119,8 @@ impl ImageViewNode {
         });
 
         ImageViewNode {
-            view_width: sc_desc.width as f32,
-            view_height: sc_desc.height as f32,
+            view_width: size.width,
+            view_height: size.height,
             vertex_buf,
             index_buf,
             index_count: index_data.len(),
