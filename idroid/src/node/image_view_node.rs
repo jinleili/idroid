@@ -23,10 +23,12 @@ pub struct ImageViewNode {
 #[allow(dead_code)]
 impl ImageViewNode {
     pub fn new(
-        size: Size<f32>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-        uniform_buffers: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>, src_views: Vec<(&wgpu::TextureView, bool)>,
-        samplers: Vec<&wgpu::Sampler>, shader: &Shader, tex_rect: Option<crate::math::Rect>,
+        size: Size<f32>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, uniform_buffers: Vec<&BufferObj>,
+        inout_buffers: Vec<&BufferObj>, src_views: Vec<(&wgpu::TextureView, bool)>, samplers: Vec<&wgpu::Sampler>,
+        shader: &Shader, tex_rect: Option<crate::math::Rect>, corlor_format: Option<wgpu::TextureFormat>,
     ) -> Self {
+        let corlor_format = if let Some(format) = corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
+
         let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
         for _ in 0..(uniform_buffers.len() + inout_buffers.len() + src_views.len() + samplers.len()) {
             stages.push(wgpu::ShaderStage::FRAGMENT)
@@ -102,7 +104,7 @@ impl ImageViewNode {
             primitive_topology: wgpu::PrimitiveTopology::TriangleList,
             // primitive_topology: wgpu::PrimitiveTopology::LineList,
             color_states: &[wgpu::ColorStateDescriptor {
-                format: wgpu::TextureFormat::Bgra8Unorm,
+                format: corlor_format,
                 color_blend: crate::utils::color_blend(),
                 alpha_blend: crate::utils::alpha_blend(),
                 write_mask: wgpu::ColorWrite::ALL,

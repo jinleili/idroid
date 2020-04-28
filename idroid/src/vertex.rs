@@ -61,6 +61,19 @@ impl PosTex {
         4 * 3
     }
 
+    // 移动顶点位置到
+    // step_rate: step_index / step_count
+    pub fn move_to(&self, to: &[f32; 3], step_rate: f32) -> PosTex {
+        PosTex {
+            pos: [
+                self.pos[0] + (to[0] - self.pos[0]) * step_rate,
+                self.pos[1] + (to[1] - self.pos[1]) * step_rate,
+                self.pos[2] + (to[2] - self.pos[2]) * step_rate,
+            ],
+            tex_coord: self.tex_coord,
+        }
+    }
+
     // pub fn vb_descriptor<'a>(offset: u32) -> wgpu::VertexBufferDescriptor<'a> {
 
     //     wgpu::VertexBufferDescriptor {

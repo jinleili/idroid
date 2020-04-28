@@ -30,7 +30,6 @@ pub fn from_path_for_usage(
 
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
-        array_layer_count: 1,
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
@@ -110,13 +109,12 @@ pub fn from_buffer_and_usage_write(
 ) -> (TextureView, Extent3d, Sampler) {
     let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
     let usage = if usage_write {
-        wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::WRITE_ALL
+        wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::STORAGE
     } else {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED
     };
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
-        array_layer_count: 1,
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
@@ -138,18 +136,24 @@ pub fn from_buffer_and_usage_write(
 
 // empty texture as a OUTPUT_ATTACHMENT
 #[allow(dead_code)]
-pub fn empty(device: &wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d) -> TextureView {
+pub fn empty(
+    device: &wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d, usage: Option<wgpu::TextureUsage>,
+) -> TextureView {
+    let usage = if let Some(u) = usage {
+        u
+    } else {
+        wgpu::TextureUsage::OUTPUT_ATTACHMENT
+            | wgpu::TextureUsage::COPY_DST
+            | wgpu::TextureUsage::SAMPLED
+            | wgpu::TextureUsage::STORAGE
+    };
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         size: extent,
-        array_layer_count: 1,
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
         format,
-        usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT
-            | wgpu::TextureUsage::COPY_DST
-            | wgpu::TextureUsage::SAMPLED
-            | wgpu::TextureUsage::WRITE_ALL,
+        usage,
         label: None,
     });
     let texture_view = texture.create_default_view();
@@ -158,13 +162,13 @@ pub fn empty(device: &wgpu::Device, format: wgpu::TextureFormat, extent: Extent3
 
 #[allow(dead_code)]
 pub fn empty_view(device: &wgpu::Device, width: u32, height: u32) -> TextureView {
-    crate::texture::empty(device, wgpu::TextureFormat::Bgra8Unorm, wgpu::Extent3d { width, height, depth: 1 })
+    crate::texture::empty(device, wgpu::TextureFormat::Bgra8Unorm, wgpu::Extent3d { width, height, depth: 1 }, None)
 }
 
 // 32位浮点纹理
 #[allow(dead_code)]
 pub fn empty_f32_view(device: &wgpu::Device, width: u32, height: u32) -> TextureView {
-    crate::texture::empty(device, wgpu::TextureFormat::Rgba32Float, wgpu::Extent3d { width, height, depth: 1 })
+    crate::texture::empty(device, wgpu::TextureFormat::Rgba32Float, wgpu::Extent3d { width, height, depth: 1 }, None)
 }
 
 #[allow(dead_code)]

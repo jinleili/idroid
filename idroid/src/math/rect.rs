@@ -1,4 +1,4 @@
-use crate::math::{Position, ViewSize, Size};
+use crate::math::{Position, Size, ViewSize};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Rect {
@@ -18,7 +18,7 @@ impl Rect {
     }
 
     pub fn get_standard_new() -> Self {
-        Rect {x: 0.0, y: 0.0, width: 1.0, height: 1.0, origin: Position::zero(), size: (1.0, 1.0).into() }
+        Rect { x: 0.0, y: 0.0, width: 1.0, height: 1.0, origin: Position::zero(), size: (1.0, 1.0).into() }
     }
 
     pub fn from_origin_n_size(x: f32, y: f32, width: f32, height: f32) -> Self {
@@ -27,6 +27,22 @@ impl Rect {
 
     pub fn zero() -> Self {
         Rect { x: 0.0, y: 0.0, width: 0.0, height: 0.0, origin: Position::zero(), size: (0.0, 0.0).into() }
+    }
+
+    // 将像素坐标转换成NDC空间中的坐标
+    // 这个空间可能不是当前可见视口，需要传入实际 reander target 的尺寸
+    pub fn get_std_coord(&self, viewport_size: Size<f32>) -> Self {
+        let half_w = viewport_size.width / 2.0;
+        let half_h = viewport_size.height / 2.0;
+        // 像素在NDC空间对应的值
+        let x = (self.x - half_w) / half_w;
+        let mut y = (self.y - half_h) / half_h;
+        // 反转 y 坐标
+        y *= -1.0;
+        let width = self.width / half_w;
+        let height = self.height / half_h;
+
+        Rect { x, y, width, height, origin: Position::new(x, y), size: (width, height).into() }
     }
 
     pub fn center_x(&self) -> f32 {

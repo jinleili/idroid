@@ -53,8 +53,10 @@ impl AppView {
             height: physical.height,
             present_mode: wgpu::PresentMode::Mailbox,
         };
-        let surface = wgpu::Surface::create_surface_from_core_animation_layer(obj.metal_layer);
-        let (device, queue) = futures::executor::block_on(request_device(&surface));
+        let instance = wgpu::Instance::new();
+        let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
+
+        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
         let pixel_on_ndc_y = 2.0 / physical.height as f32;
@@ -108,20 +110,22 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
     s as f32
 }
 
-async fn request_device(surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
-    let adapter = wgpu::Adapter::request(
-        &wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::Default,
-            compatible_surface: Some(surface),
-        },
-        wgpu::BackendBit::METAL,
-    )
-    .await
-    .unwrap();
+async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
+    let adapter = instance
+        .request_adapter(
+            &wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::Default,
+                compatible_surface: Some(surface),
+            },
+            wgpu::BackendBit::METAL,
+        )
+        .await
+        .unwrap();
     adapter
         .request_device(&wgpu::DeviceDescriptor {
             extensions: wgpu::Extensions { anisotropic_filtering: false },
             limits: wgpu::Limits::default(),
         })
         .await
+        .unwrap()
 }

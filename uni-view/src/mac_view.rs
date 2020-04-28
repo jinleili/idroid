@@ -31,8 +31,9 @@ impl AppView {
             height: physical.height as u32,
             present_mode: wgpu::PresentMode::Mailbox,
         };
-        let surface = wgpu::Surface::create(&view);
-        let (device, queue) = futures::executor::block_on(request_device(&surface));
+        let instance = wgpu::Instance::new();
+        let surface = unsafe { instance.create_surface(&view) };
+        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
@@ -56,23 +57,25 @@ impl AppView {
     }
 }
 
-async fn request_device(surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
-    let adapter = wgpu::Adapter::request(
-        &wgpu::RequestAdapterOptions {
-            // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
-            power_preference: wgpu::PowerPreference::Default,
-            compatible_surface: Some(surface),
-        },
-        wgpu::BackendBit::PRIMARY,
-    )
-    .await
-    .unwrap();
+async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
+    let adapter = instance
+        .request_adapter(
+            &wgpu::RequestAdapterOptions {
+                // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
+                power_preference: wgpu::PowerPreference::Default,
+                compatible_surface: Some(surface),
+            },
+            wgpu::BackendBit::PRIMARY,
+        )
+        .await
+        .unwrap();
     adapter
         .request_device(&wgpu::DeviceDescriptor {
             extensions: wgpu::Extensions { anisotropic_filtering: false },
             limits: wgpu::Limits::default(),
         })
         .await
+        .unwrap()
 }
 
 impl crate::GPUContext for AppView {

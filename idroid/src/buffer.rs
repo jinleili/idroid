@@ -48,7 +48,7 @@ impl BufferObj {
         let temp_buf = device.create_buffer_with_data(data.as_bytes(), wgpu::BufferUsage::COPY_SRC);
         let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
-        queue.submit(&[encoder.finish()]);
+        queue.submit(Some(encoder.finish()));
     }
 
     pub fn update_buffer<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)
@@ -66,7 +66,7 @@ impl BufferObj {
         let temp_buf = device.create_buffer_with_data(slice.as_bytes(), wgpu::BufferUsage::COPY_SRC);
         let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
-        queue.submit(&[encoder.finish()]);
+        queue.submit(Some(encoder.finish()));
     }
 
     pub fn update_buffers<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, slice: &[T])
