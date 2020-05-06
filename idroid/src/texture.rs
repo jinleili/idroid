@@ -174,6 +174,7 @@ pub fn empty_f32_view(device: &wgpu::Device, width: u32, height: u32) -> Texture
 #[allow(dead_code)]
 pub fn default_sampler(device: &wgpu::Device) -> Sampler {
     device.create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
         address_mode_u: wgpu::AddressMode::ClampToEdge,
         address_mode_v: wgpu::AddressMode::ClampToEdge,
         address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -190,6 +191,7 @@ pub fn default_sampler(device: &wgpu::Device) -> Sampler {
 #[allow(dead_code)]
 pub fn tile_sampler(device: &wgpu::Device) -> Sampler {
     device.create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
         address_mode_u: wgpu::AddressMode::Repeat,
         address_mode_v: wgpu::AddressMode::Repeat,
         address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -207,6 +209,7 @@ pub fn tile_sampler(device: &wgpu::Device) -> Sampler {
 #[allow(dead_code)]
 pub fn bilinear_sampler(device: &wgpu::Device) -> Sampler {
     device.create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
         address_mode_u: wgpu::AddressMode::ClampToEdge,
         address_mode_v: wgpu::AddressMode::ClampToEdge,
         address_mode_w: wgpu::AddressMode::ClampToEdge,

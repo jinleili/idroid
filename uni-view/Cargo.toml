@@ -4,17 +4,16 @@ version = "0.2.4"
 authors = ["Li Jinlei <grenlight@icloud.com>"]
 edition = "2018"
 
-
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  rev = "49640d2497ffac1936feb1cebb0ef64a39c31dce"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  rev = "89ee5bffd3c37279f733b76b05e5d030aba035db" }
 # wgpu = { path = "../../../wgpu-rs" }
 
 lazy_static = "*"
 futures = "0.3"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-winit = { version = "0.22.1", features = ["web-sys"] }
+winit = "0.22.1"
 raw-window-handle = "0.3"
 
 [target.'cfg(target_os = "ios")'.dependencies]

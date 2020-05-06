@@ -51,7 +51,8 @@ impl AppView {
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: physical.width,
             height: physical.height,
-            present_mode: wgpu::PresentMode::Mailbox,
+            // 在移动端上，这个呈现模式最高效
+            present_mode: wgpu::PresentMode::Fifo,
         };
         let instance = wgpu::Instance::new();
         let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
@@ -122,10 +123,13 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .await
         .unwrap();
     adapter
-        .request_device(&wgpu::DeviceDescriptor {
-            extensions: wgpu::Extensions { anisotropic_filtering: false },
-            limits: wgpu::Limits::default(),
-        })
+        .request_device(
+            &wgpu::DeviceDescriptor {
+                extensions: wgpu::Extensions { anisotropic_filtering: false },
+                limits: wgpu::Limits::default(),
+            },
+            None,
+        )
         .await
         .unwrap()
 }

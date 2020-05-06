@@ -73,7 +73,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .request_device(&wgpu::DeviceDescriptor {
             extensions: wgpu::Extensions { anisotropic_filtering: false },
             limits: wgpu::Limits::default(),
-        })
+        }, None)
         .await
         .unwrap()
 }
