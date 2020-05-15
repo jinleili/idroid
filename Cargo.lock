@@ -987,6 +987,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "naga"
+version = "0.1.0"
+source = "git+https://github.com/gfx-rs/naga?rev=bce6358eb1026c13d2f1c6d365af37afe8869a86#bce6358eb1026c13d2f1c6d365af37afe8869a86"
+dependencies = [
+ "bitflags",
+ "fxhash",
+ "log",
+ "num-traits",
+ "spirv_headers",
+]
+
+[[package]]
 name = "nalgebra"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1540,6 +1552,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "spirv_headers"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f1418983d16481227ffa3ab3cf44ef92eebc9a76c092fbcd4c51a64ff032622"
+dependencies = [
+ "bitflags",
+ "num-traits",
+]
+
+[[package]]
 name = "stb_truetype"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1811,7 +1833,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=89ee5bffd3c37279f733b76b05e5d030aba035db#89ee5bffd3c37279f733b76b05e5d030aba035db"
+source = "git+https://github.com/gfx-rs/wgpu-rs?rev=4cc94fe58e025c4f7e5ef84b461bc7d7636a6ec1#4cc94fe58e025c4f7e5ef84b461bc7d7636a6ec1"
 dependencies = [
  "arrayvec",
  "env_logger",
@@ -1831,7 +1853,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=4c448c3fc583da6d22c62c7e92bbb74b53863357#4c448c3fc583da6d22c62c7e92bbb74b53863357"
+source = "git+https://github.com/gfx-rs/wgpu?rev=a7200bb8658e7b7bb972ee46a81f423209fb7659#a7200bb8658e7b7bb972ee46a81f423209fb7659"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1846,10 +1868,12 @@ dependencies = [
  "gfx-hal",
  "gfx-memory",
  "log",
+ "naga",
  "parking_lot",
  "peek-poke",
  "raw-window-handle",
  "smallvec",
+ "spirv_headers",
  "vec_map",
  "wgpu-types",
 ]
@@ -1857,7 +1881,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=4c448c3fc583da6d22c62c7e92bbb74b53863357#4c448c3fc583da6d22c62c7e92bbb74b53863357"
+source = "git+https://github.com/gfx-rs/wgpu?rev=a7200bb8658e7b7bb972ee46a81f423209fb7659#a7200bb8658e7b7bb972ee46a81f423209fb7659"
 dependencies = [
  "bitflags",
  "peek-poke",

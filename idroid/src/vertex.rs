@@ -8,8 +8,8 @@ pub trait Pos {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
 pub struct PosColor {
-    pos: [f32; 3],
-    color: [f32; 4],
+    pub pos: [f32; 3],
+    pub color: [f32; 4],
 }
 
 impl PosColor {

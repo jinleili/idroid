@@ -32,12 +32,14 @@ pub fn create_depth_texture_view(sc_desc: &wgpu::SwapChainDescriptor, device: &w
 pub fn create_attachment_descriptor<'a>(
     depth_textue_view: &'a wgpu::TextureView,
 ) -> wgpu::RenderPassDepthStencilAttachmentDescriptor<'a> {
+    // VK_ATTACHMENT_STORE_OP_DONT_CARE should be used in case the application is not expecting to read the data rendered to the attachment
+    // this is commonly the case for depth buffers and MSAA targets.
     wgpu::RenderPassDepthStencilAttachmentDescriptor {
         attachment: depth_textue_view,
         depth_load_op: wgpu::LoadOp::Clear,
-        depth_store_op: wgpu::StoreOp::Store,
+        depth_store_op: wgpu::StoreOp::Clear,
         stencil_load_op: wgpu::LoadOp::Clear,
-        stencil_store_op: wgpu::StoreOp::Store,
+        stencil_store_op: wgpu::StoreOp::Clear,
         clear_depth: 1.0,
         clear_stencil: 0,
     }

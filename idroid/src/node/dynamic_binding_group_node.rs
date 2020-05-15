@@ -24,7 +24,7 @@ impl DynamicBindingGroupNode {
             });
             bingdings.push(wgpu::Binding {
                 binding: b_index,
-                resource: wgpu::BindingResource::Buffer { buffer: &buffer_obj.buffer, range: 0..buffer_obj.size },
+                resource: wgpu::BindingResource::Buffer(buffer_obj.buffer.slice(..)),
             });
             b_index += 1;
         }
