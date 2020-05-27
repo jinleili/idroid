@@ -1833,7 +1833,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=4cc94fe58e025c4f7e5ef84b461bc7d7636a6ec1#4cc94fe58e025c4f7e5ef84b461bc7d7636a6ec1"
+source = "git+https://github.com/gfx-rs/wgpu-rs?rev=d12d1422a75e08fc2aee3691292a960bd47416e4#d12d1422a75e08fc2aee3691292a960bd47416e4"
 dependencies = [
  "arrayvec",
  "env_logger",
@@ -1853,7 +1853,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=a7200bb8658e7b7bb972ee46a81f423209fb7659#a7200bb8658e7b7bb972ee46a81f423209fb7659"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4e1d76013c0b272383400beba48dc306e1a350f6#4e1d76013c0b272383400beba48dc306e1a350f6"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1881,7 +1881,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=a7200bb8658e7b7bb972ee46a81f423209fb7659#a7200bb8658e7b7bb972ee46a81f423209fb7659"
+source = "git+https://github.com/gfx-rs/wgpu?rev=4e1d76013c0b272383400beba48dc306e1a350f6#4e1d76013c0b272383400beba48dc306e1a350f6"
 dependencies = [
  "bitflags",
  "peek-poke",

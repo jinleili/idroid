@@ -3,32 +3,29 @@ use std::path::PathBuf;
 use wgpu::{Extent3d, Sampler, Texture, TextureView};
 
 #[allow(dead_code)]
-pub fn from_img_name(
-    image_path: &str, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-) -> (Texture, TextureView, Extent3d, Sampler) {
-    self::from_img_name_and_usage_write(image_path, device, encoder, false, false)
+pub fn from_img_name(image_path: &str, app_view: &crate::AppView) -> (Texture, TextureView, Extent3d, Sampler) {
+    self::from_img_name_and_usage_write(image_path, app_view, false, false)
 }
 
 // is_gray_pic: 是否为单通道灰度纹理
 #[allow(dead_code)]
 pub fn from_img_name_and_usage_write(
-    image_path: &str, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, usage_write: bool, is_gray_pic: bool,
+    image_path: &str, app_view: &crate::AppView, usage_write: bool, is_gray_pic: bool,
 ) -> (Texture, TextureView, Extent3d, Sampler) {
     // 动态加载本地文件
     let path = PathBuf::from(image_path);
-    crate::texture::from_path(path, device, encoder, usage_write, is_gray_pic)
+    crate::texture::from_path(path, app_view, usage_write, is_gray_pic)
 }
 
 #[allow(dead_code)]
 pub fn from_path_for_usage(
-    path: PathBuf, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, usage: wgpu::TextureUsage,
-    is_gray_pic: bool,
+    path: PathBuf, app_view: &crate::AppView, usage: wgpu::TextureUsage, is_gray_pic: bool,
 ) -> (wgpu::Texture, TextureView, Extent3d, Sampler) {
     let (texels, texture_extent) = load_from_path(path, is_gray_pic);
     let (format, channel_count) =
         if is_gray_pic { (wgpu::TextureFormat::R8Unorm, 1) } else { (wgpu::TextureFormat::Rgba8Unorm, 4) };
 
-    let texture = device.create_texture(&wgpu::TextureDescriptor {
+    let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
         mip_level_count: 1,
         sample_count: 1,
@@ -38,51 +35,44 @@ pub fn from_path_for_usage(
         label: None,
     });
     let texture_view = texture.create_default_view();
-
-    let temp_buf = device.create_buffer_with_data(&texels, wgpu::BufferUsage::COPY_SRC);
-
-    encoder.copy_buffer_to_texture(
-        wgpu::BufferCopyView {
-            buffer: &temp_buf,
+    app_view.queue.write_texture(
+        wgpu::TextureCopyView { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
+        &texels,
+        wgpu::TextureDataLayout {
             offset: 0,
             bytes_per_row: channel_count * texture_extent.width,
             rows_per_image: texture_extent.height,
         },
-        wgpu::TextureCopyView { texture: &texture, mip_level: 0, array_layer: 0, origin: wgpu::Origin3d::ZERO },
         texture_extent,
     );
 
-    (texture, texture_view, texture_extent, default_sampler(device))
+    (texture, texture_view, texture_extent, default_sampler(&app_view.device))
 }
 
 #[allow(dead_code)]
 pub fn from_path(
-    path: PathBuf, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, is_storage: bool, is_gray_pic: bool,
+    path: PathBuf, app_view: &crate::AppView, is_storage: bool, is_gray_pic: bool,
 ) -> (wgpu::Texture, TextureView, Extent3d, Sampler) {
     let usage = if is_storage {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::STORAGE
     } else {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED
     };
-    crate::texture::from_path_for_usage(path, device, encoder, usage, is_gray_pic)
+    crate::texture::from_path_for_usage(path, app_view, usage, is_gray_pic)
 }
 
 #[allow(dead_code)]
-pub fn update_by_path(
-    path: PathBuf, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, texture: &wgpu::Texture,
-    is_gray_pic: bool,
-) {
+pub fn update_by_path(path: PathBuf, app_view: &crate::AppView, texture: &wgpu::Texture, is_gray_pic: bool) {
     let (texels, texture_extent) = load_from_path(path, is_gray_pic);
-    let temp_buf = device.create_buffer_with_data(&texels, wgpu::BufferUsage::COPY_SRC);
 
-    encoder.copy_buffer_to_texture(
-        wgpu::BufferCopyView {
-            buffer: &temp_buf,
+    app_view.queue.write_texture(
+        wgpu::TextureCopyView { texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
+        &texels,
+        wgpu::TextureDataLayout {
             offset: 0,
             bytes_per_row: if is_gray_pic { 1 } else { 4 } * texture_extent.width,
             rows_per_image: texture_extent.height,
         },
-        wgpu::TextureCopyView { texture, mip_level: 0, array_layer: 0, origin: wgpu::Origin3d::ZERO },
         texture_extent,
     );
 }
@@ -104,7 +94,7 @@ fn load_from_path(path: PathBuf, is_gray_pic: bool) -> (Vec<u8>, wgpu::Extent3d)
 
 #[allow(dead_code)]
 pub fn from_buffer_and_usage_write(
-    buffer: &wgpu::Buffer, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32,
+    buffer: &wgpu::Buffer, app_view: &crate::AppView, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32,
     pixel_size: u32, usage_write: bool,
 ) -> (TextureView, Extent3d, Sampler) {
     let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
@@ -113,7 +103,7 @@ pub fn from_buffer_and_usage_write(
     } else {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED
     };
-    let texture = device.create_texture(&wgpu::TextureDescriptor {
+    let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
         mip_level_count: 1,
         sample_count: 1,
@@ -126,12 +116,15 @@ pub fn from_buffer_and_usage_write(
 
     // BufferCopyView 必须 >= TextureCopyView
     encoder.copy_buffer_to_texture(
-        wgpu::BufferCopyView { buffer, offset: 0, bytes_per_row: pixel_size * width, rows_per_image: height },
-        wgpu::TextureCopyView { texture: &texture, mip_level: 0, array_layer: 0, origin: wgpu::Origin3d::ZERO },
+        wgpu::BufferCopyView {
+            buffer,
+            layout: wgpu::TextureDataLayout { offset: 0, bytes_per_row: pixel_size * width, rows_per_image: height },
+        },
+        wgpu::TextureCopyView { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
         texture_extent,
     );
 
-    (texture_view, texture_extent, default_sampler(device))
+    (texture_view, texture_extent, default_sampler(&app_view.device))
 }
 
 // empty texture as a OUTPUT_ATTACHMENT

@@ -46,11 +46,15 @@ impl Rect {
     }
 
     pub fn center_x(&self) -> f32 {
-        self.width / 2.0
+        self.x + self.width / 2.0
     }
 
     pub fn center_y(&self) -> f32 {
-        self.height / 2.0
+        self.y + self.height / 2.0
+    }
+
+    pub fn anchor(&self) -> Position {
+        Position::new(self.center_x(), self.center_y())
     }
 
     // 一个正交投影坐标是否在区域内
