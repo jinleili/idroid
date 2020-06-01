@@ -1833,11 +1833,12 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=d12d1422a75e08fc2aee3691292a960bd47416e4#d12d1422a75e08fc2aee3691292a960bd47416e4"
+source = "git+https://github.com/gfx-rs/wgpu-rs?rev=d7abf5c38af5f3dc78f998200f906668a27dc39b#d7abf5c38af5f3dc78f998200f906668a27dc39b"
 dependencies = [
  "arrayvec",
  "env_logger",
  "futures",
+ "gfx-backend-vulkan",
  "js-sys",
  "objc",
  "parking_lot",
@@ -1853,7 +1854,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=4e1d76013c0b272383400beba48dc306e1a350f6#4e1d76013c0b272383400beba48dc306e1a350f6"
+source = "git+https://github.com/gfx-rs/wgpu?rev=1a569ebe89deabca2d8299a664d5cad4b437d8d8#1a569ebe89deabca2d8299a664d5cad4b437d8d8"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1881,7 +1882,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.5.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=4e1d76013c0b272383400beba48dc306e1a350f6#4e1d76013c0b272383400beba48dc306e1a350f6"
+source = "git+https://github.com/gfx-rs/wgpu?rev=1a569ebe89deabca2d8299a664d5cad4b437d8d8#1a569ebe89deabca2d8299a664d5cad4b437d8d8"
 dependencies = [
  "bitflags",
  "peek-poke",

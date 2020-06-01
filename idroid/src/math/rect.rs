@@ -57,6 +57,13 @@ impl Rect {
         Position::new(self.center_x(), self.center_y())
     }
 
+    // 中心点移动到坐标原点
+    pub fn move_anchor_to_origin(&mut self) {
+        self.x = -self.width / 2.0;
+        self.y = self.height / 2.0;
+        self.origin = Position::new(self.x, self.y);
+    }
+
     // 一个正交投影坐标是否在区域内
     pub fn is_ortho_intersect(&self, ortho_point: Position) -> bool {
         let x_left = -self.center_x();
