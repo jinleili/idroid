@@ -8,9 +8,11 @@ pub struct AppView {
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
-    //  一个像素在标准设备坐标中对应的量
+    //  一个像素在[-1, 1]缩放为满屏的设备空间中对应的量
     pub pixel_on_ndc_x: f32,
     pub pixel_on_ndc_y: f32,
+    // 一个像素在标准的设备空间中对应的量
+    pub pixel_on_normal_ndc: f32,
     pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub maximum_frames: i32,
     pub temporary_directory: &'static str,
@@ -38,7 +40,8 @@ impl AppView {
 
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
         let pixel_on_ndc_y = 2.0 / physical.height as f32;
-
+        let pixel_on_normal_ndc =
+            if physical.width < physical.height { 2.0 / physical.width as f32 } else { 2.0 / physical.height as f32 };
         AppView {
             view,
             scale_factor: scale_factor as f32,
@@ -49,6 +52,7 @@ impl AppView {
             swap_chain,
             pixel_on_ndc_x,
             pixel_on_ndc_y,
+            pixel_on_normal_ndc,
             maximum_frames: 60,
             callback_to_app: None,
             temporary_directory: "",
@@ -70,10 +74,13 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .await
         .unwrap();
     adapter
-        .request_device(&wgpu::DeviceDescriptor {
-            extensions: wgpu::Extensions { anisotropic_filtering: false },
-            limits: wgpu::Limits::default(),
-        }, None)
+        .request_device(
+            &wgpu::DeviceDescriptor {
+                extensions: wgpu::Extensions { anisotropic_filtering: false },
+                limits: wgpu::Limits::default(),
+            },
+            None,
+        )
         .await
         .unwrap()
 }

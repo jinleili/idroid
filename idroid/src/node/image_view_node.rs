@@ -1,5 +1,5 @@
 use crate::geometry::plane::Plane;
-use crate::math::Size;
+use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSettingNode;
 use crate::shader::Shader;
 use crate::vertex::{Pos, PosTex, PosTex2};
@@ -48,8 +48,11 @@ impl ImageViewNode {
             BindingGroupSettingNode::new(device, uniform_buffers, inout_buffers, src_views, new_samplers, stages);
 
         // Create the vertex and index buffers
+        let factor = crate::utils::matrix_helper::fullscreen_factor(size);
+        let rect = Rect::new(2.0 * factor.1, 2.0 * factor.2, Position::zero());
+        let plane = Plane::new_by_rect(rect, 1, 1);
         let (vertex_buf, index_data) = if let Some(rect) = tex_rect {
-            let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices_by_texcoord2(rect, None);
+            let (vertex_data, index_data) = plane.generate_vertices_by_texcoord2(rect, None);
             let vertex_buf = BufferObj::create_buffer(
                 device,
                 encoder,
@@ -59,7 +62,7 @@ impl ImageViewNode {
             );
             (vertex_buf, index_data)
         } else {
-            let (vertex_data, index_data) = Plane::new(1, 1).generate_vertices();
+            let (vertex_data, index_data) = plane.generate_vertices();
             let vertex_buf = BufferObj::create_buffer(
                 device,
                 encoder,

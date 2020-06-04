@@ -29,9 +29,12 @@ pub struct AppView {
     pub surface: wgpu::Surface,
     pub sc_desc: wgpu::SwapChainDescriptor,
     pub swap_chain: wgpu::SwapChain,
-    //  一个像素在标准设备坐标中对应的量
+    //  一个像素在[-1, 1]缩放为满屏的设备空间中对应的量
     pub pixel_on_ndc_x: f32,
     pub pixel_on_ndc_y: f32,
+    // 一个像素在标准的设备空间中对应的量
+    pub pixel_on_normal_ndc: f32,
+    
     pub maximum_frames: i32,
     pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub temporary_directory: &'static str,
@@ -61,6 +64,8 @@ impl AppView {
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
         let pixel_on_ndc_y = 2.0 / physical.height as f32;
+        let pixel_on_normal_ndc =
+            if physical.width < physical.height { 2.0 / physical.width as f32 } else { 2.0 / physical.height as f32 };
         // 这样传递过来的字符串为空
         let temporary_directory: &'static str = Box::leak(c_char_to_string(obj.temporary_directory).into_boxed_str());
         AppView {
@@ -73,6 +78,7 @@ impl AppView {
             swap_chain,
             pixel_on_ndc_x,
             pixel_on_ndc_y,
+            pixel_on_normal_ndc,
             callback_to_app: Some(obj.callback_to_swift),
             maximum_frames: obj.maximum_frames,
             temporary_directory,

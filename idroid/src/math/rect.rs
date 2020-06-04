@@ -11,9 +11,9 @@ pub struct Rect {
 }
 
 impl Rect {
-    pub fn new(width: f32, height: f32, center_to: ViewSize) -> Self {
-        let x = (center_to.width - width) / 2.0;
-        let y = (center_to.height - height) / 2.0;
+    pub fn new(width: f32, height: f32, center_to: Position) -> Self {
+        let x = center_to.x - width / 2.0;
+        let y = center_to.y + height / 2.0;
         Rect { x, y, width, height, origin: Position::new(x, y), size: (width, height).into() }
     }
 
