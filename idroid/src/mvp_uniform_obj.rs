@@ -22,7 +22,7 @@ pub struct MVPUniformObj {
 
 impl MVPUniformObj {
     pub fn new(viewport_size: Size<f32>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> Self {
-        let (p_matrix, base_mv_matrix, _factor) = crate::utils::matrix_helper::perspective_mvp2(viewport_size);
+        let (p_matrix, base_mv_matrix, _factor) = crate::utils::matrix_helper::perspective_mvp(viewport_size);
         let buffer = BufferObj::create_uniform_buffer(
             device,
             encoder,

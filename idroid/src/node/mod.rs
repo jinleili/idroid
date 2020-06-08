@@ -7,4 +7,4 @@ mod dynamic_binding_group_node;
 pub use dynamic_binding_group_node::DynamicBindingGroupNode;
 
 mod image_view_node;
-pub use image_view_node::ImageViewNode;
+pub use image_view_node::{ImageNodeBuilder, ImageViewNode};
