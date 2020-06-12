@@ -9,50 +9,61 @@ use nalgebra_glm as glm;
 use std::ops::{Deref, DerefMut};
 use zerocopy::AsBytes;
 
-pub struct NodeAttributes<'a> {
+pub struct NodeAttributes<'a, T: Pos> {
     pub view_size: Size<f32>,
+    pub vertices_and_indices: Option<(Vec<T>, Vec<u32>)>,
     pub uniform_buffers: Vec<&'a BufferObj>,
     pub storage_buffers: Vec<&'a BufferObj>,
     pub tex_views: Vec<(&'a wgpu::TextureView, bool)>,
     pub samplers: Vec<&'a wgpu::Sampler>,
+    // 动态 uniform
+    pub dynamic_uniforms: Vec<(&'a BufferObj, wgpu::ShaderStage)>,
+
     pub tex_rect: Option<crate::math::Rect>,
     pub corlor_format: Option<wgpu::TextureFormat>,
     pub shader: &'a Shader,
     pub shader_stages: Vec<wgpu::ShaderStage>,
 }
 
-pub struct ImageNodeBuilder<'a> {
-    pub attributes: NodeAttributes<'a>,
+pub struct ImageNodeBuilder<'a, T: Pos + AsBytes> {
+    pub attributes: NodeAttributes<'a, T>,
 }
 
-impl<'a> Deref for ImageNodeBuilder<'a> {
-    type Target = NodeAttributes<'a>;
-    fn deref(&self) -> &NodeAttributes<'a> {
+impl<'a, T: Pos + AsBytes> Deref for ImageNodeBuilder<'a, T> {
+    type Target = NodeAttributes<'a, T>;
+    fn deref(&self) -> &NodeAttributes<'a, T> {
         &self.attributes
     }
 }
 
-impl<'a> DerefMut for ImageNodeBuilder<'a> {
-    fn deref_mut(&mut self) -> &mut NodeAttributes<'a> {
+impl<'a, T: Pos + AsBytes> DerefMut for ImageNodeBuilder<'a, T> {
+    fn deref_mut(&mut self) -> &mut NodeAttributes<'a, T> {
         &mut self.attributes
     }
 }
 
-impl<'a> ImageNodeBuilder<'a> {
+impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
     pub fn new(tex_views: Vec<(&'a wgpu::TextureView, bool)>, shader: &'a Shader) -> Self {
         ImageNodeBuilder {
             attributes: NodeAttributes {
                 view_size: (0.0, 0.0).into(),
+                vertices_and_indices: None,
                 uniform_buffers: vec![],
                 storage_buffers: vec![],
                 tex_views,
                 samplers: vec![],
+                dynamic_uniforms: vec![],
                 tex_rect: None,
                 corlor_format: None,
                 shader,
                 shader_stages: vec![],
             },
         }
+    }
+
+    pub fn with_vertices_and_indices(mut self, vertices_and_indices: (Vec<T>, Vec<u32>)) -> Self {
+        self.vertices_and_indices = Some(vertices_and_indices);
+        self
     }
 
     pub fn with_view_size(mut self, size: Size<f32>) -> Self {
@@ -65,12 +76,17 @@ impl<'a> ImageNodeBuilder<'a> {
         self
     }
 
+    pub fn with_dynamic_uniforms(mut self, uniforms: Vec<(&'a BufferObj, wgpu::ShaderStage)>) -> Self {
+        self.dynamic_uniforms = uniforms;
+        self
+    }
+
     pub fn with_storage_buffers(mut self, buffers: Vec<&'a BufferObj>) -> Self {
         self.storage_buffers = buffers;
         self
     }
 
-    pub fn with_tex_views(mut self, views: Vec<(&'a wgpu::TextureView, bool)>) -> Self {
+    pub fn with_tex_views_and_samplers(mut self, views: Vec<(&'a wgpu::TextureView, bool)>) -> Self {
         self.tex_views = views;
         self
     }
@@ -95,7 +111,7 @@ impl<'a> ImageNodeBuilder<'a> {
         self
     }
 
-    pub fn build<T: Pos>(self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> ImageViewNode {
+    pub fn build(self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> ImageViewNode {
         ImageViewNode::frome_attributes::<T>(self.attributes, device, encoder)
     }
 }
@@ -103,9 +119,10 @@ impl<'a> ImageNodeBuilder<'a> {
 #[allow(dead_code)]
 pub struct ImageViewNode {
     pub vertex_buf: BufferObj,
-    index_buf: wgpu::Buffer,
+    pub index_buf: wgpu::Buffer,
     index_count: usize,
     setting_node: BindingGroupSettingNode,
+    dynamic_node: Option<super::DynamicBindingGroupNode>,
     pipeline: wgpu::RenderPipeline,
     view_width: f32,
     view_height: f32,
@@ -114,8 +131,8 @@ pub struct ImageViewNode {
 
 #[allow(dead_code)]
 impl ImageViewNode {
-    fn frome_attributes<T: Pos>(
-        attributes: NodeAttributes, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+    fn frome_attributes<T: Pos + AsBytes>(
+        attributes: NodeAttributes<T>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
     ) -> Self {
         let corlor_format =
             if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
@@ -154,57 +171,58 @@ impl ImageViewNode {
         );
 
         // Create the vertex and index buffers
-        let factor = crate::utils::matrix_helper::fullscreen_factor(attributes.view_size);
-        let rect = Rect::new(2.0 * factor.1, 2.0 * factor.2, Position::zero());
-        let plane = Plane::new_by_rect(rect, 1, 1);
-        let (vertex_buf, index_data) = if let Some(rect) = attributes.tex_rect {
-            let (vertex_data, index_data) = plane.generate_vertices_by_texcoord2(rect, None);
-            let vertex_buf = BufferObj::create_buffer(
-                device,
-                encoder,
-                Some(&vertex_data.as_bytes()),
-                None,
-                wgpu::BufferUsage::VERTEX,
-            );
-            (vertex_buf, index_data)
+        let (vertex_buf, index_data) = if let Some(vi) = attributes.vertices_and_indices {
+            let vertex_buf =
+                BufferObj::create_buffer(device, encoder, Some(&vi.0.as_bytes()), None, wgpu::BufferUsage::VERTEX);
+            (vertex_buf, vi.1)
         } else {
-            let (vertex_data, index_data) = plane.generate_vertices();
-            let vertex_buf = BufferObj::create_buffer(
-                device,
-                encoder,
-                Some(&vertex_data.as_bytes()),
-                None,
-                wgpu::BufferUsage::VERTEX,
-            );
-            (vertex_buf, index_data)
+            let factor = crate::utils::matrix_helper::fullscreen_factor(attributes.view_size);
+            let rect = Rect::new(2.0 * factor.1, 2.0 * factor.2, Position::zero());
+            let plane = Plane::new_by_rect(rect, 1, 1);
+            let vi: (BufferObj, Vec<u32>) = if let Some(rect) = attributes.tex_rect {
+                let (vertex_data, index_data) = plane.generate_vertices_by_texcoord2(rect, None);
+                let vertex_buf = BufferObj::create_buffer(
+                    device,
+                    encoder,
+                    Some(&vertex_data.as_bytes()),
+                    None,
+                    wgpu::BufferUsage::VERTEX,
+                );
+
+                (vertex_buf, index_data)
+            } else {
+                let (vertex_data, index_data) = plane.generate_vertices();
+                let vertex_buf = BufferObj::create_buffer(
+                    device,
+                    encoder,
+                    Some(&vertex_data.as_bytes()),
+                    None,
+                    wgpu::BufferUsage::VERTEX,
+                );
+                (vertex_buf, index_data)
+            };
+            vi
         };
         let index_buf = device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
 
-        // let attri_descriptor1 = PosTex2::attri_descriptor(0);
-        // let attri_descriptor0 = PosTex::attri_descriptor(0);
-        // let pipeline_vertex_buffers = if let Some(_) = attributes.tex_rect {
-        //     [wgpu::VertexBufferDescriptor {
-        //         stride: std::mem::size_of::<PosTex2>() as wgpu::BufferAddress,
-        //         step_mode: wgpu::InputStepMode::Vertex,
-        //         attributes: &attri_descriptor1,
-        //     }]
-        // } else {
-        //     [wgpu::VertexBufferDescriptor {
-        //         stride: std::mem::size_of::<PosTex>() as wgpu::BufferAddress,
-        //         step_mode: wgpu::InputStepMode::Vertex,
-        //         attributes: &attri_descriptor0,
-        //     }]
-        // };
         let attri_descriptor = T::attri_descriptor(0);
         let pipeline_vertex_buffers = [wgpu::VertexBufferDescriptor {
             stride: std::mem::size_of::<T>() as wgpu::BufferAddress,
             step_mode: wgpu::InputStepMode::Vertex,
             attributes: &attri_descriptor,
         }];
-
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            bind_group_layouts: &[&setting_node.bind_group_layout],
-        });
+        let (dynamic_node, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
+            let node = super::DynamicBindingGroupNode::new(device, attributes.dynamic_uniforms);
+            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                bind_group_layouts: &[&setting_node.bind_group_layout, &node.bind_group_layout],
+            });
+            (Some(node), pipeline_layout)
+        } else {
+            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                bind_group_layouts: &[&setting_node.bind_group_layout],
+            });
+            (None, pipeline_layout)
+        };
         // Create the render pipeline
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &pipeline_layout,
@@ -243,6 +261,7 @@ impl ImageViewNode {
             index_buf,
             index_count: index_data.len(),
             setting_node,
+            dynamic_node,
             pipeline,
             clear_color: crate::utils::alpha_color(),
         }
@@ -262,25 +281,41 @@ impl ImageViewNode {
         };
     }
 
-    pub fn begin_render_pass(&self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder) {
+    pub fn begin_render_pass(
+        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp,
+    ) {
+        self.begin_rpass_by_offset(frame_view, encoder, load_op, 0);
+    }
+
+    pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
+        self.draw_rpass_by_offset(rpass, 0);
+    }
+
+    pub fn begin_rpass_by_offset(
+        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp,
+        offset_index: u32,
+    ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: frame_view,
                 resolve_target: None,
-                load_op: wgpu::LoadOp::Clear,
+                load_op,
                 store_op: wgpu::StoreOp::Store,
                 clear_color: self.clear_color,
             }],
             depth_stencil_attachment: None,
         });
-        self.draw_render_pass(&mut rpass);
+        self.draw_rpass_by_offset(&mut rpass, offset_index);
     }
 
-    pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
+    pub fn draw_rpass_by_offset<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32) {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(self.index_buf.slice(..));
         rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
+        if let Some(node) = &self.dynamic_node {
+            rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);
+        }
         rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
     }
 }

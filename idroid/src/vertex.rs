@@ -7,6 +7,29 @@ pub trait Pos {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
+pub struct PosOnly {
+    pub pos: [f32; 3],
+}
+
+impl PosOnly {
+    #[allow(dead_code)]
+    pub fn new(pos: [f32; 3]) -> PosOnly {
+        PosOnly { pos }
+    }
+}
+
+impl Pos for PosOnly {
+    fn attri_descriptor(offset: u32) -> Vec<wgpu::VertexAttributeDescriptor> {
+        vec![wgpu::VertexAttributeDescriptor {
+            shader_location: offset + 0,
+            format: wgpu::VertexFormat::Float3,
+            offset: 0,
+        }]
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
 pub struct PosColor {
     pub pos: [f32; 3],
     pub color: [f32; 4],
