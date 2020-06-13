@@ -34,7 +34,6 @@ pub struct AppView {
     pub pixel_on_ndc_y: f32,
     // 一个像素在标准的设备空间中对应的量
     pub pixel_on_normal_ndc: f32,
-    
     pub maximum_frames: i32,
     pub callback_to_app: Option<extern "C" fn(arg: i32)>,
     pub temporary_directory: &'static str,
@@ -124,15 +123,19 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                 power_preference: wgpu::PowerPreference::Default,
                 compatible_surface: Some(surface),
             },
+            wgpu::UnsafeExtensions::disallow(),
             wgpu::BackendBit::METAL,
         )
         .await
         .unwrap();
+
+    let adapter_extensions = adapter.extensions();
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
-                extensions: wgpu::Extensions { anisotropic_filtering: false },
+                extensions: adapter_extensions & wgpu::Extensions::empty(),
                 limits: wgpu::Limits::default(),
+                shader_validation: true,
             },
             None,
         )

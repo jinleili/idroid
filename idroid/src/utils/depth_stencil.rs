@@ -37,10 +37,12 @@ pub fn create_attachment_descriptor<'a>(
     wgpu::RenderPassDepthStencilAttachmentDescriptor {
         attachment: depth_textue_view,
         depth_load_op: wgpu::LoadOp::Clear,
-        depth_store_op: wgpu::StoreOp::Clear,
+        depth_store_op: wgpu::StoreOp::Store,
+        depth_read_only: false,
         stencil_load_op: wgpu::LoadOp::Clear,
-        stencil_store_op: wgpu::StoreOp::Clear,
+        stencil_store_op: wgpu::StoreOp::Store,
         clear_depth: 1.0,
         clear_stencil: 0,
+        stencil_read_only: false,
     }
 }

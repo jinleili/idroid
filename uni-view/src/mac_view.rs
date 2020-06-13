@@ -69,15 +69,19 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                 power_preference: wgpu::PowerPreference::Default,
                 compatible_surface: Some(surface),
             },
+            wgpu::UnsafeExtensions::disallow(),
             wgpu::BackendBit::PRIMARY,
         )
         .await
         .unwrap();
+
+    let adapter_extensions = adapter.extensions();
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
-                extensions: wgpu::Extensions { anisotropic_filtering: false },
+                extensions: adapter_extensions & wgpu::Extensions::empty(),
                 limits: wgpu::Limits::default(),
+                shader_validation: true,
             },
             None,
         )

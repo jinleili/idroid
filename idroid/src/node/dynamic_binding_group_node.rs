@@ -21,6 +21,7 @@ impl DynamicBindingGroupNode {
                 binding: b_index,
                 visibility: buffer_obj.1,
                 ty: wgpu::BindingType::UniformBuffer { dynamic: true },
+                ..Default::default()
             });
             bingdings.push(wgpu::Binding {
                 binding: b_index,

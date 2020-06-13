@@ -10,12 +10,9 @@ crate-type = ["rlib", "staticlib"]
 # [target.'cfg(target_os = "android")'.lib]
 # crate-type = ["cdylib"]
 
-[features]
-default = []
-
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  rev = "d7abf5c38af5f3dc78f998200f906668a27dc39b"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  version = "0.5", rev = "554327a3d5bf596c9ca9514db5522287e69b9c18"  }
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 

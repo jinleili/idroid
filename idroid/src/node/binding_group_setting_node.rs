@@ -24,6 +24,7 @@ impl BindingGroupSettingNode {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
                 ty: wgpu::BindingType::UniformBuffer { dynamic: false },
+                ..Default::default()
             });
             bingdings.push(wgpu::Binding {
                 binding: b_index,
@@ -38,6 +39,7 @@ impl BindingGroupSettingNode {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
                 ty: wgpu::BindingType::StorageBuffer { dynamic: false, readonly: false },
+                ..Default::default()
             });
             bingdings.push(wgpu::Binding {
                 binding: b_index,
@@ -65,6 +67,7 @@ impl BindingGroupSettingNode {
                         dimension: wgpu::TextureViewDimension::D2,
                     }
                 },
+                ..Default::default()
             });
             bingdings
                 .push(wgpu::Binding { binding: b_index, resource: wgpu::BindingResource::TextureView(textures[i].0) });
@@ -76,6 +79,7 @@ impl BindingGroupSettingNode {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
                 ty: wgpu::BindingType::Sampler { comparison: false },
+                ..Default::default()
             });
             bingdings.push(wgpu::Binding { binding: b_index, resource: wgpu::BindingResource::Sampler(samplers[i]) });
             b_index += 1;

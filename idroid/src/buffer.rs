@@ -23,6 +23,7 @@ impl BufferObj {
                 wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST
             },
             label: None,
+            mapped_at_creation: false,
         });
         BufferObj { buffer, size }
     }
@@ -112,6 +113,7 @@ impl BufferObj {
                 size,
                 usage: usage | wgpu::BufferUsage::COPY_DST,
                 label: None,
+                mapped_at_creation: false,
             });
             encoder.copy_buffer_to_buffer(&temp_buffer, 0, &buffer, 0, size);
             BufferObj { buffer, size }
