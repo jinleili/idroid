@@ -36,13 +36,7 @@ pub fn create_attachment_descriptor<'a>(
     // this is commonly the case for depth buffers and MSAA targets.
     wgpu::RenderPassDepthStencilAttachmentDescriptor {
         attachment: depth_textue_view,
-        depth_load_op: wgpu::LoadOp::Clear,
-        depth_store_op: wgpu::StoreOp::Store,
-        depth_read_only: false,
-        stencil_load_op: wgpu::LoadOp::Clear,
-        stencil_store_op: wgpu::StoreOp::Store,
-        clear_depth: 1.0,
-        clear_stencil: 0,
-        stencil_read_only: false,
+        depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Clear(1.0), store: false }),
+        stencil_ops: None,
     }
 }

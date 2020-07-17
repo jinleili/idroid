@@ -7,6 +7,8 @@ use shaderc::ShaderKind;
 #[cfg(target_os = "ios")]
 use std::io::Read;
 
+use wgpu::util::{make_spirv, WordAligned};
+
 // 所有 GL_ 打头的宏名称都是 glsl 保留的，不能自定义
 const SHADER_VERSION_GL: &str = "#version 450\n";
 const SHADER_IMPORT: &str = "#include ";
@@ -33,18 +35,18 @@ impl Shader {
     #[cfg(target_os = "ios")]
     pub fn new_by_compute(name: &str, device: &wgpu::Device, _base_path: &str) -> Self {
         let bytes = generate_shader_source(name, "comp");
-        let module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&bytes[..])).unwrap());
+        let module = device.create_shader_module(make_spirv(&bytes));
         Shader { vs_module: module, fs_module: None }
     }
 
     #[cfg(not(target_os = "ios"))]
     pub fn new_by_compute(name: &str, device: &wgpu::Device, base_path: &str) -> Self {
         let binary_result = generate_shader_source(name, ShaderKind::Compute, &base_path);
-        Shader::shader_by_bytes(binary_result.as_binary(), device)
+        Shader::shader_by_bytes(binary_result.as_binary_u8(), device)
     }
 
-    fn shader_by_bytes(bytes: &[u32], device: &wgpu::Device) -> Self {
-        let module = device.create_shader_module(bytes);
+    fn shader_by_bytes(bytes: &[u8], device: &wgpu::Device) -> Self {
+        let module = device.create_shader_module(make_spirv(bytes));
         Shader { vs_module: module, fs_module: None }
     }
 
@@ -71,8 +73,8 @@ pub fn load_general_glsl(
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_bytes = generate_shader_source(name, "vs");
     let fs_bytes = generate_shader_source(name, "fs");
-    let vs_module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&vs_bytes[..])).unwrap());
-    let fs_module = device.create_shader_module(&wgpu::read_spirv(std::io::Cursor::new(&fs_bytes[..])).unwrap());
+    let vs_module = device.create_shader_module(make_spirv(&vs_bytes));
+    let fs_module = device.create_shader_module(make_spirv(&fs_bytes));
 
     (vs_module, fs_module)
 }
@@ -96,8 +98,8 @@ pub fn load_general_glsl(
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_binary = generate_shader_source(name, ShaderKind::Vertex, &base_path);
     let fs_binary = generate_shader_source(name, ShaderKind::Fragment, &base_path);
-    let vs_module = device.create_shader_module(vs_binary.as_binary());
-    let fs_module = device.create_shader_module(fs_binary.as_binary());
+    let vs_module = device.create_shader_module(make_spirv(vs_binary.as_binary_u8()));
+    let fs_module = device.create_shader_module(make_spirv(fs_binary.as_binary_u8()));
 
     (vs_module, fs_module)
 }
@@ -129,14 +131,6 @@ fn generate_shader_source(name: &str, ty: ShaderKind, base_path: &str) -> shader
     let mut compiler = shaderc::Compiler::new().unwrap();
     let options = shaderc::CompileOptions::new().unwrap();
     let binary_result = compiler.compile_into_spirv(&shader_source, ty, "shader.glsl", "main", Some(&options)).unwrap();
-
-    // print spirv text
-    // let binary_result2 = compiler.compile_into_spirv_assembly(
-    //     &shader_source, ty, "shader.glsl", "main", Some(&options)).unwrap();
-    // println!("spirv to text:\n ");
-    // for line in binary_result2.as_text().lines() {
-    //     println!("{:?}", line );
-    // }
 
     binary_result
 }

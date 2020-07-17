@@ -14,19 +14,17 @@ impl BindingGroupSettingNode {
         textures: Vec<(&wgpu::TextureView, bool)>, samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
-
-        let mut bingdings: Vec<wgpu::Binding> = vec![];
+        let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
 
         let mut b_index = 0_u32;
         for i in 0..uniforms.len() {
             let buffer_obj = uniforms[i];
-            layouts.push(wgpu::BindGroupLayoutEntry {
-                binding: b_index,
-                visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::UniformBuffer { dynamic: false },
-                ..Default::default()
-            });
-            bingdings.push(wgpu::Binding {
+            layouts.push(wgpu::BindGroupLayoutEntry::new(
+                b_index,
+                visibilitys[b_index as usize],
+                wgpu::BindingType::UniformBuffer { dynamic: true, min_binding_size: wgpu::BufferSize::new(4) },
+            ));
+            entries.push(wgpu::BindGroupEntry {
                 binding: b_index,
                 resource: wgpu::BindingResource::Buffer(buffer_obj.buffer.slice(..)),
             });
@@ -35,13 +33,16 @@ impl BindingGroupSettingNode {
 
         for i in 0..inout_buffers.len() {
             let buffer_obj = inout_buffers[i];
-            layouts.push(wgpu::BindGroupLayoutEntry {
-                binding: b_index,
-                visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::StorageBuffer { dynamic: false, readonly: false },
-                ..Default::default()
-            });
-            bingdings.push(wgpu::Binding {
+            layouts.push(wgpu::BindGroupLayoutEntry::new(
+                b_index,
+                visibilitys[b_index as usize],
+                wgpu::BindingType::StorageBuffer {
+                    dynamic: false,
+                    readonly: false,
+                    min_binding_size: wgpu::BufferSize::new(256),
+                },
+            ));
+            entries.push(wgpu::BindGroupEntry {
                 binding: b_index,
                 resource: wgpu::BindingResource::Buffer(buffer_obj.buffer.slice(..)),
             });
@@ -50,12 +51,11 @@ impl BindingGroupSettingNode {
 
         for i in 0..textures.len() {
             let is_storage_texture = textures[i].1;
-            layouts.push(wgpu::BindGroupLayoutEntry {
-                binding: b_index,
-                visibility: visibilitys[b_index as usize],
-                ty: if is_storage_texture {
+            layouts.push(wgpu::BindGroupLayoutEntry::new(
+                b_index,
+                visibilitys[b_index as usize],
+                if is_storage_texture {
                     wgpu::BindingType::StorageTexture {
-                        component_type: wgpu::TextureComponentType::Float,
                         dimension: wgpu::TextureViewDimension::D2,
                         readonly: false,
                         format: wgpu::TextureFormat::Rgb10a2Unorm,
@@ -67,30 +67,31 @@ impl BindingGroupSettingNode {
                         dimension: wgpu::TextureViewDimension::D2,
                     }
                 },
-                ..Default::default()
+            ));
+            entries.push(wgpu::BindGroupEntry {
+                binding: b_index,
+                resource: wgpu::BindingResource::TextureView(textures[i].0),
             });
-            bingdings
-                .push(wgpu::Binding { binding: b_index, resource: wgpu::BindingResource::TextureView(textures[i].0) });
             b_index += 1;
         }
 
         for i in 0..samplers.len() {
-            layouts.push(wgpu::BindGroupLayoutEntry {
-                binding: b_index,
-                visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::Sampler { comparison: false },
-                ..Default::default()
-            });
-            bingdings.push(wgpu::Binding { binding: b_index, resource: wgpu::BindingResource::Sampler(samplers[i]) });
+            layouts.push(wgpu::BindGroupLayoutEntry::new(
+                b_index,
+                visibilitys[b_index as usize],
+                wgpu::BindingType::Sampler { comparison: false },
+            ));
+            entries
+                .push(wgpu::BindGroupEntry { binding: b_index, resource: wgpu::BindingResource::Sampler(samplers[i]) });
             b_index += 1;
         }
 
         let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &layouts, label: None });
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { entries: &layouts, label: None });
 
         let bind_group: wgpu::BindGroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
-            bindings: &bingdings,
+            entries: &entries,
             label: None,
         });
 

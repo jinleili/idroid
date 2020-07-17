@@ -61,7 +61,7 @@ impl AppView {
             // 在移动端上，这个呈现模式最高效
             present_mode: wgpu::PresentMode::Fifo,
         };
-        let instance = wgpu::Instance::new();
+        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
         let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
 
         let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
@@ -123,22 +123,18 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
 
 async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
     let adapter = instance
-        .request_adapter(
-            &wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::Default,
-                compatible_surface: Some(surface),
-            },
-            wgpu::UnsafeExtensions::disallow(),
-            wgpu::BackendBit::METAL,
-        )
+        .request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::Default,
+            compatible_surface: Some(surface),
+        })
         .await
         .unwrap();
 
-    let adapter_extensions = adapter.extensions();
+    let adapter_features = adapter.features();
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
-                extensions: adapter_extensions & wgpu::Extensions::empty(),
+                features: adapter_features,
                 limits: wgpu::Limits::default(),
                 shader_validation: true,
             },

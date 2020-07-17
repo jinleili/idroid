@@ -234,11 +234,13 @@ impl ImageViewNode {
             let node = super::DynamicBindingGroupNode::new(device, attributes.dynamic_uniforms);
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 bind_group_layouts: &[&setting_node.bind_group_layout, &node.bind_group_layout],
+                push_constant_ranges: &[],
             });
             (Some(node), pipeline_layout)
         } else {
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 bind_group_layouts: &[&setting_node.bind_group_layout],
+                push_constant_ranges: &[],
             });
             (None, pipeline_layout)
         };
@@ -305,7 +307,7 @@ impl ImageViewNode {
     }
 
     pub fn begin_render_pass(
-        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp,
+        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
     ) {
         self.begin_rpass_by_offset(frame_view, encoder, load_op, 0);
     }
@@ -319,16 +321,14 @@ impl ImageViewNode {
     }
 
     pub fn begin_rpass_by_offset(
-        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp,
+        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
         offset_index: u32,
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: frame_view,
                 resolve_target: None,
-                load_op,
-                store_op: wgpu::StoreOp::Store,
-                clear_color: self.clear_color,
+                ops: wgpu::Operations { load: load_op, store: true },
             }],
             depth_stencil_attachment: None,
         });
