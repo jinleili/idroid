@@ -46,9 +46,9 @@ pub fn fullscreen_factor(viewport_size: Size<f32>) -> (f32, f32, f32) {
     // 缩放到贴合屏幕
     //
     // 移动近裁剪平面,屏幕上的投影并不会缩放,
-    // 因为虽然物理在裁剪平面上的看起来投影随之缩放,但裁剪平面本身也在随之缩放
+    // 因为虽然模型对象在裁剪平面上看起来投影随之缩放,但裁剪平面本身也在随之缩放
     // 相当于是 裁剪平面与其上的投影在整体缩放, 而裁剪平面始终是等于屏幕空间平面的, 所以映射到屏幕上就是没有缩放
-    // 满屏效果: 利用 fovy 计算 tan (近裁剪平面 x | y 与 camera 原点的距离之比) 得出 z 轴平移距离
+    // 满屏效果: 默认 camera 在原点，利用 fovy 计算 tan (近裁剪平面 x | y 与 camera 原点的距离之比) 得出 z 轴平移距离
     // 屏幕 h > w 时，才需要计算 ratio, w > h 时， ration = 1
     let ratio =
         if viewport_size.height > viewport_size.width { viewport_size.height / viewport_size.width } else { 1.0 };

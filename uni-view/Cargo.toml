@@ -1,6 +1,6 @@
 [package]
 name = "uni-view"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Li Jinlei <grenlight@icloud.com>"]
 edition = "2018"
 

@@ -40,6 +40,11 @@ pub struct AppView {
     pub library_directory: &'static str,
 }
 
+// 标记为可以在线程间安全的传递不可变引用
+// 默认情况下， *mut Object 会导致在 async fn 中报错：
+// within `uni_view::app_view::AppView`, the trait `std::marker::Sync` is not implemented for `*mut objc::runtime::Object`
+unsafe impl Sync for AppView {}
+
 impl AppView {
     pub fn new(obj: AppViewObj) -> Self {
         let scale_factor = get_scale_factor(obj.view);

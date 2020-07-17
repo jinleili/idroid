@@ -1,6 +1,6 @@
 [package]
 name = "idroid"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["li jinlei <grenlight@icloud.com>"]
 edition = "2018"
 
@@ -17,7 +17,7 @@ wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  version = "0.5", rev = "554
 uni-view = { path="../uni-view" }
 
 nalgebra-glm = "*"
-image = "0.23.2"
+image = "0.23.6"
 lazy_static = "*"
 zerocopy = "0.3"
 futures = "0.3"

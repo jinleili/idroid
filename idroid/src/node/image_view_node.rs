@@ -21,6 +21,7 @@ pub struct NodeAttributes<'a, T: Pos> {
 
     pub tex_rect: Option<crate::math::Rect>,
     pub corlor_format: Option<wgpu::TextureFormat>,
+    pub use_depth_stencil: bool,
     pub shader: &'a Shader,
     pub shader_stages: Vec<wgpu::ShaderStage>,
 }
@@ -55,6 +56,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
                 dynamic_uniforms: vec![],
                 tex_rect: None,
                 corlor_format: None,
+                use_depth_stencil: false,
                 shader,
                 shader_stages: vec![],
             },
@@ -106,6 +108,11 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
+    pub fn with_use_depth_stencil(mut self, bl: bool) -> Self {
+        self.use_depth_stencil = bl;
+        self
+    }
+
     pub fn with_shader_states(mut self, states: Vec<wgpu::ShaderStage>) -> Self {
         self.shader_stages = states;
         self
@@ -141,7 +148,9 @@ impl ImageViewNode {
             attributes.shader_stages
         } else {
             let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
-            for _ in 0..(attributes.uniform_buffers.len()
+            let uniform_buffers_len =
+                if attributes.uniform_buffers.len() > 0 { attributes.uniform_buffers.len() } else { 1 };
+            for _ in 0..(uniform_buffers_len
                 + attributes.storage_buffers.len()
                 + attributes.tex_views.len()
                 + attributes.samplers.len())
@@ -161,9 +170,19 @@ impl ImageViewNode {
         } else {
             vec![]
         };
+        // 如果没有设置 mvp, 且设置了 view_size, 则设置一个全屏的 mvp
+        let mut mvp_buf = BufferObj::create_uniform_buffer(device, encoder, &MVPUniform::zero());
+        let uniform_buffers = if attributes.uniform_buffers.len() == 0 && attributes.view_size.width > 0.0 {
+            let (p_matrix, vm_matrix, _factor) = crate::matrix_helper::perspective_mvp(attributes.view_size);
+            let mvp = MVPUniform { mvp_matrix: (p_matrix * vm_matrix).into() };
+            mvp_buf = BufferObj::create_uniform_buffer(device, encoder, &mvp);
+            vec![&mvp_buf]
+        } else {
+            attributes.uniform_buffers
+        };
         let setting_node = BindingGroupSettingNode::new(
             device,
-            attributes.uniform_buffers,
+            uniform_buffers,
             attributes.storage_buffers,
             attributes.tex_views,
             new_samplers,
@@ -244,7 +263,11 @@ impl ImageViewNode {
                 write_mask: wgpu::ColorWrite::ALL,
             }],
             // ??????
-            depth_stencil_state: None,
+            depth_stencil_state: if attributes.use_depth_stencil {
+                Some(crate::depth_stencil::create_state_descriptor())
+            } else {
+                None
+            },
             vertex_state: wgpu::VertexStateDescriptor {
                 index_format: wgpu::IndexFormat::Uint32,
                 vertex_buffers: &pipeline_vertex_buffers,
@@ -288,7 +311,11 @@ impl ImageViewNode {
     }
 
     pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
-        self.draw_rpass_by_offset(rpass, 0);
+        self.draw_rpass_by_offset(rpass, 0, 1);
+    }
+
+    pub fn draw_by_instance_count<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>, instance_count: u32) {
+        self.draw_rpass_by_offset(rpass, 0, instance_count);
     }
 
     pub fn begin_rpass_by_offset(
@@ -305,10 +332,12 @@ impl ImageViewNode {
             }],
             depth_stencil_attachment: None,
         });
-        self.draw_rpass_by_offset(&mut rpass, offset_index);
+        self.draw_rpass_by_offset(&mut rpass, offset_index, 1);
     }
 
-    pub fn draw_rpass_by_offset<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32) {
+    pub fn draw_rpass_by_offset<'a, 'b: 'a>(
+        &'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32, instance_count: u32,
+    ) {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(self.index_buf.slice(..));
@@ -316,6 +345,6 @@ impl ImageViewNode {
         if let Some(node) = &self.dynamic_node {
             rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);
         }
-        rpass.draw_indexed(0..self.index_count as u32, 0, 0..1);
+        rpass.draw_indexed(0..self.index_count as u32, 0, 0..instance_count);
     }
 }

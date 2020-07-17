@@ -1,4 +1,6 @@
 use super::view_size::ViewSize;
+use super::Size;
+
 use nalgebra_glm as glm;
 
 #[derive(Copy, Clone, Debug)]
@@ -94,6 +96,20 @@ impl Position {
 
     pub fn into_vec2(self) -> glm::TVec2<f32> {
         glm::TVec2::new(self.x, self.y)
+    }
+
+    // 将像素坐标转换成NDC空间中的坐标
+    // 这个空间可能不是当前可见视口，需要传入实际 reander target 的尺寸
+    pub fn get_std_coord(&self, viewport_size: Size<f32>) -> Self {
+        let half_w = viewport_size.width / 2.0;
+        let half_h = viewport_size.height / 2.0;
+        // 像素在NDC空间对应的值
+        let x = (self.x - half_w) / half_w;
+        let mut y = (self.y - half_h) / half_h;
+        // 反转 y 坐标
+        y *= -1.0;
+
+        Position::new(x, y)
     }
 }
 

@@ -9,6 +9,14 @@ pub struct MVPUniform {
     pub mvp_matrix: [[f32; 4]; 4],
 }
 
+impl MVPUniform {
+    pub fn zero() -> Self {
+        MVPUniform {
+            mvp_matrix: [[0.0; 4]; 4]
+        }
+    }
+}
+
 pub struct MVPUniformObj {
     pub buffer: BufferObj,
     view_width: f32,
