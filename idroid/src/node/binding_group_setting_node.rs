@@ -16,13 +16,15 @@ impl BindingGroupSettingNode {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
 
+        // 关于 min_binding_size
+        // https://gpuweb.github.io/gpuweb/#dom-gpubindgrouplayoutentry-minbufferbindingsize
         let mut b_index = 0_u32;
         for i in 0..uniforms.len() {
             let buffer_obj = uniforms[i];
             layouts.push(wgpu::BindGroupLayoutEntry::new(
                 b_index,
                 visibilitys[b_index as usize],
-                wgpu::BindingType::UniformBuffer { dynamic: true, min_binding_size: wgpu::BufferSize::new(4) },
+                wgpu::BindingType::UniformBuffer { dynamic: false, min_binding_size: wgpu::BufferSize::new(0) },
             ));
             entries.push(wgpu::BindGroupEntry {
                 binding: b_index,
@@ -39,7 +41,7 @@ impl BindingGroupSettingNode {
                 wgpu::BindingType::StorageBuffer {
                     dynamic: false,
                     readonly: false,
-                    min_binding_size: wgpu::BufferSize::new(256),
+                    min_binding_size: wgpu::BufferSize::new(0),
                 },
             ));
             entries.push(wgpu::BindGroupEntry {
