@@ -12,7 +12,7 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  version = "0.5", rev = "d0825a219511c28bf74f8cbef9056b55fde4e04e"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  version = "0.5", rev = "d91d046c0a2b75aec94006a1bbeee2955b7d9da6"  }
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 

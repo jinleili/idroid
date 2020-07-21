@@ -7,7 +7,7 @@ use shaderc::ShaderKind;
 #[cfg(target_os = "ios")]
 use std::io::Read;
 
-use wgpu::util::{make_spirv, WordAligned};
+use wgpu::util::{make_spirv};
 
 // 所有 GL_ 打头的宏名称都是 glsl 保留的，不能自定义
 const SHADER_VERSION_GL: &str = "#version 450\n";

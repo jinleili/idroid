@@ -21,7 +21,7 @@ impl DynamicBindingGroupNode {
                 buffer_obj.1,
                 wgpu::BindingType::UniformBuffer { dynamic: true, min_binding_size: wgpu::BufferSize::new(0) },
             ));
-            // 对于动态 uniform buffer, 必须指定 buffer 大小
+            // 对于动态 uniform buffer, 必须指定 buffer slice 大小
             // make sure that in your BindingResource::Buffer, you're slicing with .slice(..size_of::<Whatever>() as BufferAddress)
             // and not .slice(..)
             // for dynamic uniform buffers, BindingResource::Buffer specifies a "window" into the buffer that is then offset by your dynamic offset value
@@ -30,7 +30,6 @@ impl DynamicBindingGroupNode {
                 resource: wgpu::BindingResource::Buffer(buffer_obj.0.buffer.slice(..256)),
             });
             b_index += 1;
-            println!("BindingResource::Buffer: {}", buffer_obj.0.size);
         }
         let bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { entries: &layouts, label: None });
