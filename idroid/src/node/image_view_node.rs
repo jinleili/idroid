@@ -2,9 +2,8 @@ use crate::geometry::plane::Plane;
 use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSettingNode;
 use crate::shader::Shader;
-use crate::vertex::{Pos, PosTex, PosTex2};
-use crate::{BufferObj, MVPUniform, MVPUniformObj};
-use nalgebra_glm as glm;
+use crate::vertex::{Pos};
+use crate::{BufferObj, MVPUniform};
 
 use std::ops::{Deref, DerefMut};
 use zerocopy::AsBytes;
