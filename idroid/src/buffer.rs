@@ -1,3 +1,4 @@
+use wgpu::util::DeviceExt;
 use zerocopy::AsBytes;
 
 pub struct BufferObj {
@@ -42,21 +43,15 @@ impl BufferObj {
         BufferObj::create_buffer(device, encoder, Some(slice), None, wgpu::BufferUsage::UNIFORM)
     }
 
-    pub fn update_buffer_immediately<T>(&self, device: &wgpu::Device, queue: &wgpu::Queue, data: &T)
-    where
-        T: 'static + AsBytes + Copy,
-    {
-        let temp_buf = device.create_buffer_with_data(data.as_bytes(), wgpu::BufferUsage::COPY_SRC);
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
-        queue.submit(Some(encoder.finish()));
-    }
-
     pub fn update_buffer<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)
     where
         T: 'static + AsBytes + Copy,
     {
-        let temp_buf = device.create_buffer_with_data(data.as_bytes(), wgpu::BufferUsage::COPY_SRC);
+        let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Temp Buffer"),
+            contents: data.as_bytes(),
+            usage: wgpu::BufferUsage::COPY_SRC,
+        });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
 
@@ -64,7 +59,11 @@ impl BufferObj {
     where
         T: 'static + AsBytes + Copy,
     {
-        let temp_buf = device.create_buffer_with_data(slice.as_bytes(), wgpu::BufferUsage::COPY_SRC);
+        let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Temp Buffer"),
+            contents: slice.as_bytes(),
+            usage: wgpu::BufferUsage::COPY_SRC,
+        });
         let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
         queue.submit(Some(encoder.finish()));
@@ -84,7 +83,11 @@ impl BufferObj {
         // 此处想要省掉 staging_buffer, 只能使用 map_write 这个 future 接口：
         // You can also map buffers but that requires polling the device
         // 但是专家 @kvark 说不可行: (2020/04/30)Writing to buffers directly is not currently feasible since you can't have part of a buffer used by GPU when changing it on CPU
-        let temp_buf = device.create_buffer_with_data(slice.as_bytes(), wgpu::BufferUsage::COPY_SRC);
+        let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Temp Buffer"),
+            contents: slice.as_bytes(),
+            usage: wgpu::BufferUsage::COPY_SRC,
+        });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
 
@@ -105,17 +108,25 @@ impl BufferObj {
         // 移除staging buffer
         // 移动GPU通常是统一内存架构。这一内存架构下，CPU可以直接访问GPU所使用的内存
         if cfg!(any(target_os = "ios", target_os = "android")) {
-            let buffer = device.create_buffer_with_data(data, usage | wgpu::BufferUsage::COPY_DST);
+             let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("New Buffer"),
+                contents: data,
+                usage: usage | wgpu::BufferUsage::COPY_DST,
+            });
             BufferObj { buffer, size }
         } else {
-            let temp_buffer = device.create_buffer_with_data(data, wgpu::BufferUsage::COPY_SRC);
+            let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Temp Buffer"),
+                contents: data,
+                usage:  usage | wgpu::BufferUsage::COPY_SRC,
+            });
             let buffer = device.create_buffer(&wgpu::BufferDescriptor {
                 size,
                 usage: usage | wgpu::BufferUsage::COPY_DST,
                 label: None,
                 mapped_at_creation: false,
             });
-            encoder.copy_buffer_to_buffer(&temp_buffer, 0, &buffer, 0, size);
+            encoder.copy_buffer_to_buffer(&temp_buf, 0, &buffer, 0, size);
             BufferObj { buffer, size }
         }
     }

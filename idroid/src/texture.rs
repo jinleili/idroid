@@ -34,7 +34,7 @@ pub fn from_path_for_usage(
         usage,
         label: None,
     });
-    let texture_view = texture.create_default_view();
+    let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
     app_view.queue.write_texture(
         wgpu::TextureCopyView { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
         &texels,
@@ -112,7 +112,7 @@ pub fn from_buffer_and_usage_write(
         usage,
         label: None,
     });
-    let texture_view = texture.create_default_view();
+    let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
 
     // BufferCopyView 必须 >= TextureCopyView
     encoder.copy_buffer_to_texture(
@@ -149,7 +149,7 @@ pub fn empty(
         usage,
         label: None,
     });
-    let texture_view = texture.create_default_view();
+    let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
     texture_view
 }
 

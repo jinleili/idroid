@@ -2,8 +2,9 @@ use crate::geometry::plane::Plane;
 use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSettingNode;
 use crate::shader::Shader;
-use crate::vertex::{Pos};
+use crate::vertex::Pos;
 use crate::{BufferObj, MVPUniform};
+use wgpu::util::DeviceExt;
 
 use std::ops::{Deref, DerefMut};
 use zerocopy::AsBytes;
@@ -221,7 +222,11 @@ impl ImageViewNode {
             };
             vi
         };
-        let index_buf = device.create_buffer_with_data(&index_data.as_bytes(), wgpu::BufferUsage::INDEX);
+        let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Index Buffer"),
+            contents: &index_data.as_bytes(),
+            usage: wgpu::BufferUsage::INDEX,
+        });
 
         let attri_descriptor = T::attri_descriptor(0);
         let pipeline_vertex_buffers = [wgpu::VertexBufferDescriptor {
@@ -232,12 +237,14 @@ impl ImageViewNode {
         let (dynamic_node, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
             let node = super::DynamicBindingGroupNode::new(device, attributes.dynamic_uniforms);
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: None,
                 bind_group_layouts: &[&setting_node.bind_group_layout, &node.bind_group_layout],
                 push_constant_ranges: &[],
             });
             (Some(node), pipeline_layout)
         } else {
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: None,
                 bind_group_layouts: &[&setting_node.bind_group_layout],
                 push_constant_ranges: &[],
             });
@@ -245,15 +252,13 @@ impl ImageViewNode {
         };
         // Create the render pipeline
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            layout: &pipeline_layout,
+            layout: Some(&pipeline_layout),
             vertex_stage: attributes.shader.vertex_stage(),
             fragment_stage: attributes.shader.fragment_stage(),
             rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: wgpu::CullMode::None,
-                depth_bias: 0,
-                depth_bias_slope_scale: 0.0,
-                depth_bias_clamp: 0.0,
+                ..Default::default()
             }),
             primitive_topology: wgpu::PrimitiveTopology::TriangleList,
             // primitive_topology: wgpu::PrimitiveTopology::LineList,

@@ -6,10 +6,7 @@ pub fn create_state_descriptor() -> wgpu::DepthStencilStateDescriptor {
         format: wgpu::TextureFormat::Depth32Float,
         depth_write_enabled: true,
         depth_compare: wgpu::CompareFunction::Less,
-        stencil_front: wgpu::StencilStateFaceDescriptor::IGNORE,
-        stencil_back: wgpu::StencilStateFaceDescriptor::IGNORE,
-        stencil_read_mask: 0,
-        stencil_write_mask: 0,
+        stencil: wgpu::StencilStateDescriptor::default(),
     }
 }
 
@@ -24,7 +21,7 @@ pub fn create_depth_texture_view(size: wgpu::Extent3d, device: &wgpu::Device) ->
         usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
         label: Some("depth buffer"),
     });
-    depth_texture.create_default_view()
+    depth_texture.create_view(&wgpu::TextureViewDescriptor::default())
 }
 
 #[allow(dead_code)]

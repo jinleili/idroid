@@ -23,11 +23,12 @@ impl ComputeNode {
         let setting_node = BindingGroupSettingNode::new(device, uniforms, inout_buffers, inout_tv, vec![], visibilitys);
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: None,
             bind_group_layouts: &[&setting_node.bind_group_layout],
             push_constant_ranges: &[],
         });
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            layout: &pipeline_layout,
+            layout: Some(&pipeline_layout),
             compute_stage: shader.cs_stage(),
         });
 

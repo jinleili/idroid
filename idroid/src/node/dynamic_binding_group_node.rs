@@ -16,11 +16,12 @@ impl DynamicBindingGroupNode {
         for i in 0..uniforms.len() {
             let buffer_obj = uniforms[i];
 
-            layouts.push(wgpu::BindGroupLayoutEntry::new(
-                b_index,
-                buffer_obj.1,
-                wgpu::BindingType::UniformBuffer { dynamic: true, min_binding_size: wgpu::BufferSize::new(0) },
-            ));
+            layouts.push(wgpu::BindGroupLayoutEntry {
+                binding: b_index,
+                visibility: buffer_obj.1,
+                ty: wgpu::BindingType::UniformBuffer { dynamic: true, min_binding_size: wgpu::BufferSize::new(0) },
+                count: None,
+            });
             // 对于动态 uniform buffer, 必须指定 buffer slice 大小
             // make sure that in your BindingResource::Buffer, you're slicing with .slice(..size_of::<Whatever>() as BufferAddress)
             // and not .slice(..)
