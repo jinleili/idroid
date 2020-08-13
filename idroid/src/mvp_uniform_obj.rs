@@ -33,7 +33,6 @@ impl MVPUniformObj {
         let (p_matrix, base_mv_matrix, _factor) = crate::utils::matrix_helper::perspective_mvp(viewport_size);
         let buffer = BufferObj::create_uniform_buffer(
             device,
-            encoder,
             &MVPUniform { mvp_matrix: (p_matrix * base_mv_matrix).into() },
         );
         MVPUniformObj {
