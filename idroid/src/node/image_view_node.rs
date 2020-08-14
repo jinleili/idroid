@@ -191,8 +191,13 @@ impl ImageViewNode {
 
         // Create the vertex and index buffers
         let (vertex_buf, index_data) = if let Some(vi) = attributes.vertices_and_indices {
-            let vertex_buf =
-                BufferObj::create_buffer(device, Some(&vi.0.as_bytes()), None, wgpu::BufferUsage::VERTEX, Some("vertex_buf"));
+            let vertex_buf = BufferObj::create_buffer(
+                device,
+                Some(&vi.0.as_bytes()),
+                None,
+                wgpu::BufferUsage::VERTEX,
+                Some("vertex_buf"),
+            );
             (vertex_buf, vi.1)
         } else {
             let factor = crate::utils::matrix_helper::fullscreen_factor(attributes.view_size);
@@ -252,6 +257,7 @@ impl ImageViewNode {
         };
         // Create the render pipeline
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("image_view pipeline"),
             layout: Some(&pipeline_layout),
             vertex_stage: attributes.shader.vertex_stage(),
             fragment_stage: attributes.shader.fragment_stage(),

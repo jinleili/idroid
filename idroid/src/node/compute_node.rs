@@ -28,6 +28,7 @@ impl ComputeNode {
             push_constant_ranges: &[],
         });
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+            label: None,
             layout: Some(&pipeline_layout),
             compute_stage: shader.cs_stage(),
         });
