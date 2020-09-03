@@ -27,10 +27,7 @@ impl BindingGroupSettingNode {
                 ty: wgpu::BindingType::UniformBuffer { dynamic: false, min_binding_size: wgpu::BufferSize::new(0) },
                 count: None,
             });
-            entries.push(wgpu::BindGroupEntry {
-                binding: b_index,
-                resource: wgpu::BindingResource::Buffer(buffer_obj.buffer.slice(..)),
-            });
+            entries.push(wgpu::BindGroupEntry { binding: b_index, resource: buffer_obj.buffer.as_entire_binding() });
             b_index += 1;
         }
 
@@ -46,10 +43,7 @@ impl BindingGroupSettingNode {
                 },
                 count: None,
             });
-            entries.push(wgpu::BindGroupEntry {
-                binding: b_index,
-                resource: wgpu::BindingResource::Buffer(buffer_obj.buffer.slice(..)),
-            });
+            entries.push(wgpu::BindGroupEntry { binding: b_index, resource: buffer_obj.buffer.as_entire_binding() });
             b_index += 1;
         }
 
