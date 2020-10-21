@@ -132,6 +132,12 @@ pub fn from_buffer_and_usage_write(
 pub fn empty(
     device: &wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d, usage: Option<wgpu::TextureUsage>,
 ) -> TextureView {
+    self::empty2(device, format, extent, usage).1
+}
+
+pub fn empty2(
+    device: &wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d, usage: Option<wgpu::TextureUsage>,
+) -> (Texture, TextureView) {
     let usage = if let Some(u) = usage {
         u
     } else {
@@ -150,7 +156,7 @@ pub fn empty(
         label: None,
     });
     let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-    texture_view
+    (texture, texture_view)
 }
 
 #[allow(dead_code)]
@@ -206,7 +212,7 @@ pub fn bilinear_sampler(device: &wgpu::Device) -> Sampler {
         min_filter: wgpu::FilterMode::Linear,
         mipmap_filter: wgpu::FilterMode::Nearest,
         // iOS 上设置了 compare 值会 crash
-        // compare: Some(&wgpu::CompareFunction::Always),
+        // compare: Some(wgpu::CompareFunction::LessEqual),
         // compare: wgpu::CompareFunction::Undefined,
         ..Default::default()
     })

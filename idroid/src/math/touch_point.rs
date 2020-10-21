@@ -1,6 +1,11 @@
 #[derive(Copy, Clone, Debug)]
 pub struct TouchPoint {
     pub pos: super::Position,
+    // 方位角
+    pub azimuth_angle: f32,
+    // 倾斜角
+    pub altitude_angle: f32,
+
     pub force: f32,
     // 基于压力及笔刷大小计算出来
     pub stamp: f32,
@@ -24,13 +29,15 @@ impl TouchPoint {
     pub fn new(pos: crate::math::Position, force: f32, interval: f32, stamp_scale: f32) -> Self {
         TouchPoint {
             pos,
+            azimuth_angle: 0.0,
+            altitude_angle: std::f32::consts::FRAC_PI_2,
             force,
             stamp: 0.0,
             distance: 0.0,
             interval,
             speed: 0.0,
             ty: -1,
-            stamp_scale: stamp_scale,
+            stamp_scale,
         }
     }
 
@@ -38,6 +45,8 @@ impl TouchPoint {
     pub fn new_end(pos: crate::math::Position) -> Self {
         TouchPoint {
             pos,
+            azimuth_angle: 0.0,
+            altitude_angle: std::f32::consts::FRAC_PI_2,
             force: 0.0,
             stamp: 0.0,
             distance: 0.0,
@@ -51,12 +60,23 @@ impl TouchPoint {
     // 通过上一点更新当前点的信息
     pub fn update(&mut self, last: &TouchPoint) {
         // let interval = self.timestamp - last.timestamp;
-        let dis = self.pos.distance(&last.pos);
-        if dis > 0.0 {
-            self.speed = dis / self.interval;
-            self.distance = dis;
+
+        // 结果的会做线性插值，speed 不由 dis 决定
+        // 收笔处直接继承上一个点的数据
+        if self.is_the_end() {
+            self.speed = last.speed;
+        } else {
+            let dis = self.pos.distance(&last.pos);
+            if dis > 0.0 {
+                self.speed = dis / self.interval;
+                self.distance = dis;
+            }
         }
         // println!("interval: {}, speed: {}", last.interval, self.speed);
+    }
+
+    pub fn set_to_end_type(&mut self) {
+        self.ty = 0;
     }
 
     // 是否为结束点

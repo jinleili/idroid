@@ -8,7 +8,7 @@ pub struct Point3D {
 }
 
 impl Point3D {
-    pub fn new(x: f32, y: f32, z:f32) -> Self {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
         Point3D { x, y, z }
     }
 

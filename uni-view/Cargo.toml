@@ -6,14 +6,14 @@ edition = "2018"
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.6",  rev = "1f7716e22ef700508795c4a7e65b4e57da6dfddb" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.6",  rev = "96b70210a87307158da37d0ee8ba69e47318aef8" }
 # wgpu = { path = "../../../wgpu-rs" }
 
 lazy_static = "*"
 futures = "0.3"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-winit = { version = "0.22.1", features = ["web-sys"] }
+winit = { version = "0.23", features = ["web-sys"] }
 raw-window-handle = "0.3"
 
 [target.'cfg(target_os = "ios")'.dependencies]

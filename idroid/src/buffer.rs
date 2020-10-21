@@ -15,7 +15,9 @@ impl BufferObj {
         BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsage::STORAGE, label)
     }
 
-    pub fn create_empty_storage_buffer(device: &wgpu::Device, size: wgpu::BufferAddress, can_read_back: bool, label: Option<&'static str>) -> Self {
+    pub fn create_empty_storage_buffer(
+        device: &wgpu::Device, size: wgpu::BufferAddress, can_read_back: bool, label: Option<&'static str>,
+    ) -> Self {
         let buffer = device.create_buffer(&wgpu::BufferDescriptor {
             size,
             usage: if can_read_back {

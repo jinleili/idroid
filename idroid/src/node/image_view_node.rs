@@ -255,6 +255,7 @@ impl ImageViewNode {
             });
             (None, pipeline_layout)
         };
+
         // Create the render pipeline
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("image_view pipeline"),

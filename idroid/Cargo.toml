@@ -12,7 +12,7 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  version = "0.6", rev = "1f7716e22ef700508795c4a7e65b4e57da6dfddb"  }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs",  version = "0.6", rev = "96b70210a87307158da37d0ee8ba69e47318aef8"  }
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 
@@ -25,7 +25,7 @@ futures = "0.3"
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
 shaderc = { path="../../shaderc-rs/shaderc-rs" }
 objc = "*"
-winit = { version = "0.22.2", features = ["web-sys"] }
+winit = { version = "0.23", features = ["web-sys"] }
 raw-window-handle = "0.3"
 
 [build-dependencies]
