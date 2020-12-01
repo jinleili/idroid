@@ -26,7 +26,7 @@ impl AppView {
         let physical = view.inner_size();
 
         let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             // supported list: [Bgra8Unorm, Bgra8Srgb, Rgba16Sfloat]
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: physical.width as u32,
@@ -65,7 +65,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
     let adapter = instance
         .request_adapter(&wgpu::RequestAdapterOptions {
             // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
-            power_preference: wgpu::PowerPreference::Default,
+            power_preference: wgpu::PowerPreference::default(),
             compatible_surface: Some(surface),
         })
         .await
@@ -75,6 +75,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
+                label: None,
                 features: adapter_features,
                 limits: wgpu::Limits {
                     max_bind_groups: 4,

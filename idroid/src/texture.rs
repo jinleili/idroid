@@ -127,7 +127,7 @@ pub fn from_buffer_and_usage_write(
     (texture_view, texture_extent, default_sampler(&app_view.device))
 }
 
-// empty texture as a OUTPUT_ATTACHMENT
+// empty texture as a RENDER_ATTACHMENT
 #[allow(dead_code)]
 pub fn empty(
     device: &wgpu::Device, format: wgpu::TextureFormat, extent: Extent3d, usage: Option<wgpu::TextureUsage>,
@@ -141,7 +141,7 @@ pub fn empty2(
     let usage = if let Some(u) = usage {
         u
     } else {
-        wgpu::TextureUsage::OUTPUT_ATTACHMENT
+        wgpu::TextureUsage::RENDER_ATTACHMENT
             | wgpu::TextureUsage::COPY_DST
             | wgpu::TextureUsage::SAMPLED
             | wgpu::TextureUsage::STORAGE

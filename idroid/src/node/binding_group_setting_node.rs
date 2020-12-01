@@ -24,7 +24,11 @@ impl BindingGroupSettingNode {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::UniformBuffer { dynamic: false, min_binding_size: wgpu::BufferSize::new(0) },
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: wgpu::BufferSize::new(0),
+                },
                 count: None,
             });
             entries.push(wgpu::BindGroupEntry { binding: b_index, resource: buffer_obj.buffer.as_entire_binding() });
@@ -36,9 +40,9 @@ impl BindingGroupSettingNode {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::StorageBuffer {
-                    dynamic: false,
-                    readonly: false,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: false },
+                    has_dynamic_offset: false,
                     min_binding_size: wgpu::BufferSize::new(0),
                 },
                 count: None,
@@ -54,15 +58,15 @@ impl BindingGroupSettingNode {
                 visibility: visibilitys[b_index as usize],
                 ty: if is_storage_texture {
                     wgpu::BindingType::StorageTexture {
-                        dimension: wgpu::TextureViewDimension::D2,
-                        readonly: false,
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        access: wgpu::StorageTextureAccess::WriteOnly,
                         format: wgpu::TextureFormat::Rgb10a2Unorm,
                     }
                 } else {
-                    wgpu::BindingType::SampledTexture {
-                        component_type: wgpu::TextureComponentType::Float,
+                    wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
                         multisampled: false,
-                        dimension: wgpu::TextureViewDimension::D2,
                     }
                 },
                 count: None,
@@ -78,7 +82,7 @@ impl BindingGroupSettingNode {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::Sampler { comparison: false },
+                ty: wgpu::BindingType::Sampler { comparison: false, filtering: true },
                 count: None,
             });
             entries

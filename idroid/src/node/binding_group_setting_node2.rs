@@ -11,7 +11,8 @@ pub struct BindingGroupSettingNode2 {
 impl BindingGroupSettingNode2 {
     pub fn new(
         device: &wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<(&BufferObj, bool, bool)>,
-        textures: Vec<(&wgpu::TextureView, bool, bool)>, samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
+        textures: Vec<(&wgpu::TextureView, bool, bool)>, samplers: Vec<&wgpu::Sampler>,
+        visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
@@ -24,7 +25,11 @@ impl BindingGroupSettingNode2 {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::UniformBuffer { dynamic: false, min_binding_size: wgpu::BufferSize::new(0) },
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: wgpu::BufferSize::new(0),
+                },
                 count: None,
             });
             entries.push(wgpu::BindGroupEntry { binding: b_index, resource: buffer_obj.buffer.as_entire_binding() });
@@ -36,9 +41,9 @@ impl BindingGroupSettingNode2 {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::StorageBuffer {
-                    dynamic: dynamic,
-                    readonly: readonly,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: readonly },
+                    has_dynamic_offset: dynamic,
                     min_binding_size: wgpu::BufferSize::new(0),
                 },
                 count: None,
@@ -56,15 +61,19 @@ impl BindingGroupSettingNode2 {
                 visibility: visibilitys[b_index as usize],
                 ty: if is_storage_texture {
                     wgpu::BindingType::StorageTexture {
-                        dimension: wgpu::TextureViewDimension::D2,
-                        readonly: is_readonly_or_multisampled,
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        access: if is_readonly_or_multisampled {
+                            wgpu::StorageTextureAccess::ReadOnly
+                        } else {
+                            wgpu::StorageTextureAccess::WriteOnly
+                        },
                         format: wgpu::TextureFormat::Rgb10a2Unorm,
                     }
                 } else {
-                    wgpu::BindingType::SampledTexture {
-                        component_type: wgpu::TextureComponentType::Float,
+                    wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
                         multisampled: is_readonly_or_multisampled,
-                        dimension: wgpu::TextureViewDimension::D2,
+                        view_dimension: wgpu::TextureViewDimension::D2,
                     }
                 },
                 count: None,
@@ -80,7 +89,7 @@ impl BindingGroupSettingNode2 {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::Sampler { comparison: false },
+                ty: wgpu::BindingType::Sampler { comparison: false, filtering: true },
                 count: None,
             });
             entries

@@ -54,7 +54,7 @@ impl AppView {
             height: (s.size.height as f32 * scale_factor) as u32,
         };
         let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: physical.width,
             height: physical.height,
@@ -124,7 +124,7 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
 async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
     let adapter = instance
         .request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::Default,
+            power_preference: wgpu::PowerPreference::default(),
             compatible_surface: Some(surface),
         })
         .await
@@ -134,6 +134,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
+                label: None,
                 features: adapter_features,
                 limits: wgpu::Limits {
                     max_bind_groups: 4,

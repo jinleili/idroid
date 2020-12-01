@@ -18,7 +18,7 @@ pub fn create_depth_texture_view(size: wgpu::Extent3d, device: &wgpu::Device) ->
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
         format: wgpu::TextureFormat::Depth32Float,
-        usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+        usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
         label: Some("depth buffer"),
     });
     depth_texture.create_view(&wgpu::TextureViewDescriptor::default())
