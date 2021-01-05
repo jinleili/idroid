@@ -35,7 +35,11 @@ impl Shader {
     #[cfg(target_os = "ios")]
     pub fn new_by_compute(name: &str, device: &wgpu::Device, _base_path: &str) -> Self {
         let bytes = generate_shader_source(name, "comp");
-        let module = device.create_shader_module(make_spirv(&bytes));
+        let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: make_spirv(bytes),
+            flags: wgpu::ShaderFlags::VALIDATION,
+        });
         Shader { vs_module: module, fs_module: None }
     }
 
@@ -46,7 +50,11 @@ impl Shader {
     }
 
     fn shader_by_bytes(bytes: &[u8], device: &wgpu::Device) -> Self {
-        let module = device.create_shader_module(make_spirv(bytes));
+        let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: make_spirv(bytes),
+            flags: wgpu::ShaderFlags::VALIDATION,
+        });
         Shader { vs_module: module, fs_module: None }
     }
 
@@ -98,8 +106,16 @@ pub fn load_general_glsl(
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_binary = generate_shader_source(name, ShaderKind::Vertex, &base_path);
     let fs_binary = generate_shader_source(name, ShaderKind::Fragment, &base_path);
-    let vs_module = device.create_shader_module(make_spirv(vs_binary.as_binary_u8()));
-    let fs_module = device.create_shader_module(make_spirv(fs_binary.as_binary_u8()));
+    let vs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: make_spirv(vs_binary.as_binary_u8()),
+        flags: wgpu::ShaderFlags::VALIDATION,
+    });
+    let fs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: make_spirv(fs_binary.as_binary_u8()),
+        flags: wgpu::ShaderFlags::VALIDATION,
+    });
 
     (vs_module, fs_module)
 }

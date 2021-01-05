@@ -142,7 +142,7 @@ impl ImageViewNode {
         attributes: NodeAttributes<T>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
     ) -> Self {
         let corlor_format =
-            if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
+            if let Some(format) = attributes.corlor_format { format } else { device.get_swap_chain_preferred_format() };
 
         let stages: Vec<wgpu::ShaderStage> = if attributes.shader_stages.len() > 0 {
             attributes.shader_stages
@@ -282,7 +282,7 @@ impl ImageViewNode {
                 None
             },
             vertex_state: wgpu::VertexStateDescriptor {
-                index_format: wgpu::IndexFormat::Uint32,
+                index_format: Some(wgpu::IndexFormat::Uint32),
                 vertex_buffers: &pipeline_vertex_buffers,
             },
             sample_count: 1,
@@ -336,6 +336,7 @@ impl ImageViewNode {
         offset_index: u32,
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: None,
             color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                 attachment: frame_view,
                 resolve_target: None,
@@ -351,7 +352,7 @@ impl ImageViewNode {
     ) {
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
-        rpass.set_index_buffer(self.index_buf.slice(..));
+        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint32);
         rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
         if let Some(node) = &self.dynamic_node {
             rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);

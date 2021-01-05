@@ -37,7 +37,7 @@ impl ComputeNode {
     }
 
     pub fn compute(&self, encoder: &mut wgpu::CommandEncoder) {
-        let mut cpass = encoder.begin_compute_pass();
+        let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
         self.dispatch(&mut cpass);
     }
 

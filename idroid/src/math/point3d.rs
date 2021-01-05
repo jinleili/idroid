@@ -44,6 +44,11 @@ impl Point3D {
     pub fn offset(&self, dx: f32, dy: f32, dz: f32) -> Self {
         Point3D::new(self.x + dx, self.y + dy, self.z + dz)
     }
+
+    // 模长
+    pub fn length(&self) -> f32 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
 }
 
 impl From<Point3D> for [f32; 3] {

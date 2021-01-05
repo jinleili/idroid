@@ -25,17 +25,17 @@ impl AppView {
         // let physical = view.inner_size().to_physical(scale_factor);
         let physical = view.inner_size();
 
+        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
+        let surface = unsafe { instance.create_surface(&view) };
+        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             // supported list: [Bgra8Unorm, Bgra8Srgb, Rgba16Sfloat]
-            format: wgpu::TextureFormat::Bgra8Unorm,
+            format: device.get_swap_chain_preferred_format(),
             width: physical.width as u32,
             height: physical.height as u32,
             present_mode: wgpu::PresentMode::Mailbox,
         };
-        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
-        let surface = unsafe { instance.create_surface(&view) };
-        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
@@ -89,7 +89,6 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     max_uniform_buffer_binding_size: 16384,
                     max_push_constant_size: 0,
                 },
-                shader_validation: true,
             },
             None,
         )

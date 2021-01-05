@@ -53,18 +53,20 @@ impl AppView {
             width: (s.size.width as f32 * scale_factor) as u32,
             height: (s.size.height as f32 * scale_factor) as u32,
         };
+        
+        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
+        let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
+
+        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
-            format: wgpu::TextureFormat::Bgra8Unorm,
+            // iOS 上这个纹理格式肯定是可以使用的： wgpu::TextureFormat::Bgra8Unorm
+            format: device.get_swap_chain_preferred_format(),
             width: physical.width,
             height: physical.height,
             // 在移动端上，这个呈现模式最高效
             present_mode: wgpu::PresentMode::Fifo,
         };
-        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
-        let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
-
-        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
         let pixel_on_ndc_y = 2.0 / physical.height as f32;
@@ -148,7 +150,6 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     max_uniform_buffer_binding_size: 16384,
                     max_push_constant_size: 0,
                 },
-                shader_validation: true,
             },
             None,
         )
