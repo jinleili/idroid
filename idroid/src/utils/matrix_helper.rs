@@ -30,7 +30,7 @@ pub fn perspective_fullscreen_mvp(viewport_size: Size<f32>) -> (glm::TMat4<f32>,
 
 // 外部调用者使用返回的 fullscreen_factor 参数缩放顶点坐标可实现填充整个视口
 pub fn perspective_mvp(viewport_size: Size<f32>) -> (glm::TMat4<f32>, glm::TMat4<f32>, (f32, f32)) {
-    let fovy: f32 = 75.0 / 180.0 * std::f32::consts::PI;
+    let fovy: f32 = 95.0 / 180.0 * std::f32::consts::PI;
     let radian: glm::TVec1<f32> = glm::vec1(fovy);
     let p_matrix: glm::TMat4<f32> =
         glm::perspective_fov(radian[0], viewport_size.width, viewport_size.height, 0.1, 1000.0);

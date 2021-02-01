@@ -8,6 +8,12 @@ use zerocopy::{AsBytes, FromBytes};
 pub struct MVPUniform {
     pub mvp_matrix: [[f32; 4]; 4],
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
+pub struct MVPUniform2 {
+    pub p_matrix: [[f32; 4]; 4],
+    pub mv_matrix: [[f32; 4]; 4],
+}
 
 impl MVPUniform {
     pub fn zero() -> Self {

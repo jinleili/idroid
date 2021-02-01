@@ -22,8 +22,8 @@ pub fn black_color() -> wgpu::Color {
 // 混合：https://vulkan.lunarg.com/doc/view/1.0.26.0/linux/vkspec.chunked/ch26s01.html
 // alpha_blend(), color_blend() 的配置为 @kvark 在 gitter 中推荐
 #[allow(dead_code)]
-pub fn alpha_blend() -> wgpu::BlendDescriptor {
-    wgpu::BlendDescriptor {
+pub fn alpha_blend() -> wgpu::BlendState {
+    wgpu::BlendState {
         src_factor: wgpu::BlendFactor::One,
         dst_factor: wgpu::BlendFactor::One,
         operation: wgpu::BlendOperation::Add,
@@ -31,8 +31,8 @@ pub fn alpha_blend() -> wgpu::BlendDescriptor {
 }
 
 #[allow(dead_code)]
-pub fn color_blend() -> wgpu::BlendDescriptor {
-    wgpu::BlendDescriptor {
+pub fn color_blend() -> wgpu::BlendState {
+    wgpu::BlendState {
         src_factor: wgpu::BlendFactor::SrcAlpha,
         dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
         operation: wgpu::BlendOperation::Add,
@@ -45,15 +45,15 @@ pub fn color_blend() -> wgpu::BlendDescriptor {
 // finalColor.rgb = newAlpha * newColor + (1 - newAlpha) * oldColor;
 // finalColor.a = newAlpha.a;
 #[allow(dead_code)]
-pub fn color_alpha_blend() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) {
+pub fn color_alpha_blend() -> (wgpu::BlendState, wgpu::BlendState) {
     (
-        wgpu::BlendDescriptor {
+        wgpu::BlendState {
             src_factor: wgpu::BlendFactor::SrcAlpha,
             dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
             operation: wgpu::BlendOperation::Add,
         },
         // 下边的 alpha_blend 能兼容 iOS
-        wgpu::BlendDescriptor {
+        wgpu::BlendState {
             src_factor: wgpu::BlendFactor::One,
             dst_factor: wgpu::BlendFactor::One,
             operation: wgpu::BlendOperation::Add,
@@ -64,14 +64,14 @@ pub fn color_alpha_blend() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) {
 // 简单的颜色叠加
 // 原理：https://www.jianshu.com/p/6d9a3f39bb53
 #[allow(dead_code)]
-pub fn color_blend_over() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) {
+pub fn color_blend_over() -> (wgpu::BlendState, wgpu::BlendState) {
     (
-        wgpu::BlendDescriptor {
+        wgpu::BlendState {
             src_factor: wgpu::BlendFactor::One,
             dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
             operation: wgpu::BlendOperation::Add,
         },
-        wgpu::BlendDescriptor {
+        wgpu::BlendState {
             src_factor: wgpu::BlendFactor::One,
             dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
             operation: wgpu::BlendOperation::Add,
@@ -81,14 +81,14 @@ pub fn color_blend_over() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) {
 
 // 颜色减法：灰色可叠加成黑色
 #[allow(dead_code)]
-pub fn color_blend_subtract() -> (wgpu::BlendDescriptor, wgpu::BlendDescriptor) {
+pub fn color_blend_subtract() -> (wgpu::BlendState, wgpu::BlendState) {
     (
-        wgpu::BlendDescriptor {
+        wgpu::BlendState {
             src_factor: wgpu::BlendFactor::One,
             dst_factor: wgpu::BlendFactor::One,
             operation: wgpu::BlendOperation::ReverseSubtract,
         },
-        wgpu::BlendDescriptor {
+        wgpu::BlendState {
             src_factor: wgpu::BlendFactor::One,
             dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha,
             operation: wgpu::BlendOperation::Add,

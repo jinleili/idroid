@@ -11,7 +11,7 @@ mod buffer;
 pub use buffer::BufferObj;
 
 mod mvp_uniform_obj;
-pub use mvp_uniform_obj::{MVPUniform, MVPUniformObj};
+pub use mvp_uniform_obj::{MVPUniform, MVPUniform2, MVPUniformObj};
 // mod dynamic_buffer;
 // pub use dynamic_buffer::DynamicBufferObj;
 

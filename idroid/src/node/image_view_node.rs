@@ -21,6 +21,7 @@ pub struct NodeAttributes<'a, T: Pos> {
 
     pub tex_rect: Option<crate::math::Rect>,
     pub corlor_format: Option<wgpu::TextureFormat>,
+    pub primitive_topology: wgpu::PrimitiveTopology,
     pub use_depth_stencil: bool,
     pub shader: &'a Shader,
     pub shader_stages: Vec<wgpu::ShaderStage>,
@@ -56,11 +57,17 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
                 dynamic_uniforms: vec![],
                 tex_rect: None,
                 corlor_format: None,
+                primitive_topology: wgpu::PrimitiveTopology::TriangleList,
                 use_depth_stencil: false,
                 shader,
                 shader_stages: vec![],
             },
         }
+    }
+
+    pub fn with_primitive_topology(mut self, primitive_topology: wgpu::PrimitiveTopology) -> Self {
+        self.primitive_topology = primitive_topology;
+        self
     }
 
     pub fn with_vertices_and_indices(mut self, vertices_and_indices: (Vec<T>, Vec<u32>)) -> Self {
@@ -142,7 +149,7 @@ impl ImageViewNode {
         attributes: NodeAttributes<T>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
     ) -> Self {
         let corlor_format =
-            if let Some(format) = attributes.corlor_format { format } else { device.get_swap_chain_preferred_format() };
+            if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
 
         let stages: Vec<wgpu::ShaderStage> = if attributes.shader_stages.len() > 0 {
             attributes.shader_stages
@@ -233,11 +240,10 @@ impl ImageViewNode {
             usage: wgpu::BufferUsage::INDEX,
         });
 
-        let attri_descriptor = T::attri_descriptor(0);
-        let pipeline_vertex_buffers = [wgpu::VertexBufferDescriptor {
-            stride: std::mem::size_of::<T>() as wgpu::BufferAddress,
+        let pipeline_vertex_buffers = [wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<T>() as wgpu::BufferAddress,
             step_mode: wgpu::InputStepMode::Vertex,
-            attributes: &attri_descriptor,
+            attributes: &T::vertex_attributes(0),
         }];
         let (dynamic_node, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
             let node = super::DynamicBindingGroupNode::new(device, attributes.dynamic_uniforms);
@@ -260,34 +266,35 @@ impl ImageViewNode {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("image_view pipeline"),
             layout: Some(&pipeline_layout),
-            vertex_stage: attributes.shader.vertex_stage(),
-            fragment_stage: attributes.shader.fragment_stage(),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+            vertex: wgpu::VertexState {
+                module: &attributes.shader.vs_module,
+                entry_point: "main",
+                buffers: &pipeline_vertex_buffers,
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &attributes.shader.fs_module.as_ref().unwrap(),
+                entry_point: "main",
+                targets: &[wgpu::ColorTargetState {
+                    format: corlor_format,
+                    color_blend: crate::utils::color_blend(),
+                    alpha_blend: crate::utils::alpha_blend(),
+                    write_mask: wgpu::ColorWrite::ALL,
+                }],
+            }),
+            primitive: wgpu::PrimitiveState {
+                topology: attributes.primitive_topology,
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: wgpu::CullMode::None,
+                polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
-            }),
-            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-            // primitive_topology: wgpu::PrimitiveTopology::LineList,
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: corlor_format,
-                color_blend: crate::utils::color_blend(),
-                alpha_blend: crate::utils::alpha_blend(),
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
+            },
             // ??????
-            depth_stencil_state: if attributes.use_depth_stencil {
-                Some(crate::depth_stencil::create_state_descriptor())
+            depth_stencil: if attributes.use_depth_stencil {
+                Some(crate::depth_stencil::create_state())
             } else {
                 None
             },
-            vertex_state: wgpu::VertexStateDescriptor {
-                index_format: Some(wgpu::IndexFormat::Uint32),
-                vertex_buffers: &pipeline_vertex_buffers,
-            },
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
+            multisample: wgpu::MultisampleState::default(),
         });
 
         ImageViewNode {

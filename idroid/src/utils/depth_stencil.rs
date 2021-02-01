@@ -1,12 +1,14 @@
 #[allow(dead_code)]
 
-// 获取 depth_stencil 状态描述符
-pub fn create_state_descriptor() -> wgpu::DepthStencilStateDescriptor {
-    wgpu::DepthStencilStateDescriptor {
+// 获取 depth_stencil 状态描述
+pub fn create_state() -> wgpu::DepthStencilState {
+    wgpu::DepthStencilState {
         format: wgpu::TextureFormat::Depth32Float,
         depth_write_enabled: true,
         depth_compare: wgpu::CompareFunction::Less,
-        stencil: wgpu::StencilStateDescriptor::default(),
+        stencil: wgpu::StencilState::default(),
+        bias: wgpu::DepthBiasState::default(),
+        clamp_depth: false,
     }
 }
 

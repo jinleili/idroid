@@ -37,7 +37,7 @@ impl Shader {
         let bytes = generate_shader_source(name, "comp");
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
-            source: make_spirv(bytes),
+            source: make_spirv(&bytes),
             flags: wgpu::ShaderFlags::VALIDATION,
         });
         Shader { vs_module: module, fs_module: None }
@@ -57,21 +57,6 @@ impl Shader {
         });
         Shader { vs_module: module, fs_module: None }
     }
-
-    pub fn vertex_stage(&self) -> wgpu::ProgrammableStageDescriptor {
-        wgpu::ProgrammableStageDescriptor { module: &self.vs_module, entry_point: "main" }
-    }
-
-    pub fn cs_stage(&self) -> wgpu::ProgrammableStageDescriptor {
-        wgpu::ProgrammableStageDescriptor { module: &self.vs_module, entry_point: "main" }
-    }
-
-    pub fn fragment_stage(&self) -> Option<wgpu::ProgrammableStageDescriptor> {
-        match &self.fs_module {
-            Some(fs_module) => Some(wgpu::ProgrammableStageDescriptor { module: fs_module, entry_point: "main" }),
-            None => None,
-        }
-    }
 }
 
 #[cfg(target_os = "ios")]
@@ -81,9 +66,17 @@ pub fn load_general_glsl(
 ) -> (wgpu::ShaderModule, wgpu::ShaderModule) {
     let vs_bytes = generate_shader_source(name, "vs");
     let fs_bytes = generate_shader_source(name, "fs");
-    let vs_module = device.create_shader_module(make_spirv(&vs_bytes));
-    let fs_module = device.create_shader_module(make_spirv(&fs_bytes));
 
+    let vs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: make_spirv(&vs_bytes),
+        flags: wgpu::ShaderFlags::VALIDATION,
+    });
+    let fs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: make_spirv(&fs_bytes),
+        flags: wgpu::ShaderFlags::VALIDATION,
+    });
     (vs_module, fs_module)
 }
 
@@ -99,6 +92,7 @@ fn generate_shader_source(name: &str, suffix: &str) -> Vec<u8> {
     spv
 }
 
+// wgpu-rs 0.7， glsl 着色器 ShaderFlags 只能设置为 default，否则无法通过 naga 的验证
 #[cfg(not(target_os = "ios"))]
 #[allow(dead_code)]
 pub fn load_general_glsl(
@@ -109,12 +103,12 @@ pub fn load_general_glsl(
     let vs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
         label: None,
         source: make_spirv(vs_binary.as_binary_u8()),
-        flags: wgpu::ShaderFlags::VALIDATION,
+        flags: wgpu::ShaderFlags::default(),
     });
     let fs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
         label: None,
         source: make_spirv(fs_binary.as_binary_u8()),
-        flags: wgpu::ShaderFlags::VALIDATION,
+        flags: wgpu::ShaderFlags::default(),
     });
 
     (vs_module, fs_module)

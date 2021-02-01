@@ -31,7 +31,9 @@ impl AppView {
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             // supported list: [Bgra8Unorm, Bgra8Srgb, Rgba16Sfloat]
-            format: device.get_swap_chain_preferred_format(),
+            // 使用 get_swap_chain_preferred_format() 渲染的画面是类似过暴的
+            // format: device.get_swap_chain_preferred_format(),
+            format: wgpu::TextureFormat::Bgra8Unorm,
             width: physical.width as u32,
             height: physical.height as u32,
             present_mode: wgpu::PresentMode::Mailbox,
@@ -87,7 +89,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     max_storage_textures_per_shader_stage: 8,
                     max_uniform_buffers_per_shader_stage: 12,
                     max_uniform_buffer_binding_size: 16384,
-                    max_push_constant_size: 0,
+                    max_push_constant_size: 16,
                 },
             },
             None,
