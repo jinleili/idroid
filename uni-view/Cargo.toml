@@ -13,7 +13,7 @@ lazy_static = "*"
 futures = "0.3"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-winit = { version = "0.23", features = ["web-sys"] }
+winit = { version = "0.24", features = ["web-sys"] }
 raw-window-handle = "0.3"
 
 [target.'cfg(target_os = "ios")'.dependencies]

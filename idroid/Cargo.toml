@@ -19,13 +19,13 @@ uni-view = { path="../uni-view" }
 nalgebra-glm = "*"
 image = "0.23"
 lazy_static = "*"
-zerocopy = "0.3"
+zerocopy = "0.4"
 futures = "0.3"
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
 shaderc = "0.7"
 objc = "*"
-winit = { version = "0.23.0", features = ["web-sys"] }
+winit = { version = "0.24", features = ["web-sys"] }
 raw-window-handle = "0.3"
 
 [build-dependencies]
