@@ -1,5 +1,5 @@
 use image::GenericImageView;
-use std::path::PathBuf;
+use std::{num::NonZeroU32, path::PathBuf};
 use wgpu::{Extent3d, Sampler, Texture, TextureView};
 
 #[allow(dead_code)]
@@ -23,7 +23,7 @@ pub fn from_path_for_usage(
 ) -> (wgpu::Texture, TextureView, Extent3d, Sampler) {
     let (texels, texture_extent) = load_from_path(path, is_gray_pic);
     let (format, channel_count) =
-        if is_gray_pic { (wgpu::TextureFormat::R8Unorm, 1) } else { (wgpu::TextureFormat::Rgba8Unorm, 4) };
+        if is_gray_pic { (wgpu::TextureFormat::R8Unorm, 1) } else { (wgpu::TextureFormat::Rgba8UnormSrgb, 4) };
 
     let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
@@ -36,12 +36,12 @@ pub fn from_path_for_usage(
     });
     let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
     app_view.queue.write_texture(
-        wgpu::TextureCopyView { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
+        wgpu::ImageCopyTexture { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
         &texels,
-        wgpu::TextureDataLayout {
+        wgpu::ImageDataLayout {
             offset: 0,
-            bytes_per_row: channel_count * texture_extent.width,
-            rows_per_image: texture_extent.height,
+            bytes_per_row: Some(NonZeroU32::new(channel_count * texture_extent.width).unwrap()),
+            rows_per_image: Some(NonZeroU32::new(texture_extent.height).unwrap()),
         },
         texture_extent,
     );
@@ -66,12 +66,12 @@ pub fn update_by_path(path: PathBuf, app_view: &crate::AppView, texture: &wgpu::
     let (texels, texture_extent) = load_from_path(path, is_gray_pic);
 
     app_view.queue.write_texture(
-        wgpu::TextureCopyView { texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
+        wgpu::ImageCopyTexture { texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
         &texels,
-        wgpu::TextureDataLayout {
+        wgpu::ImageDataLayout {
             offset: 0,
-            bytes_per_row: if is_gray_pic { 1 } else { 4 } * texture_extent.width,
-            rows_per_image: texture_extent.height,
+            bytes_per_row: Some(NonZeroU32::new(if is_gray_pic { 1 } else { 4 } * texture_extent.width).unwrap()),
+            rows_per_image: Some(NonZeroU32::new(texture_extent.height).unwrap()),
         },
         texture_extent,
     );
@@ -84,11 +84,11 @@ fn load_from_path(path: PathBuf, is_gray_pic: bool) -> (Vec<u8>, wgpu::Extent3d)
     };
 
     let img_load = image::load_from_memory(&image_bytes).expect("Failed to load image.");
-    let img_raw = if is_gray_pic { img_load.to_luma().into_raw() } else { img_load.to_rgba().into_raw() };
+    let img_raw = if is_gray_pic { img_load.to_luma8().into_raw() } else { img_load.to_rgba8().into_raw() };
     let texels: Vec<u8> = img_raw;
 
     let (width, height) = img_load.dimensions();
-    let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
+    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
     (texels, texture_extent)
 }
 
@@ -97,7 +97,7 @@ pub fn from_buffer_and_usage_write(
     buffer: &wgpu::Buffer, app_view: &crate::AppView, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32,
     pixel_size: u32, usage_write: bool,
 ) -> (TextureView, Extent3d, Sampler) {
-    let texture_extent = wgpu::Extent3d { width, height, depth: 1 };
+    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
     let usage = if usage_write {
         wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::STORAGE
     } else {
@@ -116,11 +116,15 @@ pub fn from_buffer_and_usage_write(
 
     // BufferCopyView 必须 >= TextureCopyView
     encoder.copy_buffer_to_texture(
-        wgpu::BufferCopyView {
+        wgpu::ImageCopyBuffer {
             buffer,
-            layout: wgpu::TextureDataLayout { offset: 0, bytes_per_row: pixel_size * width, rows_per_image: height },
+            layout: wgpu::ImageDataLayout {
+                offset: 0,
+                bytes_per_row: Some(NonZeroU32::new(pixel_size * width).unwrap()),
+                rows_per_image: Some(NonZeroU32::new(height).unwrap()),
+            },
         },
-        wgpu::TextureCopyView { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
+        wgpu::ImageCopyTexture { texture: &texture, mip_level: 0, origin: wgpu::Origin3d::ZERO },
         texture_extent,
     );
 
@@ -161,13 +165,23 @@ pub fn empty2(
 
 #[allow(dead_code)]
 pub fn empty_view(device: &wgpu::Device, width: u32, height: u32) -> TextureView {
-    crate::texture::empty(device, wgpu::TextureFormat::Bgra8Unorm, wgpu::Extent3d { width, height, depth: 1 }, None)
+    crate::texture::empty(
+        device,
+        wgpu::TextureFormat::Bgra8Unorm,
+        wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
+        None,
+    )
 }
 
 // 32位浮点纹理
 #[allow(dead_code)]
 pub fn empty_f32_view(device: &wgpu::Device, width: u32, height: u32) -> TextureView {
-    crate::texture::empty(device, wgpu::TextureFormat::Rgba32Float, wgpu::Extent3d { width, height, depth: 1 }, None)
+    crate::texture::empty(
+        device,
+        wgpu::TextureFormat::Rgba32Float,
+        wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
+        None,
+    )
 }
 
 #[allow(dead_code)]

@@ -1,3 +1,4 @@
+
 extern crate raw_window_handle;
 
 pub struct AppView {
@@ -80,16 +81,11 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                 label: None,
                 features: adapter_features,
                 limits: wgpu::Limits {
-                    max_bind_groups: 4,
-                    max_dynamic_uniform_buffers_per_pipeline_layout: 8,
                     max_dynamic_storage_buffers_per_pipeline_layout: 28,
-                    max_sampled_textures_per_shader_stage: 16,
-                    max_samplers_per_shader_stage: 16,
                     max_storage_buffers_per_shader_stage: 28,
                     max_storage_textures_per_shader_stage: 8,
-                    max_uniform_buffers_per_shader_stage: 12,
-                    max_uniform_buffer_binding_size: 16384,
                     max_push_constant_size: 16,
+                    ..Default::default()
                 },
             },
             None,

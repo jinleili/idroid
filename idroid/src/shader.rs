@@ -123,7 +123,6 @@ fn generate_shader_source(name: &str, ty: ShaderKind, base_path: &str) -> shader
     };
 
     let path = PathBuf::from(base_path).join("shader").join(format!("{}{}", name, suffix));
-
     let code = match read_to_string(&path) {
         Ok(code) => code,
         Err(e) => {

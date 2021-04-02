@@ -18,6 +18,7 @@ pub use mvp_uniform_obj::{MVPUniform, MVPUniform2, MVPUniformObj};
 pub mod node;
 pub mod shader;
 pub mod vertex;
+pub mod shader2;
 
 use math::TouchPoint;
 

@@ -276,24 +276,19 @@ impl ImageViewNode {
                 entry_point: "main",
                 targets: &[wgpu::ColorTargetState {
                     format: corlor_format,
-                    color_blend: crate::utils::color_blend(),
-                    alpha_blend: crate::utils::alpha_blend(),
+                    blend: Some(crate::utils::default_blend()),
                     write_mask: wgpu::ColorWrite::ALL,
                 }],
             }),
             primitive: wgpu::PrimitiveState {
                 topology: attributes.primitive_topology,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::None,
+                cull_mode: Some(wgpu::Face::Back),
                 polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
             },
             // ??????
-            depth_stencil: if attributes.use_depth_stencil {
-                Some(crate::depth_stencil::create_state())
-            } else {
-                None
-            },
+            depth_stencil: if attributes.use_depth_stencil { Some(crate::depth_stencil::create_state()) } else { None },
             multisample: wgpu::MultisampleState::default(),
         });
 
@@ -344,8 +339,8 @@ impl ImageViewNode {
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
-            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                attachment: frame_view,
+            color_attachments: &[wgpu::RenderPassColorAttachment {
+                view: frame_view,
                 resolve_target: None,
                 ops: wgpu::Operations { load: load_op, store: true },
             }],
