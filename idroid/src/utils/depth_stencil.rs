@@ -8,7 +8,6 @@ pub fn create_state() -> wgpu::DepthStencilState {
         depth_compare: wgpu::CompareFunction::Less,
         stencil: wgpu::StencilState::default(),
         bias: wgpu::DepthBiasState::default(),
-        clamp_depth: false,
     }
 }
 

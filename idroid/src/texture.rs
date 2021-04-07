@@ -23,7 +23,7 @@ pub fn from_path_for_usage(
 ) -> (wgpu::Texture, TextureView, Extent3d, Sampler) {
     let (texels, texture_extent) = load_from_path(path, is_gray_pic);
     let (format, channel_count) =
-        if is_gray_pic { (wgpu::TextureFormat::R8Unorm, 1) } else { (wgpu::TextureFormat::Rgba8UnormSrgb, 4) };
+        if is_gray_pic { (wgpu::TextureFormat::R8Unorm, 1) } else { (wgpu::TextureFormat::Rgba8Unorm, 4) };
 
     let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,

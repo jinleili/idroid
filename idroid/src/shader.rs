@@ -38,7 +38,7 @@ impl Shader {
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
             source: make_spirv(&bytes),
-            flags: wgpu::ShaderFlags::VALIDATION,
+            flags: wgpu::ShaderFlags::default(),
         });
         Shader { vs_module: module, fs_module: None }
     }
@@ -53,7 +53,7 @@ impl Shader {
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
             source: make_spirv(bytes),
-            flags: wgpu::ShaderFlags::VALIDATION,
+            flags: wgpu::ShaderFlags::default(),
         });
         Shader { vs_module: module, fs_module: None }
     }
@@ -70,12 +70,12 @@ pub fn load_general_glsl(
     let vs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
         label: None,
         source: make_spirv(&vs_bytes),
-        flags: wgpu::ShaderFlags::VALIDATION,
+        flags: wgpu::ShaderFlags::default(),
     });
     let fs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
         label: None,
         source: make_spirv(&fs_bytes),
-        flags: wgpu::ShaderFlags::VALIDATION,
+        flags: wgpu::ShaderFlags::default(),
     });
     (vs_module, fs_module)
 }

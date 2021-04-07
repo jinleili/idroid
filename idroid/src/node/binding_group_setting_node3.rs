@@ -1,17 +1,19 @@
 use crate::buffer::BufferObj;
 use std::vec::Vec;
+use wgpu::{StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
-pub struct BindingGroupSettingNode {
+pub struct BindingGroupSettingNode3 {
     pub bind_group_layout: wgpu::BindGroupLayout,
     pub bind_group: wgpu::BindGroup,
 }
 
 #[allow(dead_code)]
-impl BindingGroupSettingNode {
+impl BindingGroupSettingNode3 {
     pub fn new(
         device: &wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
-        textures: Vec<(&wgpu::TextureView, bool)>, samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
+        textures: Vec<(&wgpu::TextureView, Option<(StorageTextureAccess, TextureFormat)>)>,
+        samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
@@ -52,15 +54,15 @@ impl BindingGroupSettingNode {
         }
 
         for i in 0..textures.len() {
-            let is_storage_texture = textures[i].1;
+            let storage_texture = textures[i].1;
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: if is_storage_texture {
+                ty: if let Some(st) = storage_texture {
                     wgpu::BindingType::StorageTexture {
                         view_dimension: wgpu::TextureViewDimension::D2,
-                        access: wgpu::StorageTextureAccess::ReadWrite,
-                        format: wgpu::TextureFormat::Rgba8Unorm,
+                        access: st.0,
+                        format: st.1,
                     }
                 } else {
                     wgpu::BindingType::Texture {
@@ -99,6 +101,6 @@ impl BindingGroupSettingNode {
             label: None,
         });
 
-        BindingGroupSettingNode { bind_group_layout, bind_group }
+        BindingGroupSettingNode3 { bind_group_layout, bind_group }
     }
 }
