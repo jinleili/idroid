@@ -1,5 +1,5 @@
-
 extern crate raw_window_handle;
+use std::path::PathBuf;
 
 pub struct AppView {
     pub view: winit::window::Window,
@@ -75,6 +75,8 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .unwrap();
 
     let adapter_features = adapter.features();
+    let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let trace_path = PathBuf::from(&base_dir).join("WGPU_TRACE");
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
@@ -88,7 +90,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     ..Default::default()
                 },
             },
-            None,
+            Some(&trace_path)
         )
         .await
         .unwrap()
