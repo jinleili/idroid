@@ -26,14 +26,16 @@ pub struct Shader {
 
 #[allow(dead_code)]
 impl Shader {
-    pub fn new(name: &str, device: &wgpu::Device, base_path: &str) -> Self {
-        let (vs_module, fs_module) = load_general_glsl(name, device, base_path);
+    pub fn new(name: &str, device: &wgpu::Device) -> Self {
+        // env!("CARGO_MANIFEST_DIR") 是编译时执行的，得到的是当前所编辑的库的所在路径，而不是项目的路径
+        let base_path = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let (vs_module, fs_module) = load_general_glsl(name, device, &base_path);
         Shader { vs_module, fs_module: Some(fs_module) }
     }
 
     // 计算着色
     #[cfg(target_os = "ios")]
-    pub fn new_by_compute(name: &str, device: &wgpu::Device, _base_path: &str) -> Self {
+    pub fn new_by_compute(name: &str, device: &wgpu::Device) -> Self {
         let bytes = generate_shader_source(name, "comp");
         let module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: None,
@@ -44,7 +46,8 @@ impl Shader {
     }
 
     #[cfg(not(target_os = "ios"))]
-    pub fn new_by_compute(name: &str, device: &wgpu::Device, base_path: &str) -> Self {
+    pub fn new_by_compute(name: &str, device: &wgpu::Device) -> Self {
+        let base_path = std::env::var("CARGO_MANIFEST_DIR").unwrap();
         let binary_result = generate_shader_source(name, ShaderKind::Compute, &base_path);
         Shader::shader_by_bytes(binary_result.as_binary_u8(), device)
     }
