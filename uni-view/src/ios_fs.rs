@@ -29,12 +29,12 @@ fn get_bundle_url() -> &'static str {
     path
 }
 
-pub struct FileSystem {
-    _base_path: &'static str,
+pub struct FileSystem<'a> {
+    _base_path: &'a str,
 }
 
-impl FileSystem {
-    pub fn new(_base_path: &'static str) -> Self {
+impl<'a> FileSystem<'a> {
+    pub fn new(_base_path: &'a str) -> Self {
         FileSystem { _base_path }
     }
 
