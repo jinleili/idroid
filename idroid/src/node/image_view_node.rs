@@ -23,7 +23,7 @@ pub struct NodeAttributes<'a, T: Pos> {
     pub corlor_format: Option<wgpu::TextureFormat>,
     pub primitive_topology: wgpu::PrimitiveTopology,
     pub use_depth_stencil: bool,
-    pub shader: &'a Shader,
+    pub shader_module: &'a wgpu::ShaderModule,
     pub shader_stages: Vec<wgpu::ShaderStage>,
 }
 
@@ -45,7 +45,7 @@ impl<'a, T: Pos + AsBytes> DerefMut for ImageNodeBuilder<'a, T> {
 }
 
 impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
-    pub fn new(tex_views: Vec<(&'a wgpu::TextureView, bool)>, shader: &'a Shader) -> Self {
+    pub fn new(tex_views: Vec<(&'a wgpu::TextureView, bool)>, shader_module: &'a wgpu::ShaderModule) -> Self {
         ImageNodeBuilder {
             attributes: NodeAttributes {
                 view_size: (0.0, 0.0).into(),
@@ -59,7 +59,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
                 corlor_format: None,
                 primitive_topology: wgpu::PrimitiveTopology::TriangleList,
                 use_depth_stencil: false,
-                shader,
+                shader_module,
                 shader_stages: vec![],
             },
         }
@@ -267,12 +267,12 @@ impl ImageViewNode {
             label: Some("image_view pipeline"),
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
-                module: &attributes.shader.vs_module,
+                module: &attributes.shader_module,
                 entry_point: "main",
                 buffers: &pipeline_vertex_buffers,
             },
             fragment: Some(wgpu::FragmentState {
-                module: &attributes.shader.fs_module.as_ref().unwrap(),
+                module: &attributes.shader_module,
                 entry_point: "main",
                 targets: &[wgpu::ColorTargetState {
                     format: corlor_format,

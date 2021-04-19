@@ -75,8 +75,9 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .unwrap();
 
     let adapter_features = adapter.features();
-    let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let trace_path = PathBuf::from(&base_dir).join("WGPU_TRACE");
+    // 使用 Xcode 调试时，配置 trace_path 会 crash (2021/4/12)
+    // let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    // let trace_path = PathBuf::from(&base_dir).join("WGPU_TRACE");
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
@@ -90,7 +91,8 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     ..Default::default()
                 },
             },
-            Some(&trace_path)
+            // Some(&trace_path)
+            None,
         )
         .await
         .unwrap()

@@ -59,7 +59,6 @@ impl BindingGroupSettingNode3 {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
                 ty: if let Some(st) = storage_texture {
-                    println!("-- BindingType::StorageTexture: {:?}, {:?}", st.0, st.1);
                     wgpu::BindingType::StorageTexture {
                         view_dimension: wgpu::TextureViewDimension::D2,
                         access: st.0,

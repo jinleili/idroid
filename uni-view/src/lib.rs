@@ -1,6 +1,5 @@
 extern crate libc;
 extern crate wgpu;
-use std::path::PathBuf;
 use std::ops::Deref;
 
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
@@ -13,6 +12,8 @@ mod app_view;
 
 pub use app_view::*;
 pub mod ffi;
+pub mod fs;
+
 
 #[repr(C)]
 #[derive(Debug)]
@@ -49,17 +50,3 @@ impl Deref for AppViewWrapper {
     }
 }
 
-
-#[cfg(target_os = "ios")]
-#[path = "ios_fs.rs"]
-pub mod fs;
-
-#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-#[path = "mac_fs.rs"]
-pub mod fs;
-
-pub fn get_texture_file_path(name: &str) -> PathBuf {
-    let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let f = fs::FileSystem::new(&&base_dir);
-    f.get_texture_file_path(name)
-}
