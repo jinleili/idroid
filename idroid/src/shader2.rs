@@ -7,13 +7,13 @@ use wgpu::{ShaderFlags, ShaderModule, ShaderModuleDescriptor, ShaderSource};
 pub fn create_shader_module(device: &wgpu::Device, shader_name: &'static str, lable: Option<&str>) -> ShaderModule {
     // @Kvark 20210402 ：Please don't use EXPERIMENTAL_TRANSLATION on Metal for this shader for now.
     // let flags = ShaderFlags::VALIDATION | ShaderFlags::EXPERIMENTAL_TRANSLATION;
-    // let flags = ShaderFlags::VALIDATION;
-    let flags = ShaderFlags::default();
+    let flags = ShaderFlags::VALIDATION;
+    // let flags = ShaderFlags::default();
 
     // env!("CARGO_MANIFEST_DIR") 是编译时执行的，得到的是当前所编辑的库的所在路径，而不是项目的路径
     println!("CARGO_MANIFEST_DIR: {:?}", std::env::var("CARGO_MANIFEST_DIR"));
     println!("std::env::current_exe: {:?}", std::env::current_exe().expect("Failed to find executable path").parent());
-    println!(" std::env::current_dir: {:?}", std::env::current_dir() );
+    println!(" std::env::current_dir: {:?}", std::env::current_dir());
     println!("root_dir: {:?}", uni_view::fs::application_root_dir());
     let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let path = PathBuf::from(&base_dir).join("shader-wgsl").join(format!("{}.wgsl", shader_name));
@@ -78,7 +78,7 @@ fn parse_shader_source(source: &str, output: &mut String, base_path: &str) {
             }
         } else {
             output.push_str(line);
-            output.push_str("\n");
+            output.push_str("\n ");
             // 移除注释
             // let need_delete = match line.find("//") {
             //     Some(_) => {
