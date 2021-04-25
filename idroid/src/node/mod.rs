@@ -15,3 +15,5 @@ pub use dynamic_binding_group_node::DynamicBindingGroupNode;
 
 mod image_view_node;
 pub use image_view_node::{ImageNodeBuilder, ImageViewNode};
+mod bufferless_fullscreen_node;
+pub use bufferless_fullscreen_node::BufferlessFullscreenNode;
