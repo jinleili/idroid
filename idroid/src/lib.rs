@@ -3,7 +3,7 @@ pub use uni_view::*;
 
 pub mod geometry;
 pub mod math;
-pub mod texture;
+pub mod load_texture;
 pub mod utils;
 pub use utils::{depth_stencil, matrix_helper};
 

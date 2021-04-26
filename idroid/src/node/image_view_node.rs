@@ -167,7 +167,7 @@ impl ImageViewNode {
             stages
         };
 
-        let sampler = crate::texture::default_sampler(device);
+        let sampler = crate::load_texture::default_sampler(device);
         let new_samplers: Vec<&wgpu::Sampler> = if attributes.tex_views.len() > 0 {
             if attributes.samplers.len() > 0 {
                 attributes.samplers
