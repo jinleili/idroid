@@ -1,16 +1,16 @@
-use crate::node::BindingGroupSettingNode3;
+use crate::node::BindingGroupSettingNode;
 use wgpu::{PrimitiveTopology, ShaderModule, ShaderStage, StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
 pub struct BufferlessFullscreenNode {
-    setting_node: BindingGroupSettingNode3,
+    setting_node: BindingGroupSettingNode,
     pipeline: wgpu::RenderPipeline,
 }
 
 impl BufferlessFullscreenNode {
     pub fn new(
         app_view: &uni_view::AppView,
-        textures: Vec<(&wgpu::TextureView, Option<(StorageTextureAccess, TextureFormat)>)>,
+        textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
         samplers: Vec<&wgpu::Sampler>,
         shader_module: &ShaderModule,
     ) -> Self {
@@ -19,7 +19,7 @@ impl BufferlessFullscreenNode {
             stages.push(ShaderStage::FRAGMENT);
         }
         let setting_node =
-            BindingGroupSettingNode3::new(&app_view.device, vec![], vec![], textures, samplers, stages);
+            BindingGroupSettingNode::new(&app_view.device, vec![], vec![], textures, samplers, stages);
         let pipeline_layout = app_view.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[&setting_node.bind_group_layout],

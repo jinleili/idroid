@@ -1,4 +1,4 @@
-use image::GenericImageView;
+use image::{DynamicImage, GenericImageView};
 use std::{num::NonZeroU32, path::Path, path::PathBuf};
 use wgpu::{Extent3d, Sampler, Texture, TextureFormat, TextureView};
 
@@ -94,32 +94,33 @@ pub fn from_buffer(
 
 fn load_from_path(path: PathBuf, set_to_grayscale: bool) -> (Vec<u8>, wgpu::Extent3d, wgpu::TextureFormat) {
     let img = image::open(&path.as_path()).unwrap();
+    let (width, height) = img.dimensions();
+    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
 
     // get TextureFormat from image
     let color_type = img.color();
     let (format, texels) = match color_type {
-        image::ColorType::L8 => (wgpu::TextureFormat::R8Unorm, img.to_bytes()),
+        image::ColorType::L8 => (wgpu::TextureFormat::R8Unorm, img.into_bytes()),
         // no rgb format without alpha channels in the webgpu spec, so, need to convert.
         image::ColorType::Rgb8 => {
             if set_to_grayscale {
-                (wgpu::TextureFormat::R8Unorm, img.to_luma8().into_raw())
+                // on macOS(wgpu 0.7), texture format R8Unorm is not supported for storage use.
+                (wgpu::TextureFormat::R16Float, DynamicImage::ImageLuma16(img.into_luma16()).into_bytes())
             } else {
                 (wgpu::TextureFormat::Rgba8Unorm, img.to_bgra8().into_raw())
             }
         }
         image::ColorType::Rgba8 => {
             if set_to_grayscale {
-                (wgpu::TextureFormat::R8Unorm, img.to_luma8().into_raw())
+                (wgpu::TextureFormat::R16Float, DynamicImage::ImageLuma16(img.into_luma16()).into_bytes())
             } else {
-                (wgpu::TextureFormat::Rgba8Unorm, img.to_bytes())
+                (wgpu::TextureFormat::Rgba8Unorm, img.into_bytes())
             }
         }
 
         _ => panic!("unsupported color type"),
     };
 
-    let (width, height) = img.dimensions();
-    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
     (texels, texture_extent, format)
 }
 

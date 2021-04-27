@@ -1,5 +1,6 @@
 use crate::buffer::BufferObj;
 use std::vec::Vec;
+use wgpu::{StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
 pub struct BindingGroupSettingNode {
@@ -11,7 +12,8 @@ pub struct BindingGroupSettingNode {
 impl BindingGroupSettingNode {
     pub fn new(
         device: &wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
-        textures: Vec<(&wgpu::TextureView, bool)>, samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
+        textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
+        samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
@@ -41,8 +43,8 @@ impl BindingGroupSettingNode {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
                 ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: false },
-                    has_dynamic_offset: false,
+                    ty: wgpu::BufferBindingType::Storage { read_only: buffer_obj.read_only },
+                    has_dynamic_offset: buffer_obj.has_dynamic_offset,
                     min_binding_size: wgpu::BufferSize::new(0),
                 },
                 count: None,
@@ -52,15 +54,15 @@ impl BindingGroupSettingNode {
         }
 
         for i in 0..textures.len() {
-            let is_storage_texture = textures[i].1;
+            let storage_access = textures[i].2;
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: if is_storage_texture {
+                ty: if let Some(access) = storage_access {
                     wgpu::BindingType::StorageTexture {
                         view_dimension: wgpu::TextureViewDimension::D2,
-                        access: wgpu::StorageTextureAccess::ReadWrite,
-                        format: wgpu::TextureFormat::Rgba8Unorm,
+                        access: access,
+                        format: textures[i].1,
                     }
                 } else {
                     wgpu::BindingType::Texture {

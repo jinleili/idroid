@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.7",  rev = "1806a5bd4d0a8740774969c92f51ad9a906a2e24" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.7",  rev = "048551cba3419c50937192a85fb716c03c0ebf4b" }
 # wgpu = { path = "../../../wgpu-rs" }
 
 lazy_static = "*"

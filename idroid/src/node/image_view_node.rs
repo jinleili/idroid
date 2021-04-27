@@ -5,6 +5,7 @@ use crate::shader::Shader;
 use crate::vertex::Pos;
 use crate::{BufferObj, MVPUniform};
 use wgpu::util::DeviceExt;
+use wgpu::{ShaderModule, StorageTextureAccess, TextureFormat};
 
 use std::ops::{Deref, DerefMut};
 use zerocopy::AsBytes;
@@ -14,7 +15,7 @@ pub struct NodeAttributes<'a, T: Pos> {
     pub vertices_and_indices: Option<(Vec<T>, Vec<u32>)>,
     pub uniform_buffers: Vec<&'a BufferObj>,
     pub storage_buffers: Vec<&'a BufferObj>,
-    pub tex_views: Vec<(&'a wgpu::TextureView, bool)>,
+    pub tex_views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
     pub samplers: Vec<&'a wgpu::Sampler>,
     // 动态 uniform
     pub dynamic_uniforms: Vec<(&'a BufferObj, wgpu::ShaderStage)>,
@@ -45,7 +46,7 @@ impl<'a, T: Pos + AsBytes> DerefMut for ImageNodeBuilder<'a, T> {
 }
 
 impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
-    pub fn new(tex_views: Vec<(&'a wgpu::TextureView, bool)>, shader_module: &'a wgpu::ShaderModule) -> Self {
+    pub fn new(tex_views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>, shader_module: &'a wgpu::ShaderModule) -> Self {
         ImageNodeBuilder {
             attributes: NodeAttributes {
                 view_size: (0.0, 0.0).into(),
@@ -95,7 +96,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_tex_views_and_samplers(mut self, views: Vec<(&'a wgpu::TextureView, bool)>) -> Self {
+    pub fn with_tex_views_and_samplers(mut self, views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>) -> Self {
         self.tex_views = views;
         self
     }

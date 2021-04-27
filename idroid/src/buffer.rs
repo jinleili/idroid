@@ -4,6 +4,8 @@ use zerocopy::AsBytes;
 pub struct BufferObj {
     pub buffer: wgpu::Buffer,
     pub size: wgpu::BufferAddress,
+    pub has_dynamic_offset: bool,
+    pub read_only: bool,
 }
 
 #[allow(dead_code)]
@@ -28,7 +30,7 @@ impl BufferObj {
             label,
             mapped_at_creation: false,
         });
-        BufferObj { buffer, size }
+        BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
     }
 
     pub fn create_uniform_buffer<T>(device: &wgpu::Device, uniform: &T) -> Self
@@ -115,7 +117,7 @@ impl BufferObj {
             contents: data,
             usage: usage | wgpu::BufferUsage::COPY_DST,
         });
-        BufferObj { buffer, size }
+        BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
         // } else {
         //     let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
         //         label: Some("Temp Buffer"),

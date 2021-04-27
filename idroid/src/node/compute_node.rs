@@ -1,4 +1,4 @@
-use wgpu::PushConstantRange;
+use wgpu::{Operations, PushConstantRange, ShaderModule, StorageTextureAccess, TextureFormat};
 
 use super::BindingGroupSettingNode;
 use crate::buffer::BufferObj;
@@ -17,14 +17,24 @@ pub struct ComputeNode {
 impl ComputeNode {
     pub fn new(
         device: &wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
-        inout_buffers: Vec<&BufferObj>, inout_tv: Vec<(&wgpu::TextureView, bool)>, shader: &crate::shader::Shader,
+        inout_buffers: Vec<&BufferObj>,
+        inout_tv: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
     ) -> Self {
-        ComputeNode::new_with_push_constants(device, threadgroup_count, uniforms, inout_buffers, inout_tv, shader, None)
+        ComputeNode::new_with_push_constants(
+            device,
+            threadgroup_count,
+            uniforms,
+            inout_buffers,
+            inout_tv,
+            shader_module,
+            None,
+        )
     }
 
     pub fn new_with_push_constants(
         device: &wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
-        inout_buffers: Vec<&BufferObj>, inout_tv: Vec<(&wgpu::TextureView, bool)>, shader: &crate::shader::Shader,
+        inout_buffers: Vec<&BufferObj>,
+        inout_tv: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
         push_constants: Option<Vec<(wgpu::ShaderStage, Range<u32>)>>,
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStage> = vec![];
@@ -48,7 +58,7 @@ impl ComputeNode {
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             label: None,
             layout: Some(&pipeline_layout),
-            module: &shader.vs_module,
+            module: shader_module,
             entry_point: "main",
         });
 
