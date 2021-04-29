@@ -11,11 +11,11 @@ pub fn create_shader_module(device: &wgpu::Device, shader_name: &'static str, la
     // let flags = ShaderFlags::default();
 
     // env!("CARGO_MANIFEST_DIR") 是编译时执行的，得到的是当前所编辑的库的所在路径，而不是项目的路径
-    println!("CARGO_MANIFEST_DIR: {:?}", std::env::var("CARGO_MANIFEST_DIR"));
-    println!("std::env::current_exe: {:?}", std::env::current_exe().expect("Failed to find executable path").parent());
-    println!(" std::env::current_dir: {:?}", std::env::current_dir());
-    println!("root_dir: {:?}", uni_view::fs::application_root_dir());
-    let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    // std::env::var("CARGO_MANIFEST_DIR") 在 xcode debug 时不存在
+    // std::env::current_dir() 在 xcode debug 时只能获得相对路径： “/”
+
+    // let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let base_dir = uni_view::fs::application_root_dir();
     let path = PathBuf::from(&base_dir).join("shader-wgsl").join(format!("{}.wgsl", shader_name));
     let code = match read_to_string(&path) {
         Ok(code) => code,

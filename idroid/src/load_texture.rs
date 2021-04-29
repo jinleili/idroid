@@ -39,13 +39,13 @@ pub fn from_path(
 // from webgpu spec: R8 | R16 is not supported for storage use.
 #[allow(dead_code)]
 pub fn into_format_r32float(
-    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsage
+    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsage, label: Option<&'static str>
 ) -> (wgpu::Texture, TextureView, Extent3d) {
     let path = uni_view::fs::get_texture_file_path(image_path);
  
-    let (texels, texture_extent) = load_by_luma16(path);
+    let (texels, texture_extent) = load_by_luma(path);
     let pixel_bytes = 4;
-    let new_texels: Vec<u32> = texels.into_iter().map(|t| t as u32).collect();
+    let new_texels: Vec<f32> = texels.into_iter().map(|t| t as f32).collect();
 
     let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
@@ -54,7 +54,7 @@ pub fn into_format_r32float(
         dimension: wgpu::TextureDimension::D2,
         format: TextureFormat::R32Float,
         usage,
-        label: None,
+        label,
     });
     let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
     app_view.queue.write_texture(
@@ -156,12 +156,12 @@ fn load_from_path(path: PathBuf, set_to_grayscale: bool) -> (Vec<u8>, wgpu::Exte
     (texels, texture_extent, format)
 }
 
-fn load_by_luma16(path: PathBuf, ) -> (Vec<u16>, wgpu::Extent3d) {
+fn load_by_luma(path: PathBuf, ) -> (Vec<u8>, wgpu::Extent3d) {
     let img = image::open(&path.as_path()).unwrap();
     let (width, height) = img.dimensions();
     let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
 
-    (img.into_luma16().to_vec(), texture_extent) 
+    (img.to_luma8().into_raw(), texture_extent) 
 }
 
 // empty texture as a RENDER_ATTACHMENT

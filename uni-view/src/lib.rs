@@ -13,6 +13,7 @@ mod app_view;
 pub use app_view::*;
 pub mod ffi;
 pub mod fs;
+pub use fs::application_root_dir;
 
 
 #[repr(C)]

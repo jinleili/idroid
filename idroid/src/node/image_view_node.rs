@@ -46,7 +46,10 @@ impl<'a, T: Pos + AsBytes> DerefMut for ImageNodeBuilder<'a, T> {
 }
 
 impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
-    pub fn new(tex_views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>, shader_module: &'a wgpu::ShaderModule) -> Self {
+    pub fn new(
+        tex_views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
+        shader_module: &'a wgpu::ShaderModule,
+    ) -> Self {
         ImageNodeBuilder {
             attributes: NodeAttributes {
                 view_size: (0.0, 0.0).into(),
@@ -96,7 +99,9 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_tex_views_and_samplers(mut self, views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>) -> Self {
+    pub fn with_tex_views_and_samplers(
+        mut self, views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
+    ) -> Self {
         self.tex_views = views;
         self
     }
@@ -347,16 +352,20 @@ impl ImageViewNode {
             }],
             depth_stencil_attachment: None,
         });
+        self.set_rpass(&mut rpass);
         self.draw_rpass_by_offset(&mut rpass, offset_index, 1);
+    }
+
+    pub fn set_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
+        rpass.set_pipeline(&self.pipeline);
+        rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
+        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint32);
+        rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
     }
 
     pub fn draw_rpass_by_offset<'a, 'b: 'a>(
         &'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32, instance_count: u32,
     ) {
-        rpass.set_pipeline(&self.pipeline);
-        rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
-        rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint32);
-        rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
         if let Some(node) = &self.dynamic_node {
             rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);
         }
