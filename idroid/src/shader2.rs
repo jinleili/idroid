@@ -43,8 +43,8 @@ pub fn create_shader_module(device: &wgpu::Device, shader_name: &'static str, la
     let flags = ShaderFlags::VALIDATION;
 
     // env!("CARGO_MANIFEST_DIR") 是编译时执行的，得到的是当前所编辑的库的所在路径，而不是项目的路径
-    let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let path = PathBuf::from(&base_dir).join("shader-preprocessed-wgsl").join(format!("{}.wgsl", shader_name));
+    let base_dir = uni_view::fs::application_root_dir();
+    let path = PathBuf::from(&base_dir).join("shader-preprocessed-wgsl").join(format!("{}.wgsl", shader_name.replace("/", "_")));
     let code = match read_to_string(&path) {
         Ok(code) => code,
         Err(e) => {

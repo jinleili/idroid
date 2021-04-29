@@ -61,12 +61,14 @@ impl BindingGroupSettingNode {
                 ty: if let Some(access) = storage_access {
                     wgpu::BindingType::StorageTexture {
                         view_dimension: wgpu::TextureViewDimension::D2,
-                        access: access,
+                        access,
                         format: textures[i].1,
                     }
                 } else {
                     wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        sample_type: wgpu::TextureSampleType::Float {
+                            filterable: texture_sample_filterable(textures[i].1),
+                        },
                         view_dimension: wgpu::TextureViewDimension::D2,
                         multisampled: false,
                     }
@@ -102,5 +104,13 @@ impl BindingGroupSettingNode {
         });
 
         BindingGroupSettingNode { bind_group_layout, bind_group }
+    }
+}
+
+fn texture_sample_filterable(format: TextureFormat) -> bool {
+    match format {
+        // on iOS: texture binding 1 expects sample type = Float { filterable: true }, but given a view with format = R32Float
+        TextureFormat::R32Float => false,
+        _ => true,
     }
 }
