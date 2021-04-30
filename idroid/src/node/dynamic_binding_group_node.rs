@@ -32,11 +32,11 @@ impl DynamicBindingGroupNode {
             // for dynamic uniform buffers, BindingResource::Buffer specifies a "window" into the buffer that is then offset by your dynamic offset value
             entries.push(wgpu::BindGroupEntry {
                 binding: b_index,
-                resource: wgpu::BindingResource::Buffer {
+                resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
                     buffer: &buffer_obj.0.buffer,
                     offset: 0,
                     size: wgpu::BufferSize::new(256),
-                },
+                }),
             });
             b_index += 1;
         }
