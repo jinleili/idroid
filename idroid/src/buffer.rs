@@ -33,18 +33,18 @@ impl BufferObj {
         BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
     }
 
-    pub fn create_uniform_buffer<T>(device: &wgpu::Device, uniform: &T) -> Self
+    pub fn create_uniform_buffer<T>(device: &wgpu::Device, uniform: &T, label: Option<&'static str>) -> Self
     where
         T: 'static + AsBytes + Copy,
     {
-        BufferObj::create_buffer(device, None, Some(uniform), wgpu::BufferUsage::UNIFORM, Some("Uniform Buffer"))
+        BufferObj::create_buffer(device, None, Some(uniform), wgpu::BufferUsage::UNIFORM, label)
     }
 
-    pub fn create_uniforms_buffer<T>(device: &wgpu::Device, slice: &[T]) -> Self
+    pub fn create_uniforms_buffer<T>(device: &wgpu::Device, slice: &[T], label: Option<&'static str>) -> Self
     where
         T: 'static + AsBytes + Copy,
     {
-        BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsage::UNIFORM, Some("Uniform Buffer"))
+        BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsage::UNIFORM, label)
     }
 
     pub fn update_buffer<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)

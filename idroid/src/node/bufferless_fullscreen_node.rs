@@ -1,4 +1,4 @@
-use crate::node::BindingGroupSettingNode;
+use crate::{node::BindingGroupSettingNode, BufferObj};
 use wgpu::{PrimitiveTopology, ShaderModule, ShaderStage, StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
@@ -9,21 +9,27 @@ pub struct BufferlessFullscreenNode {
 
 impl BufferlessFullscreenNode {
     pub fn new(
-        app_view: &uni_view::AppView, textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
-        samplers: Vec<&wgpu::Sampler>, shader_module: &ShaderModule,
+        device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
+        textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
+        samplers: Vec<&wgpu::Sampler>, visibilities: Option<Vec<ShaderStage>>, shader_module: &ShaderModule,
     ) -> Self {
-        let mut stages: Vec<ShaderStage> = vec![];
-        for _ in 0..(textures.len() + samplers.len()) {
-            stages.push(ShaderStage::FRAGMENT);
-        }
-        let setting_node = BindingGroupSettingNode::new(&app_view.device, vec![], vec![], textures, samplers, stages);
-        let pipeline_layout = app_view.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let stages: Vec<ShaderStage> = if let Some(states) = visibilities {
+            states
+        } else {
+            let mut stages = vec![];
+            for _ in 0..(uniforms.len() + inout_buffers.len() + textures.len() + samplers.len()) {
+                stages.push(ShaderStage::FRAGMENT);
+            }
+            stages
+        };
+        let setting_node = BindingGroupSettingNode::new(device, uniforms, inout_buffers, textures, samplers, stages);
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[&setting_node.bind_group_layout],
             push_constant_ranges: &[],
         });
         let pipeline_vertex_buffers = [];
-        let pipeline = app_view.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("bufferless fullscreen pipeline"),
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState { module: shader_module, entry_point: "main", buffers: &pipeline_vertex_buffers },
@@ -31,7 +37,7 @@ impl BufferlessFullscreenNode {
                 module: shader_module,
                 entry_point: "main",
                 targets: &[wgpu::ColorTargetState {
-                    format: app_view.sc_desc.format,
+                    format,
                     blend: Some(crate::utils::default_blend()),
                     write_mask: wgpu::ColorWrite::ALL,
                 }],

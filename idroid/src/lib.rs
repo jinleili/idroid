@@ -2,8 +2,8 @@ extern crate libc;
 pub use uni_view::*;
 
 pub mod geometry;
-pub mod math;
 pub mod load_texture;
+pub mod math;
 pub mod utils;
 pub use utils::{depth_stencil, matrix_helper};
 
@@ -17,18 +17,18 @@ pub use mvp_uniform_obj::{MVPUniform, MVPUniform2, MVPUniformObj};
 
 pub mod node;
 pub mod shader;
-pub mod vertex;
 pub mod shader2;
+pub mod vertex;
 
 use math::TouchPoint;
 
 pub trait SurfaceView {
-    fn resize(&mut self);
-    fn pintch_start(&mut self, location: TouchPoint, scale: f32);
-    fn pintch_changed(&mut self, location: TouchPoint, scale: f32);
-    fn touch_start(&mut self, point: TouchPoint);
-    fn touch_moved(&mut self, point: TouchPoint);
-    fn touch_end(&mut self, point: TouchPoint);
+    fn resize(&mut self) {}
+    fn pintch_start(&mut self, _location: TouchPoint, _scale: f32) {}
+    fn pintch_changed(&mut self, _location: TouchPoint, _scale: f32) {}
+    fn touch_start(&mut self, _point: TouchPoint) {}
+    fn touch_moved(&mut self, _point: TouchPoint) {}
+    fn touch_end(&mut self, _point: TouchPoint) {}
 
     fn enter_frame(&mut self);
 }
