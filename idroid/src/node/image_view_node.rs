@@ -184,11 +184,11 @@ impl ImageViewNode {
             vec![]
         };
         // 如果没有设置 mvp, 且设置了 view_size, 则设置一个全屏的 mvp
-        let mut mvp_buf = BufferObj::create_uniform_buffer(device, &MVPUniform::zero());
+        let mut mvp_buf = BufferObj::create_uniform_buffer(device, &MVPUniform::zero(), Some("mvp uniform"));
         let uniform_buffers = if attributes.uniform_buffers.len() == 0 && attributes.view_size.width > 0.0 {
             let (p_matrix, vm_matrix, _factor) = crate::matrix_helper::perspective_mvp(attributes.view_size);
             let mvp = MVPUniform { mvp_matrix: (p_matrix * vm_matrix).into() };
-            mvp_buf = BufferObj::create_uniform_buffer(device, &mvp);
+            mvp_buf = BufferObj::create_uniform_buffer(device, &mvp, Some("mvp uniform"));
             vec![&mvp_buf]
         } else {
             attributes.uniform_buffers
