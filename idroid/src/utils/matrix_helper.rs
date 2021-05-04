@@ -62,7 +62,8 @@ pub fn fullscreen_factor(viewport_size: Size<f32>) -> (f32, f32, f32) {
     } else {
         sx = viewport_size.width / viewport_size.height;
     };
-    (-(ratio / factor), sx, sy)
+    let translate_z = -(ratio / factor);
+    (translate_z, sx, sy)
 }
 
 #[allow(dead_code)]

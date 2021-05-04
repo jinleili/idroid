@@ -64,6 +64,12 @@ impl From<[f32; 2]> for Size<f32> {
     }
 }
 
+impl From<wgpu::Extent3d> for Size<f32> {
+    fn from(data: wgpu::Extent3d) -> Self {
+        Size { width: data.width as f32, height: data.height as f32 }
+    }
+}
+
 impl From<Size<f32>> for [f32; 2] {
     fn from(s: Size<f32>) -> Self {
         [s.width, s.height]
