@@ -16,7 +16,6 @@ pub use mvp_uniform_obj::{MVPUniform, MVPUniform2, MVPUniformObj};
 // pub use dynamic_buffer::DynamicBufferObj;
 
 pub mod node;
-pub mod shader;
 pub mod shader2;
 pub mod vertex;
 
@@ -33,7 +32,7 @@ pub trait SurfaceView {
     fn enter_frame(&mut self);
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 pub fn box_obj(obj: impl SurfaceView) -> *mut libc::c_void {
     let boxed_trait: Box<dyn SurfaceView> = Box::new(obj);
     let boxed_boxed_trait = Box::new(boxed_trait);
@@ -43,7 +42,7 @@ pub fn box_obj(obj: impl SurfaceView) -> *mut libc::c_void {
     heap_pointer as *mut libc::c_void
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn enter_frame(obj: *mut libc::c_void) -> *mut libc::c_void {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
@@ -53,7 +52,7 @@ pub unsafe extern "C" fn enter_frame(obj: *mut libc::c_void) -> *mut libc::c_voi
     Box::into_raw(obj) as *mut libc::c_void
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn touch_move(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
@@ -62,7 +61,7 @@ pub unsafe extern "C" fn touch_move(obj: *mut libc::c_void, p: TouchPoint) {
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn touch_start(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
@@ -70,7 +69,7 @@ pub unsafe extern "C" fn touch_start(obj: *mut libc::c_void, p: TouchPoint) {
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn touch_end(obj: *mut libc::c_void, p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
@@ -78,7 +77,7 @@ pub unsafe extern "C" fn touch_end(obj: *mut libc::c_void, p: TouchPoint) {
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn resize(obj: *mut libc::c_void, _p: TouchPoint) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
@@ -86,7 +85,7 @@ pub unsafe extern "C" fn resize(obj: *mut libc::c_void, _p: TouchPoint) {
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn pintch_start(obj: *mut libc::c_void, location: TouchPoint, scale: f32) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);
@@ -94,7 +93,7 @@ pub unsafe extern "C" fn pintch_start(obj: *mut libc::c_void, location: TouchPoi
     let _ = Box::into_raw(obj) as *mut libc::c_void;
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "ios")]
 #[no_mangle]
 pub unsafe extern "C" fn pintch_changed(obj: *mut libc::c_void, location: TouchPoint, scale: f32) {
     let mut obj: Box<Box<dyn SurfaceView>> = Box::from_raw(obj as *mut _);

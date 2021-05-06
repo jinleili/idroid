@@ -47,7 +47,7 @@ pub fn insert_code_then_create(
     let final_source = if let Some(segment) = code_segment {
         let mut output = String::new();
         for line in shader_source.lines() {
-            if line.starts_with(SHADER_SEGMENT) {
+            if line.contains(SHADER_SEGMENT) {
                 output.push_str(segment);
             } else {
                 output.push_str(line);
@@ -61,7 +61,7 @@ pub fn insert_code_then_create(
 
     // println!("{:?} \n === \n \n", &shader_source);
     device.create_shader_module(&ShaderModuleDescriptor {
-        label: label,
+        label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
         flags,
     })

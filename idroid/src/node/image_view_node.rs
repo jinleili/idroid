@@ -1,7 +1,6 @@
 use crate::geometry::plane::Plane;
 use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSettingNode;
-use crate::shader::Shader;
 use crate::vertex::Pos;
 use crate::{BufferObj, MVPUniform};
 use wgpu::util::DeviceExt;

@@ -10,6 +10,10 @@ mod file_sys;
 #[path = "mac_fs.rs"]
 mod file_sys;
 
+#[cfg(target_arch = "wasm32")]
+#[path = "web_fs.rs"]
+mod file_sys;
+
 pub use file_sys::FileSystem;
 
 pub fn get_texture_file_path(name: &str) -> PathBuf {

@@ -2,7 +2,7 @@ extern crate libc;
 extern crate wgpu;
 use std::ops::Deref;
 
-#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
+#[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows", target_arch = "wasm32"))]
 #[path = "mac_view.rs"]
 mod app_view;
 
