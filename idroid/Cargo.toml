@@ -20,7 +20,24 @@ nalgebra-glm = "*"
 image = "0.23"
 lazy_static = "*"
 zerocopy = "0.4"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 pollster = "0.2"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2.73" 
+js-sys = "0.3.50"
+wasm-bindgen-futures = "0.4.23"
+web-sys = { version = "=0.3.50", features = [
+    "Document",
+    "Navigator",
+    "Node",
+    "NodeList",
+    "HtmlCanvasElement",
+    "Location",
+    "Window",
+    "XmlHttpRequest",
+]}
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
 objc = "*"

@@ -729,6 +729,7 @@ name = "idroid"
 version = "0.2.6"
 dependencies = [
  "image",
+ "js-sys",
  "lazy_static",
  "libc",
  "nalgebra-glm",
@@ -736,6 +737,9 @@ dependencies = [
  "pollster",
  "raw-window-handle",
  "uni-view",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "wgpu",
  "winit",
  "zerocopy",
@@ -1688,9 +1692,11 @@ dependencies = [
  "log",
  "objc",
  "objc-foundation",
+ "pollster",
  "raw-window-handle",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "web-sys",
  "wgpu",
  "winit",
 ]

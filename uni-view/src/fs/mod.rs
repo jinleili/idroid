@@ -27,7 +27,8 @@ pub fn get_texture_file_path(name: &str) -> PathBuf {
 // traversing symlinks if necessary.
 #[cfg(target_arch = "wasm32")]
 pub fn application_root_dir() -> String {
-    "./".to_string()
+    let host = web_sys::window().unwrap().location().host().unwrap();
+    "http://".to_string() + &host
 }
 
 #[cfg(not(target_arch = "wasm32"))]

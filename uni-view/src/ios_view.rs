@@ -57,7 +57,7 @@ impl AppView {
         let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
         let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
 
-        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
+        let (device, queue) = pollster::block_on(request_device(&instance, &surface));
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             // iOS 上这个纹理格式肯定是可以使用的： wgpu::TextureFormat::Bgra8Unorm

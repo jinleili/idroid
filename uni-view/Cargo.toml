@@ -12,6 +12,9 @@ wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.8",  rev = "9e4
 lazy_static = "*"
 log = "0.4"
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pollster = "0.2"
+
 [target.'cfg(any(target_os = "macos", target_arch = "wasm32"))'.dependencies]
 winit = { version = "0.24", features = ["web-sys"] }
 raw-window-handle = "0.3"
@@ -20,6 +23,16 @@ raw-window-handle = "0.3"
 wasm-bindgen = "0.2.73" 
 js-sys = "0.3.50"
 wasm-bindgen-futures = "0.4.23"
+web-sys = { version = "=0.3.50", features = [
+    "Document",
+    "Navigator",
+    "Node",
+    "NodeList",
+    "HtmlCanvasElement",
+    "Location",
+    "Window",
+    "XmlHttpRequest",
+]}
 
 [target.'cfg(target_os = "ios")'.dependencies]
 objc = "*"
