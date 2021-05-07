@@ -25,6 +25,12 @@ pub fn get_texture_file_path(name: &str) -> PathBuf {
 // Returns the cargo manifest directory when running the executable with cargo
 // or the directory in which the executable resides otherwise,
 // traversing symlinks if necessary.
+#[cfg(target_arch = "wasm32")]
+pub fn application_root_dir() -> String {
+    "./".to_string()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub fn application_root_dir() -> String {
     match env::var("PROFILE") {
         Ok(_) => String::from(env!("CARGO_MANIFEST_DIR")),

@@ -21,14 +21,63 @@ pub struct AppView {
 }
 
 impl AppView {
-    pub fn new(view: winit::window::Window) -> Self {
+    pub async fn new(view: winit::window::Window) -> Self {
         let scale_factor = view.scale_factor();
-        // let physical = view.inner_size().to_physical(scale_factor);
-        let physical = view.inner_size();
 
-        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
-        let surface = unsafe { instance.create_surface(&view) };
-        let (device, queue) = futures::executor::block_on(request_device(&instance, &surface));
+        let backend = if let Ok(backend) = std::env::var("WGPU_BACKEND") {
+            match backend.to_lowercase().as_str() {
+                "vulkan" => wgpu::BackendBit::VULKAN,
+                "metal" => wgpu::BackendBit::METAL,
+                "dx12" => wgpu::BackendBit::DX12,
+                "dx11" => wgpu::BackendBit::DX11,
+                "gl" => wgpu::BackendBit::GL,
+                "webgpu" => wgpu::BackendBit::BROWSER_WEBGPU,
+                other => panic!("Unknown backend: {}", other),
+            }
+        } else {
+            wgpu::BackendBit::PRIMARY
+        };
+        let instance = wgpu::Instance::new(backend);
+        let (physical, surface) = unsafe { (view.inner_size(), instance.create_surface(&view)) };
+
+        let power_preference = if let Ok(power_preference) = std::env::var("WGPU_POWER_PREF") {
+            match power_preference.to_lowercase().as_str() {
+                // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
+                "low" => wgpu::PowerPreference::LowPower,
+                "high" => wgpu::PowerPreference::HighPerformance,
+                other => panic!("Unknown power preference: {}", other),
+            }
+        } else {
+            wgpu::PowerPreference::default()
+        };
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions { power_preference, compatible_surface: Some(&surface) })
+            .await
+            .expect("No suitable GPU adapters found on the system!");
+
+        let adapter_features = adapter.features();
+        // 使用 Xcode 调试时，配置 trace_path 会 crash (2021/4/12)
+        // let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        // let trace_path = PathBuf::from(&base_dir).join("WGPU_TRACE");
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    label: None,
+                    features: adapter_features,
+                    limits: wgpu::Limits {
+                        max_dynamic_storage_buffers_per_pipeline_layout: 28,
+                        max_storage_buffers_per_shader_stage: 28,
+                        max_storage_textures_per_shader_stage: 8,
+                        max_push_constant_size: 16,
+                        ..Default::default()
+                    },
+                },
+                // Some(&trace_path)
+                None,
+            )
+            .await
+            .expect("Unable to find a suitable GPU adapter!");
+
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             // supported list: [Bgra8Unorm, Bgra8Srgb, Rgba16Sfloat]
@@ -62,40 +111,6 @@ impl AppView {
             library_directory: "",
         }
     }
-}
-
-async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
-    let adapter = instance
-        .request_adapter(&wgpu::RequestAdapterOptions {
-            // wgpu::PowerPreference::Lowpower 会获取到电脑上的集成显示
-            power_preference: wgpu::PowerPreference::default(),
-            compatible_surface: Some(surface),
-        })
-        .await
-        .unwrap();
-
-    let adapter_features = adapter.features();
-    // 使用 Xcode 调试时，配置 trace_path 会 crash (2021/4/12)
-    // let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    // let trace_path = PathBuf::from(&base_dir).join("WGPU_TRACE");
-    adapter
-        .request_device(
-            &wgpu::DeviceDescriptor {
-                label: None,
-                features: adapter_features,
-                limits: wgpu::Limits {
-                    max_dynamic_storage_buffers_per_pipeline_layout: 28,
-                    max_storage_buffers_per_shader_stage: 28,
-                    max_storage_textures_per_shader_stage: 8,
-                    max_push_constant_size: 16,
-                    ..Default::default()
-                },
-            },
-            // Some(&trace_path)
-            None,
-        )
-        .await
-        .unwrap()
 }
 
 impl crate::GPUContext for AppView {

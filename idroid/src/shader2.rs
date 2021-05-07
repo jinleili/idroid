@@ -23,7 +23,7 @@ pub fn insert_code_then_create(
     // std::env::current_dir() 在 xcode debug 时只能获得相对路径： “/”
 
     let base_dir = uni_view::fs::application_root_dir();
-    let (fold, shader_name) = if cfg!(target_os = "ios") {
+    let (fold, shader_name) = if cfg!(any(target_os = "ios", target_arch = "wasm32")) {
         ("shader-preprocessed-wgsl", shader_name.replace("/", "_"))
     } else {
         ("shader-wgsl", shader_name.to_string())
@@ -36,7 +36,7 @@ pub fn insert_code_then_create(
         }
     };
 
-    let mut shader_source = if cfg!(target_os = "ios") {
+    let shader_source = if cfg!(any(target_os = "ios", target_arch = "wasm32")) {
         code
     } else {
         let mut shader_source = String::new();
