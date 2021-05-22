@@ -52,7 +52,7 @@ pub fn insert_code_then_create(
         shader_source
     };
 
-    // println!("{:?} \n === \n \n", &shader_source);
+    // println!("{:?} \n === \n \n", &final_source);
     device.create_shader_module(&ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
@@ -64,6 +64,7 @@ pub fn insert_code_then_create(
 fn request_shader_code(base_dir: &str, fold: &str, shader_name: &str) -> String {
     // 主线程中同步的 XMLHttpRequest 已不赞成使用(2021/05/07)
     let mut request = web_sys::XmlHttpRequest::new().unwrap();
+    request.set_response_type(web_sys::XmlHttpRequestResponseType::None);
     let url = base_dir.to_string() + "/" + &shader_name + ".wgsl";
     request.open_with_async("get", &url, false);
     request.send();

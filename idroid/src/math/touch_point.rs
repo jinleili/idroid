@@ -41,6 +41,21 @@ impl TouchPoint {
         }
     }
 
+    pub fn new_by_pos(pos: crate::math::Position) -> Self {
+        TouchPoint {
+            pos,
+            azimuth_angle: 0.0,
+            altitude_angle: std::f32::consts::FRAC_PI_2,
+            force: 0.0,
+            stamp: 0.0,
+            distance: 0.0,
+            interval: 0.0,
+            speed: 0.0,
+            ty: -1,
+            stamp_scale: 0.0,
+        }
+    }
+
     // 生成结束点
     pub fn new_end(pos: crate::math::Position) -> Self {
         TouchPoint {

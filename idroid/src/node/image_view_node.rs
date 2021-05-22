@@ -151,7 +151,7 @@ pub struct ImageViewNode {
 #[allow(dead_code)]
 impl ImageViewNode {
     fn frome_attributes<T: Pos + AsBytes>(
-        attributes: NodeAttributes<T>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+        attributes: NodeAttributes<T>, device: &wgpu::Device, _encoder: &mut wgpu::CommandEncoder,
     ) -> Self {
         let corlor_format =
             if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };

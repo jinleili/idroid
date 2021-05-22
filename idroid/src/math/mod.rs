@@ -13,8 +13,8 @@ pub use point3d::Point3D;
 mod touch_point;
 pub use touch_point::TouchPoint;
 
-mod size;
-pub use size::Size;
+pub mod size;
+pub use size::*;
 
 mod line_segment;
 pub use line_segment::LineSegment;

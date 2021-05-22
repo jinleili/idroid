@@ -15,6 +15,11 @@ pub mod ffi;
 pub mod fs;
 pub use fs::application_root_dir;
 
+#[cfg(target_arch = "wasm32")]
+pub use ffi::web::*;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use std::println as console_log;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -31,6 +36,7 @@ pub struct TouchPoint {
 }
 
 pub trait GPUContext {
+    fn set_view_size(&mut self, _size: (f64, f64)) {}
     fn get_view_size(&self) -> ViewSize;
     fn update_swap_chain(&mut self);
     fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32);
@@ -50,4 +56,3 @@ impl Deref for AppViewWrapper {
         &self.0
     }
 }
-

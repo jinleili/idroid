@@ -12,7 +12,7 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "*"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.8",  rev = "9e4c98ccbe4e980f75a20cd00450a60ef361c16e" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", version = "0.8",  rev = "7486bdad64bb5d17b709ecccb41e063469efff88" }
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 
@@ -41,5 +41,5 @@ web-sys = { version = "=0.3.50", features = [
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
 objc = "*"
-winit = { version = "0.24", features = ["web-sys"] }
+winit = { version = "0.25", features = ["web-sys"] }
 raw-window-handle = "0.3"

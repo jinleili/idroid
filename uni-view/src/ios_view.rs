@@ -141,8 +141,8 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                 label: None,
                 features: adapter_features,
                 limits: wgpu::Limits {
-                    max_dynamic_storage_buffers_per_pipeline_layout: 28,
-                    max_storage_buffers_per_shader_stage: 28,
+                    max_dynamic_storage_buffers_per_pipeline_layout: 16,
+                    max_storage_buffers_per_shader_stage: 16,
                     max_storage_textures_per_shader_stage: 8,
                     max_push_constant_size: 16,
                     ..Default::default()

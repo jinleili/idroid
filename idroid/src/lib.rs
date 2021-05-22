@@ -16,7 +16,7 @@ pub use mvp_uniform_obj::{MVPUniform, MVPUniform2, MVPUniformObj};
 // pub use dynamic_buffer::DynamicBufferObj;
 
 pub mod node;
-pub mod shader2;
+pub mod shader;
 pub mod vertex;
 
 use math::TouchPoint;

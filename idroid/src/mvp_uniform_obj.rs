@@ -23,8 +23,6 @@ impl MVPUniform {
 
 pub struct MVPUniformObj {
     pub buffer: BufferObj,
-    view_width: f32,
-    view_height: f32,
     // 实现绽放与拖拽
     scale: f32,
     pintch_start_location: Option<(f32, f32)>,
@@ -33,7 +31,7 @@ pub struct MVPUniformObj {
 }
 
 impl MVPUniformObj {
-    pub fn new(viewport_size: Size<f32>, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> Self {
+    pub fn new(viewport_size: Size<f32>, device: &wgpu::Device) -> Self {
         let (p_matrix, base_mv_matrix, _factor) = crate::utils::matrix_helper::perspective_mvp(viewport_size);
         let buffer = BufferObj::create_uniform_buffer(
             device,
@@ -44,8 +42,6 @@ impl MVPUniformObj {
             buffer,
             p_matrix,
             base_mv_matrix,
-            view_width: viewport_size.width,
-            view_height: viewport_size.height,
             scale: 1.0,
             pintch_start_location: None,
         }
