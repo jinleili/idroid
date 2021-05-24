@@ -11,7 +11,7 @@ pub struct BindingGroupSettingNode {
 #[allow(dead_code)]
 impl BindingGroupSettingNode {
     pub fn new(
-        device: &wgpu::Device, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
+        device: &wgpu::Device, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
         samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
@@ -37,8 +37,8 @@ impl BindingGroupSettingNode {
             b_index += 1;
         }
 
-        for i in 0..inout_buffers.len() {
-            let buffer_obj = inout_buffers[i];
+        for i in 0..storage_buffers.len() {
+            let buffer_obj = storage_buffers[i];
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],

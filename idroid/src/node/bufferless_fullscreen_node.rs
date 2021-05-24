@@ -9,7 +9,7 @@ pub struct BufferlessFullscreenNode {
 
 impl BufferlessFullscreenNode {
     pub fn new(
-        device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, inout_buffers: Vec<&BufferObj>,
+        device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
         samplers: Vec<&wgpu::Sampler>, visibilities: Option<Vec<ShaderStage>>, shader_module: &ShaderModule,
     ) -> Self {
@@ -17,12 +17,12 @@ impl BufferlessFullscreenNode {
             states
         } else {
             let mut stages = vec![];
-            for _ in 0..(uniforms.len() + inout_buffers.len() + textures.len() + samplers.len()) {
+            for _ in 0..(uniforms.len() + storage_buffers.len() + textures.len() + samplers.len()) {
                 stages.push(ShaderStage::FRAGMENT);
             }
             stages
         };
-        let setting_node = BindingGroupSettingNode::new(device, uniforms, inout_buffers, textures, samplers, stages);
+        let setting_node = BindingGroupSettingNode::new(device, uniforms, storage_buffers, textures, samplers, stages);
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[&setting_node.bind_group_layout],
