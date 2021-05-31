@@ -118,20 +118,5 @@ impl BufferObj {
             usage: usage | wgpu::BufferUsage::COPY_DST,
         });
         BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
-        // } else {
-        //     let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        //         label: Some("Temp Buffer"),
-        //         contents: data,
-        //         usage:  usage | wgpu::BufferUsage::COPY_SRC,
-        //     });
-        //     let buffer = device.create_buffer(&wgpu::BufferDescriptor {
-        //         size,
-        //         usage: usage | wgpu::BufferUsage::COPY_DST,
-        //         label: None,
-        //         mapped_at_creation: false,
-        //     });
-        //     encoder.copy_buffer_to_buffer(&temp_buf, 0, &buffer, 0, size);
-        //     BufferObj { buffer, size }
-        // }
     }
 }

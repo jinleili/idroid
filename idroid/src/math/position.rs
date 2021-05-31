@@ -75,6 +75,10 @@ impl Position {
         ((self.x - other.x).powf(2.0) + (self.y - other.y).powf(2.0)).sqrt()
     }
 
+    pub fn length(&self) -> f32 {
+        (self.x.powf(2.0) + self.y.powf(2.0)).sqrt()
+    }
+
     pub fn ortho_in(&self, view_size: ViewSize) -> Self {
         // 转换成匹配正交投影的像素坐标
         Position::new(self.x - view_size.center_x(), view_size.center_y() - self.y)

@@ -16,6 +16,7 @@ pub mod fs;
 pub use fs::application_root_dir;
 
 #[cfg(target_arch = "wasm32")]
+#[macro_use]
 pub use ffi::web::*;
 
 #[cfg(not(target_arch = "wasm32"))]
