@@ -1,4 +1,4 @@
-use crate::buffer::BufferObj;
+use crate::{buffer::BufferObj, AnyTexture};
 use std::vec::Vec;
 use wgpu::{StorageTextureAccess, TextureFormat};
 
@@ -12,8 +12,8 @@ pub struct BindingGroupSettingNode {
 impl BindingGroupSettingNode {
     pub fn new(
         device: &wgpu::Device, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
-        textures: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
-        samplers: Vec<&wgpu::Sampler>, visibilitys: Vec<wgpu::ShaderStage>,
+        textures: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, samplers: Vec<&wgpu::Sampler>,
+        visibilitys: Vec<wgpu::ShaderStage>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
@@ -54,22 +54,20 @@ impl BindingGroupSettingNode {
         }
 
         for i in 0..textures.len() {
-            let storage_access = textures[i].2;
+            let storage_access = textures[i].1;
+            let any_tex = textures[i].0;
+            let view_dimension = any_tex.view_dimension;
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
                 ty: if let Some(access) = storage_access {
-                    wgpu::BindingType::StorageTexture {
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        access,
-                        format: textures[i].1,
-                    }
+                    wgpu::BindingType::StorageTexture { view_dimension, access, format: any_tex.format }
                 } else {
                     wgpu::BindingType::Texture {
                         sample_type: wgpu::TextureSampleType::Float {
-                            filterable: texture_sample_filterable(textures[i].1),
+                            filterable: texture_sample_filterable(any_tex.format),
                         },
-                        view_dimension: wgpu::TextureViewDimension::D2,
+                        view_dimension,
                         multisampled: false,
                     }
                 },
@@ -77,7 +75,7 @@ impl BindingGroupSettingNode {
             });
             entries.push(wgpu::BindGroupEntry {
                 binding: b_index,
-                resource: wgpu::BindingResource::TextureView(textures[i].0),
+                resource: wgpu::BindingResource::TextureView(&any_tex.tex_view),
             });
             b_index += 1;
         }

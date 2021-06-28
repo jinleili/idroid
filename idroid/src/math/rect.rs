@@ -1,4 +1,4 @@
-use crate::math::{Position, Size, ViewSize};
+use crate::math::{Position, Size};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Rect {

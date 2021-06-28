@@ -2,9 +2,9 @@ use crate::geometry::plane::Plane;
 use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSettingNode;
 use crate::vertex::Pos;
-use crate::{BufferObj, MVPUniform};
+use crate::{AnyTexture, BufferObj, MVPUniform};
 use wgpu::util::DeviceExt;
-use wgpu::{ShaderModule, StorageTextureAccess, TextureFormat};
+use wgpu::StorageTextureAccess;
 
 use std::ops::{Deref, DerefMut};
 use zerocopy::AsBytes;
@@ -14,7 +14,7 @@ pub struct NodeAttributes<'a, T: Pos> {
     pub vertices_and_indices: Option<(Vec<T>, Vec<u32>)>,
     pub uniform_buffers: Vec<&'a BufferObj>,
     pub storage_buffers: Vec<&'a BufferObj>,
-    pub tex_views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
+    pub tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>,
     pub samplers: Vec<&'a wgpu::Sampler>,
     // 动态 uniform
     pub dynamic_uniforms: Vec<(&'a BufferObj, wgpu::ShaderStage)>,
@@ -46,8 +46,7 @@ impl<'a, T: Pos + AsBytes> DerefMut for ImageNodeBuilder<'a, T> {
 
 impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
     pub fn new(
-        tex_views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
-        shader_module: &'a wgpu::ShaderModule,
+        tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>, shader_module: &'a wgpu::ShaderModule,
     ) -> Self {
         ImageNodeBuilder {
             attributes: NodeAttributes {
@@ -98,9 +97,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_tex_views_and_samplers(
-        mut self, views: Vec<(&'a wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>,
-    ) -> Self {
+    pub fn with_tex_views_and_samplers(mut self, views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>) -> Self {
         self.tex_views = views;
         self
     }
@@ -183,11 +180,10 @@ impl ImageViewNode {
             vec![]
         };
         // 如果没有设置 mvp, 且设置了 view_size, 则设置一个全屏的 mvp
-        let mut mvp_buf = BufferObj::create_uniform_buffer(device, &MVPUniform::zero(), Some("mvp uniform"));
+        let (p_matrix, vm_matrix, _factor) = crate::matrix_helper::perspective_mvp(attributes.view_size);
+        let mvp = MVPUniform { mvp_matrix: (p_matrix * vm_matrix).into() };
+        let mvp_buf = BufferObj::create_uniform_buffer(device, &mvp, Some("mvp uniform"));
         let uniform_buffers = if attributes.uniform_buffers.len() == 0 && attributes.view_size.width > 0.0 {
-            let (p_matrix, vm_matrix, _factor) = crate::matrix_helper::perspective_mvp(attributes.view_size);
-            let mvp = MVPUniform { mvp_matrix: (p_matrix * vm_matrix).into() };
-            mvp_buf = BufferObj::create_uniform_buffer(device, &mvp, Some("mvp uniform"));
             vec![&mvp_buf]
         } else {
             attributes.uniform_buffers
@@ -357,7 +353,6 @@ impl ImageViewNode {
 
     pub fn set_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         rpass.set_pipeline(&self.pipeline);
-        rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint32);
         rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
     }

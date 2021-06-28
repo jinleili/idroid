@@ -3,7 +3,6 @@ pub mod matrix_helper;
 
 mod hud;
 pub use hud::HUD;
-use wgpu::BlendState;
 
 #[allow(dead_code)]
 pub fn clear_color() -> wgpu::Color {

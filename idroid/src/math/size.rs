@@ -16,13 +16,12 @@ impl Size<f32> {
         let valid_h = self.height - margin.top - margin.bottom;
         let self_ratio = valid_w / valid_h;
         let external_size_ratio = fill_size.width / fill_size.height;
-        let mut ratio = 1.0;
-        if external_size_ratio > self_ratio {
+        let ratio = if external_size_ratio > self_ratio {
             // 按宽顶边计算缩放比
-            ratio = valid_w / fill_size.width;
+            valid_w / fill_size.width
         } else {
-            ratio = valid_h / fill_size.height;
-        }
+            valid_h / fill_size.height
+        };
         // 缩放后的 size
         let new_fill_size: Size<f32> = (fill_size.width * ratio, fill_size.height * ratio).into();
         Rect::from_origin_n_size(

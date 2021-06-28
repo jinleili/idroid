@@ -1,5 +1,4 @@
 extern crate raw_window_handle;
-use winit::dpi::PhysicalSize;
 
 pub struct AppView {
     pub view: winit::window::Window,

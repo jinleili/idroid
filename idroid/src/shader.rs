@@ -1,5 +1,5 @@
 use std::{borrow::Cow, fs::read_to_string, path::PathBuf};
-use wgpu::{ShaderFlags, ShaderModule, ShaderModuleDescriptor, ShaderSource};
+use wgpu::{ShaderModule, ShaderModuleDescriptor, ShaderSource};
 
 const SHADER_IMPORT: &str = "#include ";
 const SHADER_SEGMENT: &str = "#insert_code_segment";
@@ -15,7 +15,7 @@ pub fn insert_code_then_create(
 ) -> ShaderModule {
     // @Kvark 20210402 ：Please don't use EXPERIMENTAL_TRANSLATION on Metal for this shader for now.
     // let flags = ShaderFlags::VALIDATION | ShaderFlags::EXPERIMENTAL_TRANSLATION;
-    let flags = ShaderFlags::VALIDATION;
+    // let flags = ShaderFlags::VALIDATION;
     // let flags = ShaderFlags::default();
 
     // env!("CARGO_MANIFEST_DIR") 是编译时执行的，得到的是当前所编辑的库的所在路径，而不是项目的路径
@@ -56,7 +56,6 @@ pub fn insert_code_then_create(
     device.create_shader_module(&ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
-        flags,
     })
 }
 

@@ -1,7 +1,7 @@
-use wgpu::{Operations, PushConstantRange, ShaderModule, StorageTextureAccess, TextureFormat};
+use wgpu::{PushConstantRange, ShaderModule, StorageTextureAccess};
 
 use super::BindingGroupSettingNode;
-use crate::buffer::BufferObj;
+use crate::{buffer::BufferObj, AnyTexture};
 
 use core::ops::Range;
 use std::vec::Vec;
@@ -10,15 +10,15 @@ use std::vec::Vec;
 pub struct ComputeNode {
     pub setting_node: BindingGroupSettingNode,
     pub pipeline: wgpu::ComputePipeline,
-    pub threadgroup_count: (u32, u32),
+    pub threadgroup_count: (u32, u32, u32),
 }
 
 #[allow(dead_code)]
 impl ComputeNode {
     pub fn new(
-        device: &wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
+        device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
         storage_buffers: Vec<&BufferObj>,
-        inout_tv: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
+        inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
     ) -> Self {
         ComputeNode::new_with_push_constants(
             device,
@@ -32,16 +32,17 @@ impl ComputeNode {
     }
 
     pub fn new_with_push_constants(
-        device: &wgpu::Device, threadgroup_count: (u32, u32), uniforms: Vec<&BufferObj>,
+        device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
         storage_buffers: Vec<&BufferObj>,
-        inout_tv: Vec<(&wgpu::TextureView, TextureFormat, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
+        inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
         push_constants: Option<Vec<(wgpu::ShaderStage, Range<u32>)>>,
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStage> = vec![];
         for _ in 0..(uniforms.len() + storage_buffers.len() + inout_tv.len()) {
             visibilitys.push(wgpu::ShaderStage::COMPUTE);
         }
-        let setting_node = BindingGroupSettingNode::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
+        let setting_node =
+            BindingGroupSettingNode::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
 
         let mut ranges: Vec<PushConstantRange> = vec![];
         if let Some(constants) = push_constants {
@@ -73,6 +74,6 @@ impl ComputeNode {
     pub fn dispatch<'a, 'b: 'a>(&'b self, cpass: &mut wgpu::ComputePass<'a>) {
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, 1);
+        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, self.threadgroup_count.2);
     }
 }

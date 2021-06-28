@@ -77,13 +77,6 @@ impl BufferObj {
     where
         T: 'static + AsBytes + Copy,
     {
-        /**
-         * if need to update an existing buffer every frame, ```map_write``` or ```copy_buffer_to_buffer``` which is the best choice?
-         * as [gpuweb docs mentioned](https://github.com/gpuweb/gpuweb/blob/a43fbad0f01fbc122b97b005a57b0f5c27d03dc6/design/BufferOperations.md),
-         * user can reusing upload buffers to reduces overhead, is it possible or appropriate in wgpu-rs?
-         *
-         * kvark:  re-using upload buffers is pretty much blocked on #9, so creating a new upload buffer and copying from it is the way to go, for now
-         */
         // 此处想要省掉 staging_buffer, 只能使用 map_write 这个 future 接口：
         // You can also map buffers but that requires polling the device
         // 但是专家 @kvark 说不可行: (2020/04/30)Writing to buffers directly is not currently feasible since you can't have part of a buffer used by GPU when changing it on CPU
