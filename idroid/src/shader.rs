@@ -56,6 +56,7 @@ pub fn insert_code_then_create(
     device.create_shader_module(&ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),
+        flags: wgpu::ShaderFlags::VALIDATION
     })
 }
 

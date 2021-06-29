@@ -12,8 +12,8 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="ce753cf5423b3f72c0f41dff9e417b2fdf5ba988"}
-# wgpu = { path = "../../../wgpu-rs" }
+wgpu = "0.9"
+# wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="ce753cf5423b3f72c0f41dff9e417b2fdf5ba988"}
 uni-view = { path="../uni-view" }
 
 nalgebra-glm = "*"

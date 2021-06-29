@@ -34,7 +34,6 @@ pub fn from_path(
             texture: &texture,
             mip_level: 0,
             origin: wgpu::Origin3d::ZERO,
-            aspect: wgpu::TextureAspect::All,
         },
         &texels,
         wgpu::ImageDataLayout {
@@ -81,7 +80,6 @@ pub fn into_format_r32float(
             texture: &texture,
             mip_level: 0,
             origin: wgpu::Origin3d::ZERO,
-            aspect: wgpu::TextureAspect::All,
         },
         &new_texels.as_bytes(),
         wgpu::ImageDataLayout {
@@ -113,7 +111,6 @@ pub fn update_by_path(image_path: &str, app_view: &crate::AppView, texture: &Tex
             texture,
             mip_level: 0,
             origin: wgpu::Origin3d::ZERO,
-            aspect: wgpu::TextureAspect::All,
         },
         &texels,
         wgpu::ImageDataLayout {
@@ -156,7 +153,6 @@ pub fn from_buffer(
             texture: &texture,
             mip_level: 0,
             origin: wgpu::Origin3d::ZERO,
-            aspect: wgpu::TextureAspect::All,
         },
         texture_extent,
     );
