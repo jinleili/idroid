@@ -22,19 +22,7 @@ pub struct AppView {
 impl AppView {
     pub async fn new(view: winit::window::Window) -> Self {
         let scale_factor = view.scale_factor();
-        let backend = if let Ok(backend) = std::env::var("WGPU_BACKEND") {
-            match backend.to_lowercase().as_str() {
-                "vulkan" => wgpu::BackendBit::VULKAN,
-                "metal" => wgpu::BackendBit::METAL,
-                "dx12" => wgpu::BackendBit::DX12,
-                "dx11" => wgpu::BackendBit::DX11,
-                "gl" => wgpu::BackendBit::GL,
-                "webgpu" => wgpu::BackendBit::BROWSER_WEBGPU,
-                other => panic!("Unknown backend: {}", other),
-            }
-        } else {
-            wgpu::BackendBit::PRIMARY
-        };
+        let backend = wgpu::util::backend_bits_from_env().unwrap_or(wgpu::Backends::PRIMARY);
         let instance = wgpu::Instance::new(backend);
         let (physical, surface) = unsafe { (view.inner_size(), instance.create_surface(&view)) };
 
@@ -76,7 +64,7 @@ impl AppView {
             .expect("Unable to find a suitable GPU device!");
 
         let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             // supported list: [Bgra8Unorm, Bgra8Srgb, Rgba16Sfloat]
             // format: device.get_swap_chain_preferred_format(),
             format: wgpu::TextureFormat::Bgra8Unorm,

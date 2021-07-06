@@ -54,12 +54,12 @@ impl AppView {
             height: (s.size.height as f32 * scale_factor) as u32,
         };
         
-        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
+        let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
         let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
 
         let (device, queue) = pollster::block_on(request_device(&instance, &surface));
         let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             // iOS 上这个纹理格式肯定是可以使用的： wgpu::TextureFormat::Bgra8Unorm
             // 使用 get_swap_chain_preferred_format() 渲染的画面是类似过暴的
             // format: device.get_swap_chain_preferred_format(),

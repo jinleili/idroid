@@ -13,7 +13,7 @@ impl BindingGroupSettingNode {
     pub fn new(
         device: &wgpu::Device, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, samplers: Vec<&wgpu::Sampler>,
-        visibilitys: Vec<wgpu::ShaderStage>,
+        visibilitys: Vec<wgpu::ShaderStages>,
     ) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];

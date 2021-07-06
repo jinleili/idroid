@@ -12,7 +12,7 @@ pub struct AnyTexture {
 }
 #[allow(dead_code)]
 pub fn from_path(
-    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsage, set_to_grayscale: bool,
+    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsages, set_to_grayscale: bool,
 ) -> (AnyTexture, Sampler) {
     let path = uni_view::fs::get_texture_file_path(image_path);
 
@@ -58,7 +58,7 @@ pub fn from_path(
 // from webgpu spec: R8 | R16 is not supported for storage use.
 #[allow(dead_code)]
 pub fn into_format_r32float(
-    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsage, label: Option<&'static str>,
+    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsages, label: Option<&'static str>,
 ) -> AnyTexture {
     let path = uni_view::fs::get_texture_file_path(image_path);
 
@@ -128,7 +128,7 @@ pub fn update_by_path(image_path: &str, app_view: &crate::AppView, texture: &Tex
 #[allow(dead_code)]
 pub fn from_buffer(
     buffer: &wgpu::Buffer, app_view: &crate::AppView, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32,
-    pixel_size: u32, format: TextureFormat, usage: wgpu::TextureUsage,
+    pixel_size: u32, format: TextureFormat, usage: wgpu::TextureUsages,
 ) -> (AnyTexture, Sampler) {
     let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
     let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
@@ -213,15 +213,15 @@ fn load_by_luma(path: PathBuf) -> (Vec<u8>, wgpu::Extent3d) {
 
 pub fn empty(
     device: &wgpu::Device, format: TextureFormat, extent: Extent3d, view_dimension: Option<wgpu::TextureViewDimension>,
-    usage: Option<wgpu::TextureUsage>,
+    usage: Option<wgpu::TextureUsages>,
 ) -> AnyTexture {
     let usage = if let Some(u) = usage {
         u
     } else {
-        wgpu::TextureUsage::RENDER_ATTACHMENT
-            | wgpu::TextureUsage::COPY_DST
-            | wgpu::TextureUsage::SAMPLED
-            | wgpu::TextureUsage::STORAGE
+        wgpu::TextureUsages::RENDER_ATTACHMENT
+            | wgpu::TextureUsages::COPY_DST
+            | wgpu::TextureUsages::SAMPLED
+            | wgpu::TextureUsages::STORAGE
     };
     let view_dimension = if let Some(vd) = view_dimension { vd } else { wgpu::TextureViewDimension::D2 };
     let tex_dimension = if view_dimension == wgpu::TextureViewDimension::D3 {

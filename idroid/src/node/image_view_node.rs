@@ -17,14 +17,14 @@ pub struct NodeAttributes<'a, T: Pos> {
     pub tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>,
     pub samplers: Vec<&'a wgpu::Sampler>,
     // 动态 uniform
-    pub dynamic_uniforms: Vec<(&'a BufferObj, wgpu::ShaderStage)>,
+    pub dynamic_uniforms: Vec<(&'a BufferObj, wgpu::ShaderStages)>,
 
     pub tex_rect: Option<crate::math::Rect>,
     pub corlor_format: Option<wgpu::TextureFormat>,
     pub primitive_topology: wgpu::PrimitiveTopology,
     pub use_depth_stencil: bool,
     pub shader_module: &'a wgpu::ShaderModule,
-    pub shader_stages: Vec<wgpu::ShaderStage>,
+    pub shader_stages: Vec<wgpu::ShaderStages>,
 }
 
 pub struct ImageNodeBuilder<'a, T: Pos + AsBytes> {
@@ -87,7 +87,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_dynamic_uniforms(mut self, uniforms: Vec<(&'a BufferObj, wgpu::ShaderStage)>) -> Self {
+    pub fn with_dynamic_uniforms(mut self, uniforms: Vec<(&'a BufferObj, wgpu::ShaderStages)>) -> Self {
         self.dynamic_uniforms = uniforms;
         self
     }
@@ -122,7 +122,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_shader_states(mut self, states: Vec<wgpu::ShaderStage>) -> Self {
+    pub fn with_shader_states(mut self, states: Vec<wgpu::ShaderStages>) -> Self {
         self.shader_stages = states;
         self
     }
@@ -153,10 +153,10 @@ impl ImageViewNode {
         let corlor_format =
             if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
 
-        let stages: Vec<wgpu::ShaderStage> = if attributes.shader_stages.len() > 0 {
+        let stages: Vec<wgpu::ShaderStages> = if attributes.shader_stages.len() > 0 {
             attributes.shader_stages
         } else {
-            let mut stages: Vec<wgpu::ShaderStage> = vec![wgpu::ShaderStage::VERTEX];
+            let mut stages: Vec<wgpu::ShaderStages> = vec![wgpu::ShaderStages::VERTEX];
             let uniform_buffers_len =
                 if attributes.uniform_buffers.len() > 0 { attributes.uniform_buffers.len() } else { 1 };
             for _ in 0..(uniform_buffers_len
@@ -164,7 +164,7 @@ impl ImageViewNode {
                 + attributes.tex_views.len()
                 + attributes.samplers.len())
             {
-                stages.push(wgpu::ShaderStage::FRAGMENT);
+                stages.push(wgpu::ShaderStages::FRAGMENT);
             }
             stages
         };
@@ -203,7 +203,7 @@ impl ImageViewNode {
                 device,
                 Some(&vi.0.as_bytes()),
                 None,
-                wgpu::BufferUsage::VERTEX,
+                wgpu::BufferUsages::VERTEX,
                 Some("vertex_buf"),
             );
             (vertex_buf, vi.1)
@@ -217,7 +217,7 @@ impl ImageViewNode {
                     device,
                     Some(&vertex_data.as_bytes()),
                     None,
-                    wgpu::BufferUsage::VERTEX,
+                    wgpu::BufferUsages::VERTEX,
                     Some("vertex_buf"),
                 );
 
@@ -228,7 +228,7 @@ impl ImageViewNode {
                     device,
                     Some(&vertex_data.as_bytes()),
                     None,
-                    wgpu::BufferUsage::VERTEX,
+                    wgpu::BufferUsages::VERTEX,
                     Some("vertex_buf"),
                 );
                 (vertex_buf, index_data)
@@ -238,7 +238,7 @@ impl ImageViewNode {
         let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Index Buffer"),
             contents: &index_data.as_bytes(),
-            usage: wgpu::BufferUsage::INDEX,
+            usage: wgpu::BufferUsages::INDEX,
         });
 
         let pipeline_vertex_buffers = [wgpu::VertexBufferLayout {
@@ -278,7 +278,7 @@ impl ImageViewNode {
                 targets: &[wgpu::ColorTargetState {
                     format: corlor_format,
                     blend: Some(crate::utils::default_blend()),
-                    write_mask: wgpu::ColorWrite::ALL,
+                    write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),
             primitive: wgpu::PrimitiveState {

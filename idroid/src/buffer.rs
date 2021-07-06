@@ -14,7 +14,7 @@ impl BufferObj {
     where
         T: 'static + AsBytes + Copy,
     {
-        BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsage::STORAGE, label)
+        BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsages::STORAGE, label)
     }
 
     pub fn create_empty_storage_buffer(
@@ -23,9 +23,9 @@ impl BufferObj {
         let buffer = device.create_buffer(&wgpu::BufferDescriptor {
             size,
             usage: if can_read_back {
-                wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST | wgpu::BufferUsage::COPY_SRC
+                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC
             } else {
-                wgpu::BufferUsage::STORAGE | wgpu::BufferUsage::COPY_DST
+                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST
             },
             label,
             mapped_at_creation: false,
@@ -37,14 +37,14 @@ impl BufferObj {
     where
         T: 'static + AsBytes + Copy,
     {
-        BufferObj::create_buffer(device, None, Some(uniform), wgpu::BufferUsage::UNIFORM, label)
+        BufferObj::create_buffer(device, None, Some(uniform), wgpu::BufferUsages::UNIFORM, label)
     }
 
     pub fn create_uniforms_buffer<T>(device: &wgpu::Device, slice: &[T], label: Option<&'static str>) -> Self
     where
         T: 'static + AsBytes + Copy,
     {
-        BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsage::UNIFORM, label)
+        BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsages::UNIFORM, label)
     }
 
     pub fn update_buffer<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)
@@ -54,7 +54,7 @@ impl BufferObj {
         let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Temp Buffer"),
             contents: data.as_bytes(),
-            usage: wgpu::BufferUsage::COPY_SRC,
+            usage: wgpu::BufferUsages::COPY_SRC,
         });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
@@ -66,7 +66,7 @@ impl BufferObj {
         let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Temp Buffer"),
             contents: slice.as_bytes(),
-            usage: wgpu::BufferUsage::COPY_SRC,
+            usage: wgpu::BufferUsages::COPY_SRC,
         });
         let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
@@ -83,13 +83,13 @@ impl BufferObj {
         let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Temp Buffer"),
             contents: slice.as_bytes(),
-            usage: wgpu::BufferUsage::COPY_SRC,
+            usage: wgpu::BufferUsages::COPY_SRC,
         });
         encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
     }
 
     pub fn create_buffer<T>(
-        device: &wgpu::Device, slice: Option<&[T]>, item: Option<&T>, usage: wgpu::BufferUsage,
+        device: &wgpu::Device, slice: Option<&[T]>, item: Option<&T>, usage: wgpu::BufferUsages,
         label: Option<&'static str>,
     ) -> Self
     where
@@ -108,7 +108,7 @@ impl BufferObj {
         let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label,
             contents: data,
-            usage: usage | wgpu::BufferUsage::COPY_DST,
+            usage: usage | wgpu::BufferUsages::COPY_DST,
         });
         BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
     }

@@ -1,5 +1,5 @@
 use crate::{node::BindingGroupSettingNode, BufferObj};
-use wgpu::{PrimitiveTopology, ShaderModule, ShaderStage, StorageTextureAccess, TextureFormat};
+use wgpu::{PrimitiveTopology, ShaderModule, ShaderStages, StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
 pub struct BufferlessFullscreenNode {
@@ -11,14 +11,14 @@ impl BufferlessFullscreenNode {
     pub fn new(
         device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<(&crate::AnyTexture, Option<StorageTextureAccess>)>,
-        samplers: Vec<&wgpu::Sampler>, visibilities: Option<Vec<ShaderStage>>, shader_module: &ShaderModule,
+        samplers: Vec<&wgpu::Sampler>, visibilities: Option<Vec<ShaderStages>>, shader_module: &ShaderModule,
     ) -> Self {
-        let stages: Vec<ShaderStage> = if let Some(states) = visibilities {
+        let stages: Vec<ShaderStages> = if let Some(states) = visibilities {
             states
         } else {
             let mut stages = vec![];
             for _ in 0..(uniforms.len() + storage_buffers.len() + textures.len() + samplers.len()) {
-                stages.push(ShaderStage::FRAGMENT);
+                stages.push(ShaderStages::FRAGMENT);
             }
             stages
         };
@@ -39,7 +39,7 @@ impl BufferlessFullscreenNode {
                 targets: &[wgpu::ColorTargetState {
                     format,
                     blend: Some(crate::utils::default_blend()),
-                    write_mask: wgpu::ColorWrite::ALL,
+                    write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),
             // the bufferless vertices are in clock-wise order

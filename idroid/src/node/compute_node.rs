@@ -35,11 +35,11 @@ impl ComputeNode {
         device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
         storage_buffers: Vec<&BufferObj>,
         inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
-        push_constants: Option<Vec<(wgpu::ShaderStage, Range<u32>)>>,
+        push_constants: Option<Vec<(wgpu::ShaderStages, Range<u32>)>>,
     ) -> Self {
-        let mut visibilitys: Vec<wgpu::ShaderStage> = vec![];
+        let mut visibilitys: Vec<wgpu::ShaderStages> = vec![];
         for _ in 0..(uniforms.len() + storage_buffers.len() + inout_tv.len()) {
-            visibilitys.push(wgpu::ShaderStage::COMPUTE);
+            visibilitys.push(wgpu::ShaderStages::COMPUTE);
         }
         let setting_node =
             BindingGroupSettingNode::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
