@@ -27,8 +27,7 @@ pub struct AppView {
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
     pub surface: wgpu::Surface,
-    pub sc_desc: wgpu::SwapChainDescriptor,
-    pub swap_chain: wgpu::SwapChain,
+    pub config: wgpu::SurfaceConfiguration,
     //  一个像素在[-1, 1]缩放为满屏的设备空间中对应的量
     pub pixel_on_ndc_x: f32,
     pub pixel_on_ndc_y: f32,
@@ -55,10 +54,11 @@ impl AppView {
         };
         
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
-        let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
+        let surface = unsafe { instance.create_surface_from_layer(obj.metal_layer) };
+        let surface = unsafe { wgpu::Surface::from_layer(obj.metal_layer)};
 
         let (device, queue) = pollster::block_on(request_device(&instance, &surface));
-        let sc_desc = wgpu::SwapChainDescriptor {
+        let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             // iOS 上这个纹理格式肯定是可以使用的： wgpu::TextureFormat::Bgra8Unorm
             // 使用 get_swap_chain_preferred_format() 渲染的画面是类似过暴的
@@ -69,7 +69,8 @@ impl AppView {
             // 在移动端上，这个呈现模式最高效
             present_mode: wgpu::PresentMode::Fifo,
         };
-        let swap_chain = device.create_swap_chain(&surface, &sc_desc);
+        surface.configure(&device, &config);
+
         let pixel_on_ndc_x = 2.0 / physical.width as f32;
         let pixel_on_ndc_y = 2.0 / physical.height as f32;
         let pixel_on_normal_ndc =
@@ -82,8 +83,7 @@ impl AppView {
             device,
             queue,
             surface,
-            sc_desc,
-            swap_chain,
+            config,
             pixel_on_ndc_x,
             pixel_on_ndc_y,
             pixel_on_normal_ndc,
@@ -96,12 +96,12 @@ impl AppView {
 }
 
 impl crate::GPUContext for AppView {
-    fn update_swap_chain(&mut self) {
+    fn resize_surface(&mut self) {
         let size = self.get_view_size();
         println!("view_size: {:?}", size);
-        self.sc_desc.width = size.width;
-        self.sc_desc.height = size.height;
-        self.swap_chain = self.device.create_swap_chain(&self.surface, &self.sc_desc);
+        self.config.width = size.width;
+        self.config.height = size.height;
+        self.surface.configure(&self.device, &self.config);
         self.pixel_on_ndc_x = 2.0 / size.width as f32;
         self.pixel_on_ndc_y = 2.0 / size.height as f32;
     }
@@ -117,6 +117,10 @@ impl crate::GPUContext for AppView {
     fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32) {
         let size = self.get_view_size();
         (touch_point_x * self.scale_factor / size.width as f32, touch_point_y * self.scale_factor / size.height as f32)
+    }
+
+    fn get_current_frame_view(&self) -> (wgpu::SurfaceFrame, wgpu::TextureView) {
+        self.create_current_frame_view(&self.device, &self.surface, &self.config)
     }
 }
 

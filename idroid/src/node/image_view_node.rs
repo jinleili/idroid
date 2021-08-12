@@ -50,7 +50,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
     ) -> Self {
         ImageNodeBuilder {
             attributes: NodeAttributes {
-                view_size: (0.0, 0.0).into(),
+                view_size: (1.0, 1.0).into(),
                 vertices_and_indices: None,
                 uniform_buffers: vec![],
                 storage_buffers: vec![],
@@ -97,7 +97,7 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_tex_views_and_samplers(mut self, views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>) -> Self {
+    pub fn with_tex_views(mut self, views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>) -> Self {
         self.tex_views = views;
         self
     }
@@ -127,8 +127,17 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn build(self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder) -> ImageViewNode {
-        ImageViewNode::frome_attributes::<T>(self.attributes, device, encoder)
+    pub fn build(self, device: &wgpu::Device) -> ImageViewNode {
+        debug_assert!(
+            self.shader_stages.len()
+                >= self.uniform_buffers.len()
+                    + self.samplers.len()
+                    + self.storage_buffers.len()
+                    + self.tex_views.len()
+                    + self.dynamic_uniforms.len(),
+            "shader_stages count less than binding resource count"
+        );
+        ImageViewNode::frome_attributes::<T>(self.attributes, device)
     }
 }
 
@@ -136,10 +145,10 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
 pub struct ImageViewNode {
     pub vertex_buf: BufferObj,
     pub index_buf: wgpu::Buffer,
-    index_count: usize,
-    setting_node: BindingGroupSettingNode,
-    dynamic_node: Option<super::DynamicBindingGroupNode>,
-    pipeline: wgpu::RenderPipeline,
+    pub index_count: usize,
+    pub setting_node: BindingGroupSettingNode,
+    pub dynamic_node: Option<super::DynamicBindingGroupNode>,
+    pub pipeline: wgpu::RenderPipeline,
     view_width: f32,
     view_height: f32,
     pub clear_color: wgpu::Color,
@@ -147,9 +156,7 @@ pub struct ImageViewNode {
 
 #[allow(dead_code)]
 impl ImageViewNode {
-    fn frome_attributes<T: Pos + AsBytes>(
-        attributes: NodeAttributes<T>, device: &wgpu::Device, _encoder: &mut wgpu::CommandEncoder,
-    ) -> Self {
+    fn frome_attributes<T: Pos + AsBytes>(attributes: NodeAttributes<T>, device: &wgpu::Device) -> Self {
         let corlor_format =
             if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
 
@@ -243,7 +250,7 @@ impl ImageViewNode {
 
         let pipeline_vertex_buffers = [wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<T>() as wgpu::BufferAddress,
-            step_mode: wgpu::InputStepMode::Vertex,
+            step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &T::vertex_attributes(0),
         }];
         let (dynamic_node, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
@@ -308,7 +315,7 @@ impl ImageViewNode {
 
     // 视口的宽高发生变化
     pub fn resize(
-        &mut self, _sc_desc: &wgpu::SwapChainDescriptor, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
+        &mut self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
         tex_rect: Option<crate::math::Rect>,
     ) {
         if let Some(rect) = tex_rect {
@@ -320,18 +327,18 @@ impl ImageViewNode {
         };
     }
 
-    pub fn begin_render_pass(
-        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
-    ) {
-        self.begin_rpass_by_offset(frame_view, encoder, load_op, 0);
-    }
-
     pub fn draw_render_pass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         self.draw_rpass_by_offset(rpass, 0, 1);
     }
 
     pub fn draw_by_instance_count<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>, instance_count: u32) {
         self.draw_rpass_by_offset(rpass, 0, instance_count);
+    }
+
+    pub fn begin_render_pass(
+        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
+    ) {
+        self.begin_rpass_by_offset(frame_view, encoder, load_op, 0);
     }
 
     pub fn begin_rpass_by_offset(
@@ -351,15 +358,17 @@ impl ImageViewNode {
         self.draw_rpass_by_offset(&mut rpass, offset_index, 1);
     }
 
-    pub fn set_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
+    fn set_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         rpass.set_pipeline(&self.pipeline);
+        rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
         rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint32);
         rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
     }
 
-    pub fn draw_rpass_by_offset<'a, 'b: 'a>(
+    fn draw_rpass_by_offset<'a, 'b: 'a>(
         &'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32, instance_count: u32,
     ) {
+        self.set_rpass(rpass);
         if let Some(node) = &self.dynamic_node {
             rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);
         }

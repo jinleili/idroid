@@ -39,8 +39,23 @@ pub struct TouchPoint {
 pub trait GPUContext {
     fn set_view_size(&mut self, _size: (f64, f64)) {}
     fn get_view_size(&self) -> ViewSize;
-    fn update_swap_chain(&mut self);
+    fn resize_surface(&mut self);
     fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32);
+    fn get_current_frame_view(&self) -> (wgpu::SurfaceFrame, wgpu::TextureView);
+    fn create_current_frame_view(
+        &self, device: &wgpu::Device, surface: &wgpu::Surface, config: &wgpu::SurfaceConfiguration,
+    ) -> (wgpu::SurfaceFrame, wgpu::TextureView) {
+        let frame = match surface.get_current_frame() {
+            Ok(frame) => frame,
+            Err(_) => {
+                surface.configure(&device, &config);
+                surface.get_current_frame().expect("Failed to acquire next surface texture!")
+            }
+        };
+        let view = frame.output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+        // frame cannot be drop early
+        (frame, view)
+    }
 }
 
 // 元组结构类型，默认的构造方法只能在当前模块访问，除非将元组参数添加 pub

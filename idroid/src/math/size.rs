@@ -97,14 +97,14 @@ impl From<super::Position> for Size<f32> {
     }
 }
 
-impl From<&wgpu::SwapChainDescriptor> for Size<f32> {
-    fn from(data: &wgpu::SwapChainDescriptor) -> Self {
+impl From<&wgpu::SurfaceConfiguration> for Size<f32> {
+    fn from(data: &wgpu::SurfaceConfiguration) -> Self {
         Size { width: data.width as f32, height: data.height as f32 }
     }
 }
 
-impl From<&wgpu::SwapChainDescriptor> for Size<u32> {
-    fn from(data: &wgpu::SwapChainDescriptor) -> Self {
+impl From<&wgpu::SurfaceConfiguration> for Size<u32> {
+    fn from(data: &wgpu::SurfaceConfiguration) -> Self {
         Size { width: data.width, height: data.height }
     }
 }

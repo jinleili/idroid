@@ -20,11 +20,30 @@ impl PosOnly {
 
 impl Pos for PosOnly {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
-        vec![wgpu::VertexAttribute {
-            shader_location: offset + 0,
-            format: wgpu::VertexFormat::Float32x3,
-            offset: 0,
-        }]
+        vec![wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 }]
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
+pub struct PosTangent {
+    pub pos: [f32; 3],
+    pub tangent: [f32; 3],
+}
+
+impl PosTangent {
+    #[allow(dead_code)]
+    pub fn new(pos: [f32; 3], tangent: [f32; 3]) -> PosTangent {
+        PosTangent { pos, tangent }
+    }
+}
+
+impl Pos for PosTangent {
+    fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
+        vec![
+            wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 },
+            wgpu::VertexAttribute { shader_location: offset + 1, format: wgpu::VertexFormat::Float32x3, offset: 4 * 3 },
+        ]
     }
 }
 
@@ -49,11 +68,7 @@ impl PosColor {
 impl Pos for PosColor {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
         vec![
-            wgpu::VertexAttribute {
-                shader_location: offset + 0,
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 0,
-            },
+            wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 },
             wgpu::VertexAttribute {
                 shader_location: offset + 1,
                 format: wgpu::VertexFormat::Float32x4,
@@ -110,11 +125,7 @@ impl PosTex {
 impl Pos for PosTex {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
         vec![
-            wgpu::VertexAttribute {
-                shader_location: offset + 0,
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 0,
-            },
+            wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 },
             wgpu::VertexAttribute {
                 shader_location: offset + 1,
                 format: wgpu::VertexFormat::Float32x2,
@@ -154,11 +165,7 @@ impl PosTex2 {
 impl Pos for PosTex2 {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
         vec![
-            wgpu::VertexAttribute {
-                shader_location: offset + 0,
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 0,
-            },
+            wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 },
             wgpu::VertexAttribute {
                 shader_location: offset + 1,
                 format: wgpu::VertexFormat::Float32x2,
@@ -195,16 +202,8 @@ impl PosWeight {
 impl Pos for PosWeight {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
         vec![
-            wgpu::VertexAttribute {
-                shader_location: offset + 0,
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 0,
-            },
-            wgpu::VertexAttribute {
-                shader_location: offset + 1,
-                format: wgpu::VertexFormat::Float32,
-                offset: 4 * 3,
-            },
+            wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 },
+            wgpu::VertexAttribute { shader_location: offset + 1, format: wgpu::VertexFormat::Float32, offset: 4 * 3 },
         ]
     }
 }
@@ -228,16 +227,8 @@ impl PosBrush {
 impl Pos for PosBrush {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
         vec![
-            wgpu::VertexAttribute {
-                shader_location: offset + 0,
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 0,
-            },
-            wgpu::VertexAttribute {
-                shader_location: offset + 1,
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 4 * 3,
-            },
+            wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 },
+            wgpu::VertexAttribute { shader_location: offset + 1, format: wgpu::VertexFormat::Float32x3, offset: 4 * 3 },
             wgpu::VertexAttribute {
                 shader_location: offset + 2,
                 format: wgpu::VertexFormat::Float32x3,
@@ -262,11 +253,7 @@ impl PosParticleIndex {
 
 impl Pos for PosParticleIndex {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
-        vec![wgpu::VertexAttribute {
-            shader_location: offset + 0,
-            format: wgpu::VertexFormat::Uint32x3,
-            offset: 0,
-        }]
+        vec![wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Uint32x3, offset: 0 }]
     }
 }
 
@@ -285,10 +272,6 @@ impl PosParticle {
 
 impl Pos for PosParticle {
     fn vertex_attributes(offset: u32) -> Vec<wgpu::VertexAttribute> {
-        vec![wgpu::VertexAttribute {
-            shader_location: offset + 0,
-            format: wgpu::VertexFormat::Float32x3,
-            offset: 0,
-        }]
+        vec![wgpu::VertexAttribute { shader_location: offset + 0, format: wgpu::VertexFormat::Float32x3, offset: 0 }]
     }
 }

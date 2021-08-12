@@ -220,8 +220,8 @@ pub fn empty(
     } else {
         wgpu::TextureUsages::RENDER_ATTACHMENT
             | wgpu::TextureUsages::COPY_DST
-            | wgpu::TextureUsages::SAMPLED
-            | wgpu::TextureUsages::STORAGE
+            | wgpu::TextureUsages::TEXTURE_BINDING
+            | wgpu::TextureUsages::STORAGE_BINDING
     };
     let view_dimension = if let Some(vd) = view_dimension { vd } else { wgpu::TextureViewDimension::D2 };
     let tex_dimension = if view_dimension == wgpu::TextureViewDimension::D3 {
