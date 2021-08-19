@@ -1,4 +1,4 @@
-use crate::geometry::plane::Plane;
+use crate::geometry::Plane;
 use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSettingNode;
 use crate::vertex::Pos;

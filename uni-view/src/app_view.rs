@@ -25,10 +25,14 @@ impl AppView {
         let instance = wgpu::Instance::new(backend);
         let (physical, surface) = unsafe { (view.inner_size(), instance.create_surface(&view)) };
 
-         let adapter = wgpu::util::initialize_adapter_from_env_or_default(&instance, backend)
-        .await
-        .expect("No suitable GPU adapters found on the system!");
+        let adapter = wgpu::util::initialize_adapter_from_env_or_default(&instance, backend)
+            .await
+            .expect("No suitable GPU adapters found on the system!");
+        // adapter.features() include some native-only features
         let adapter_features = adapter.features();
+        // let adapter_features = wgpu::Features::DEPTH_CLAMPING;
+        // println!("features: {:?}", adapter_features);
+        // println!("{:?}", adapter.get_texture_format_features(wgpu::TextureFormat::Rgba16Float));
 
         // 使用 Xcode 调试时，配置 trace_path 会 crash (2021/4/12)
         // let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();

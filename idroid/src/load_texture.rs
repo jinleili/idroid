@@ -224,10 +224,10 @@ pub fn empty(
             | wgpu::TextureUsages::STORAGE_BINDING
     };
     let view_dimension = if let Some(vd) = view_dimension { vd } else { wgpu::TextureViewDimension::D2 };
-    let tex_dimension = if view_dimension == wgpu::TextureViewDimension::D3 {
-        wgpu::TextureDimension::D3
+    let (tex_dimension, array_layer_count) = if view_dimension == wgpu::TextureViewDimension::D3 {
+        (wgpu::TextureDimension::D3, 1)
     } else {
-        wgpu::TextureDimension::D2
+        (wgpu::TextureDimension::D2, extent.depth_or_array_layers)
     };
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         size: extent,
@@ -246,7 +246,7 @@ pub fn empty(
         base_mip_level: 0,
         mip_level_count: None,
         base_array_layer: 0,
-        array_layer_count: std::num::NonZeroU32::new(extent.depth_or_array_layers),
+        array_layer_count: std::num::NonZeroU32::new(array_layer_count),
     };
     let texture_view = texture.create_view(&tex_view_descriptor);
     let any_tex = AnyTexture { size: extent, tex: texture, tex_view: texture_view, view_dimension, format };
@@ -285,6 +285,34 @@ pub fn default_sampler(device: &wgpu::Device) -> Sampler {
         address_mode_w: wgpu::AddressMode::ClampToEdge,
         mag_filter: wgpu::FilterMode::Nearest,
         min_filter: wgpu::FilterMode::Nearest,
+        mipmap_filter: wgpu::FilterMode::Nearest,
+        ..Default::default()
+    })
+}
+
+#[allow(dead_code)]
+pub fn repeate_sampler(device: &wgpu::Device) -> Sampler {
+    device.create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
+        address_mode_u: wgpu::AddressMode::Repeat,
+        address_mode_v: wgpu::AddressMode::Repeat,
+        address_mode_w: wgpu::AddressMode::Repeat,
+        mag_filter: wgpu::FilterMode::Nearest,
+        min_filter: wgpu::FilterMode::Nearest,
+        mipmap_filter: wgpu::FilterMode::Nearest,
+        ..Default::default()
+    })
+}
+
+#[allow(dead_code)]
+pub fn mirror_repeate_sampler(device: &wgpu::Device) -> Sampler {
+    device.create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
+        address_mode_u: wgpu::AddressMode::MirrorRepeat,
+        address_mode_v: wgpu::AddressMode::MirrorRepeat,
+        address_mode_w: wgpu::AddressMode::MirrorRepeat,
+        mag_filter: wgpu::FilterMode::Linear,
+        min_filter: wgpu::FilterMode::Linear,
         mipmap_filter: wgpu::FilterMode::Nearest,
         ..Default::default()
     })

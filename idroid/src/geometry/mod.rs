@@ -1,4 +1,5 @@
-pub mod plane;
+mod plane;
+pub use plane::Plane;
 
 mod line;
 pub use line::Line;
