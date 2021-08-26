@@ -186,7 +186,7 @@ fn load_from_path(path: PathBuf, set_to_grayscale: bool) -> (Vec<u8>, wgpu::Exte
                 // webgpu spec: R8 | R16 is not supported for storage use.
                 (TextureFormat::R16Float, DynamicImage::ImageLuma16(img.into_luma16()).into_bytes())
             } else {
-                (TextureFormat::Rgba8Unorm, img.to_bgra8().into_raw())
+                (TextureFormat::Rgba8Unorm, img.into_rgba8().into_raw())
             }
         }
         image::ColorType::Rgba8 => {
@@ -213,7 +213,7 @@ fn load_by_luma(path: PathBuf) -> (Vec<u8>, wgpu::Extent3d) {
 
 pub fn empty(
     device: &wgpu::Device, format: TextureFormat, extent: Extent3d, view_dimension: Option<wgpu::TextureViewDimension>,
-    usage: Option<wgpu::TextureUsages>,
+    usage: Option<wgpu::TextureUsages>, label: Option<&'static str>,
 ) -> AnyTexture {
     let usage = if let Some(u) = usage {
         u
@@ -236,10 +236,14 @@ pub fn empty(
         dimension: tex_dimension,
         format,
         usage,
-        label: None,
+        label,
     });
+    let mut view_label: String = String::from("view");
+    if let Some(lb) = label {
+        view_label = lb.to_string() + "_" + &view_label;
+    }
     let tex_view_descriptor = wgpu::TextureViewDescriptor {
-        label: None,
+        label: Some(&view_label),
         format: Some(format),
         dimension: Some(view_dimension),
         aspect: wgpu::TextureAspect::All,
@@ -261,6 +265,7 @@ pub fn empty_view(device: &wgpu::Device, width: u32, height: u32) -> AnyTexture 
         wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
         None,
         None,
+        None,
     )
 }
 
@@ -271,6 +276,7 @@ pub fn empty_f32_view(device: &wgpu::Device, width: u32, height: u32) -> AnyText
         device,
         TextureFormat::Rgba32Float,
         wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
+        None,
         None,
         None,
     )

@@ -52,10 +52,10 @@ impl AppView {
             width: (s.size.width as f32 * scale_factor) as u32,
             height: (s.size.height as f32 * scale_factor) as u32,
         };
-        
+
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
         let surface = unsafe { instance.create_surface_from_layer(obj.metal_layer) };
-        let surface = unsafe { wgpu::Surface::from_layer(obj.metal_layer)};
+        let surface = unsafe { wgpu::Surface::from_layer(obj.metal_layer) };
 
         let (device, queue) = pollster::block_on(request_device(&instance, &surface));
         let config = wgpu::SurfaceConfiguration {
@@ -139,14 +139,16 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .unwrap();
 
     let adapter_features = adapter.features();
+    // iOS device can not support BC compressed texture, A8(iPhone 6, mini 4) and above support ASTC, All support ETC2
+    let optional_features = wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR | wgpu::Features::TEXTURE_COMPRESSION_ETC2;
     adapter
         .request_device(
             &wgpu::DeviceDescriptor {
                 label: None,
-                features: adapter_features,
+                features: optional_features | adapter_features,
                 limits: wgpu::Limits {
                     max_dynamic_storage_buffers_per_pipeline_layout: 16,
-                    max_storage_buffers_per_shader_stage: 16,
+                    max_storage_buffers_per_shader_stage: 8,
                     max_storage_textures_per_shader_stage: 8,
                     max_push_constant_size: 16,
                     ..Default::default()

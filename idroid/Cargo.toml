@@ -12,12 +12,12 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="564330432f60b967a69b36a0094d72e1e77ebb72"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="1c086a51ff9bd9670f1447dca5fe797e052c73f9"}
 # wgpu = { path = "../../../wgpu-rs" }
 uni-view = { path="../uni-view" }
 
 nalgebra-glm = "*"
-image = "0.23"
+image =  { version = "0.23", default-features = false, features = ["png"] }
 lazy_static = "*"
 zerocopy = "0.5"
 
@@ -25,10 +25,10 @@ zerocopy = "0.5"
 pollster = "0.2.4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2.73" 
+wasm-bindgen = "0.2.76" 
 js-sys = "0.3.50"
 wasm-bindgen-futures = "0.4.23"
-web-sys = { version = "=0.3.51", features = [
+web-sys = { version = "=0.3.53", features = [
     "Document",
     "Navigator",
     "Node",

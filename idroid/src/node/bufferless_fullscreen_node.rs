@@ -10,8 +10,8 @@ pub struct BufferlessFullscreenNode {
 impl BufferlessFullscreenNode {
     pub fn new(
         device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
-        textures: Vec<(&crate::AnyTexture, Option<StorageTextureAccess>)>,
-        samplers: Vec<&wgpu::Sampler>, visibilities: Option<Vec<ShaderStages>>, shader_module: &ShaderModule,
+        textures: Vec<(&crate::AnyTexture, Option<StorageTextureAccess>)>, samplers: Vec<&wgpu::Sampler>,
+        visibilities: Option<Vec<ShaderStages>>, shader_module: &ShaderModule,
     ) -> Self {
         let stages: Vec<ShaderStages> = if let Some(states) = visibilities {
             states

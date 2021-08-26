@@ -17,8 +17,8 @@ pub struct ComputeNode {
 impl ComputeNode {
     pub fn new(
         device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
-        storage_buffers: Vec<&BufferObj>,
-        inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
+        storage_buffers: Vec<&BufferObj>, inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>,
+        shader_module: &ShaderModule,
     ) -> Self {
         ComputeNode::new_with_push_constants(
             device,
@@ -33,9 +33,8 @@ impl ComputeNode {
 
     pub fn new_with_push_constants(
         device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
-        storage_buffers: Vec<&BufferObj>,
-        inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
-        push_constants: Option<Vec<(wgpu::ShaderStages, Range<u32>)>>,
+        storage_buffers: Vec<&BufferObj>, inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>,
+        shader_module: &ShaderModule, push_constants: Option<Vec<(wgpu::ShaderStages, Range<u32>)>>,
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStages> = vec![];
         for _ in 0..(uniforms.len() + storage_buffers.len() + inout_tv.len()) {

@@ -38,13 +38,7 @@ impl MVPUniformObj {
             &MVPUniform { mvp_matrix: (p_matrix * base_mv_matrix).into() },
             Some("MVPUniformObj"),
         );
-        MVPUniformObj {
-            buffer,
-            p_matrix,
-            base_mv_matrix,
-            scale: 1.0,
-            pintch_start_location: None,
-        }
+        MVPUniformObj { buffer, p_matrix, base_mv_matrix, scale: 1.0, pintch_start_location: None }
     }
 
     pub fn pintch_start(&mut self, location: (f32, f32), _scale: f32) {

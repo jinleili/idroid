@@ -19,7 +19,7 @@ pub struct AppView {
 }
 
 impl AppView {
-    pub async fn new(view: winit::window::Window) -> Self {
+    pub async fn new(view: winit::window::Window, native_only: bool) -> Self {
         let scale_factor = view.scale_factor();
         let backend = wgpu::util::backend_bits_from_env().unwrap_or(wgpu::Backends::PRIMARY);
         let instance = wgpu::Instance::new(backend);
@@ -30,18 +30,20 @@ impl AppView {
             .expect("No suitable GPU adapters found on the system!");
         // adapter.features() include some native-only features
         let adapter_features = adapter.features();
+        let required_features = if native_only { adapter.features() } else { wgpu::Features::empty() };
+        let optional_features = wgpu::Features::TEXTURE_COMPRESSION_BC
+            | wgpu::Features::TEXTURE_COMPRESSION_ETC2
+            | wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR;
         // let adapter_features = wgpu::Features::DEPTH_CLAMPING;
-        // println!("features: {:?}", adapter_features);
-        // println!("{:?}", adapter.get_texture_format_features(wgpu::TextureFormat::Rgba16Float));
 
         // 使用 Xcode 调试时，配置 trace_path 会 crash (2021/4/12)
         // let base_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        // let trace_path = PathBuf::from(&base_dir).join("WGPU_TRACE");
+        // let trace_path = std::path::PathBuf::from(&base_dir).join("WGPU_TRACE");
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: None,
-                    features: adapter_features,
+                    features: (optional_features & adapter_features) | required_features,
                     limits: wgpu::Limits {
                         // Error in Adapter::request_device: Limit 'max_dynamic_storage_buffers_per_pipeline_layout' value 16 is better than allowed 4
                         max_dynamic_storage_buffers_per_pipeline_layout: 4,
@@ -51,7 +53,7 @@ impl AppView {
                         ..Default::default()
                     },
                 },
-                // Some(&trace_path)
+                // Some(&trace_path),
                 None,
             )
             .await

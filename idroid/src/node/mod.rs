@@ -7,7 +7,7 @@ pub use binding_group_setting_node::BindingGroupSettingNode;
 mod dynamic_binding_group_node;
 pub use dynamic_binding_group_node::DynamicBindingGroupNode;
 
-mod image_view_node;
-pub use image_view_node::{ImageNodeBuilder, ImageViewNode};
+mod view_node;
+pub use view_node::{ViewNodeBuilder, ViewNode};
 mod bufferless_fullscreen_node;
 pub use bufferless_fullscreen_node::BufferlessFullscreenNode;

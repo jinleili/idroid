@@ -27,28 +27,28 @@ pub struct NodeAttributes<'a, T: Pos> {
     pub shader_stages: Vec<wgpu::ShaderStages>,
 }
 
-pub struct ImageNodeBuilder<'a, T: Pos + AsBytes> {
+pub struct ViewNodeBuilder<'a, T: Pos + AsBytes> {
     pub attributes: NodeAttributes<'a, T>,
 }
 
-impl<'a, T: Pos + AsBytes> Deref for ImageNodeBuilder<'a, T> {
+impl<'a, T: Pos + AsBytes> Deref for ViewNodeBuilder<'a, T> {
     type Target = NodeAttributes<'a, T>;
     fn deref(&self) -> &NodeAttributes<'a, T> {
         &self.attributes
     }
 }
 
-impl<'a, T: Pos + AsBytes> DerefMut for ImageNodeBuilder<'a, T> {
+impl<'a, T: Pos + AsBytes> DerefMut for ViewNodeBuilder<'a, T> {
     fn deref_mut(&mut self) -> &mut NodeAttributes<'a, T> {
         &mut self.attributes
     }
 }
 
-impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
+impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
     pub fn new(
         tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>, shader_module: &'a wgpu::ShaderModule,
     ) -> Self {
-        ImageNodeBuilder {
+        ViewNodeBuilder {
             attributes: NodeAttributes {
                 view_size: (1.0, 1.0).into(),
                 vertices_and_indices: None,
@@ -122,12 +122,12 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_shader_states(mut self, states: Vec<wgpu::ShaderStages>) -> Self {
+    pub fn with_shader_stages(mut self, states: Vec<wgpu::ShaderStages>) -> Self {
         self.shader_stages = states;
         self
     }
 
-    pub fn build(self, device: &wgpu::Device) -> ImageViewNode {
+    pub fn build(self, device: &wgpu::Device) -> ViewNode {
         debug_assert!(
             self.shader_stages.len()
                 >= self.uniform_buffers.len()
@@ -137,12 +137,12 @@ impl<'a, T: Pos + AsBytes> ImageNodeBuilder<'a, T> {
                     + self.dynamic_uniforms.len(),
             "shader_stages count less than binding resource count"
         );
-        ImageViewNode::frome_attributes::<T>(self.attributes, device)
+        ViewNode::frome_attributes::<T>(self.attributes, device)
     }
 }
 
 #[allow(dead_code)]
-pub struct ImageViewNode {
+pub struct ViewNode {
     pub vertex_buf: BufferObj,
     pub index_buf: wgpu::Buffer,
     pub index_count: usize,
@@ -155,7 +155,7 @@ pub struct ImageViewNode {
 }
 
 #[allow(dead_code)]
-impl ImageViewNode {
+impl ViewNode {
     fn frome_attributes<T: Pos + AsBytes>(attributes: NodeAttributes<T>, device: &wgpu::Device) -> Self {
         let corlor_format =
             if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
@@ -300,7 +300,7 @@ impl ImageViewNode {
             multisample: wgpu::MultisampleState::default(),
         });
 
-        ImageViewNode {
+        ViewNode {
             view_width: attributes.view_size.width,
             view_height: attributes.view_size.height,
             vertex_buf,
@@ -315,8 +315,7 @@ impl ImageViewNode {
 
     // 视口的宽高发生变化
     pub fn resize(
-        &mut self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder,
-        tex_rect: Option<crate::math::Rect>,
+        &mut self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, tex_rect: Option<crate::math::Rect>,
     ) {
         if let Some(rect) = tex_rect {
             let (vertex_data, _) = Plane::new(1, 1).generate_vertices_by_texcoord(rect);
