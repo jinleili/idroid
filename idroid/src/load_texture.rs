@@ -176,28 +176,21 @@ fn load_from_path(path: PathBuf, set_to_grayscale: bool) -> (Vec<u8>, wgpu::Exte
     let (width, height) = img.dimensions();
     let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
 
-    // get TextureFormat from image
-    let color_type = img.color();
-    let (format, texels) = match color_type {
-        image::ColorType::L8 => (TextureFormat::R8Unorm, img.into_bytes()),
-        // no rgb format without alpha channels in the webgpu spec, so, need to convert.
-        image::ColorType::Rgb8 => {
-            if set_to_grayscale {
-                // webgpu spec: R8 | R16 is not supported for storage use.
-                (TextureFormat::R16Float, DynamicImage::ImageLuma16(img.into_luma16()).into_bytes())
-            } else {
+    let (format, texels) = if set_to_grayscale {
+        // webgpu spec: R8 | R16 is not supported for storage use.
+        // (TextureFormat::R8Unorm, DynamicImage::ImageLuma16(img.into_luma8()).into_bytes())
+        (TextureFormat::R8Unorm, img.into_luma8().into_raw())
+    } else {
+        // get TextureFormat from image
+        let color_type = img.color();
+        match color_type {
+            image::ColorType::L8 => (TextureFormat::R8Unorm, img.into_bytes()),
+            // no rgb format without alpha channels in the webgpu spec, so, need to convert.
+            image::ColorType::Rgb8 | image::ColorType::Rgba8 => {
                 (TextureFormat::Rgba8Unorm, img.into_rgba8().into_raw())
             }
+            _ => panic!("unsupported color type"),
         }
-        image::ColorType::Rgba8 => {
-            if set_to_grayscale {
-                (TextureFormat::R16Float, DynamicImage::ImageLuma16(img.into_luma16()).into_bytes())
-            } else {
-                (TextureFormat::Rgba8Unorm, img.into_bytes())
-            }
-        }
-
-        _ => panic!("unsupported color type"),
     };
 
     (texels, texture_extent, format)
