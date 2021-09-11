@@ -3,6 +3,7 @@ use super::Size;
 
 use nalgebra_glm as glm;
 
+#[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct Position {
     pub x: f32,

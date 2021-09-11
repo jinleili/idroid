@@ -4,6 +4,7 @@ use zerocopy::AsBytes;
 pub struct BufferObj {
     pub buffer: wgpu::Buffer,
     pub size: wgpu::BufferAddress,
+    pub min_binding_size: Option<wgpu::BufferSize>,
     pub has_dynamic_offset: bool,
     pub read_only: bool,
 }
@@ -30,7 +31,20 @@ impl BufferObj {
             label,
             mapped_at_creation: false,
         });
-        BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
+        BufferObj { buffer, size, min_binding_size: None, has_dynamic_offset: false, read_only: false }
+    }
+
+    pub fn create_empty_dynamic_uniform_buffer(
+        device: &wgpu::Device, size: wgpu::BufferAddress, min_binding_size: Option<wgpu::BufferSize>,
+        label: Option<&'static str>,
+    ) -> Self {
+        let buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            size,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            label,
+            mapped_at_creation: false,
+        });
+        BufferObj { buffer, size, min_binding_size, has_dynamic_offset: true, read_only: true }
     }
 
     pub fn create_uniform_buffer<T>(device: &wgpu::Device, uniform: &T, label: Option<&'static str>) -> Self
@@ -110,6 +124,6 @@ impl BufferObj {
             contents: data,
             usage: usage | wgpu::BufferUsages::COPY_DST,
         });
-        BufferObj { buffer, size, has_dynamic_offset: false, read_only: false }
+        BufferObj { buffer, size, min_binding_size: None, has_dynamic_offset: false, read_only: false }
     }
 }

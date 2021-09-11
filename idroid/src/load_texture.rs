@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView};
+use image::GenericImageView;
 use std::{num::NonZeroU32, path::PathBuf};
 use wgpu::{Extent3d, Sampler, Texture, TextureFormat, TextureView};
 use zerocopy::AsBytes;
@@ -246,20 +246,9 @@ pub fn empty(
         array_layer_count: std::num::NonZeroU32::new(array_layer_count),
     };
     let texture_view = texture.create_view(&tex_view_descriptor);
-    let any_tex = AnyTexture { size: extent, tex: texture, tex_view: texture_view, view_dimension, format };
-    any_tex
-}
+    // let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-#[allow(dead_code)]
-pub fn empty_view(device: &wgpu::Device, width: u32, height: u32) -> AnyTexture {
-    crate::load_texture::empty(
-        device,
-        TextureFormat::Bgra8Unorm,
-        wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
-        None,
-        None,
-        None,
-    )
+    AnyTexture { size: extent, tex: texture, tex_view: texture_view, view_dimension, format }
 }
 
 // 32位浮点纹理

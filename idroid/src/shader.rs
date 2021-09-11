@@ -52,7 +52,6 @@ pub fn insert_code_then_create(
         shader_source
     };
 
-    // println!("{:?} \n === \n \n", &final_source);
     device.create_shader_module(&ShaderModuleDescriptor {
         label,
         source: ShaderSource::Wgsl(Cow::Borrowed(&final_source)),

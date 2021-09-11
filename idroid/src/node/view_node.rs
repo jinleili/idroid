@@ -1,6 +1,6 @@
 use crate::geometry::Plane;
 use crate::math::{Position, Rect, Size};
-use crate::node::BindingGroupSettingNode;
+use crate::node::BindingGroupSetting;
 use crate::vertex::Pos;
 use crate::{AnyTexture, BufferObj, MVPUniform};
 use wgpu::util::DeviceExt;
@@ -22,6 +22,7 @@ pub struct NodeAttributes<'a, T: Pos> {
     pub tex_rect: Option<crate::math::Rect>,
     pub corlor_format: Option<wgpu::TextureFormat>,
     pub primitive_topology: wgpu::PrimitiveTopology,
+    pub cull_mode: Option<wgpu::Face>,
     pub use_depth_stencil: bool,
     pub shader_module: &'a wgpu::ShaderModule,
     pub shader_stages: Vec<wgpu::ShaderStages>,
@@ -60,6 +61,7 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
                 tex_rect: None,
                 corlor_format: None,
                 primitive_topology: wgpu::PrimitiveTopology::TriangleList,
+                cull_mode: Some(wgpu::Face::Back),
                 use_depth_stencil: false,
                 shader_module,
                 shader_stages: vec![],
@@ -69,6 +71,11 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
 
     pub fn with_primitive_topology(mut self, primitive_topology: wgpu::PrimitiveTopology) -> Self {
         self.primitive_topology = primitive_topology;
+        self
+    }
+
+    pub fn with_cull_mode(mut self, cull_mode: Option<wgpu::Face>) -> Self {
+        self.cull_mode = cull_mode;
         self
     }
 
@@ -130,11 +137,7 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
     pub fn build(self, device: &wgpu::Device) -> ViewNode {
         debug_assert!(
             self.shader_stages.len()
-                >= self.uniform_buffers.len()
-                    + self.samplers.len()
-                    + self.storage_buffers.len()
-                    + self.tex_views.len()
-                    + self.dynamic_uniforms.len(),
+                >= self.uniform_buffers.len() + self.samplers.len() + self.storage_buffers.len() + self.tex_views.len(),
             "shader_stages count less than binding resource count"
         );
         ViewNode::frome_attributes::<T>(self.attributes, device)
@@ -146,8 +149,8 @@ pub struct ViewNode {
     pub vertex_buf: BufferObj,
     pub index_buf: wgpu::Buffer,
     pub index_count: usize,
-    pub setting_node: BindingGroupSettingNode,
-    pub dynamic_node: Option<super::DynamicBindingGroupNode>,
+    pub bg_setting: BindingGroupSetting,
+    pub dy_uniform_bg: Option<super::DynamicUniformBindingGroup>,
     pub pipeline: wgpu::RenderPipeline,
     view_width: f32,
     view_height: f32,
@@ -195,7 +198,7 @@ impl ViewNode {
         } else {
             attributes.uniform_buffers
         };
-        let setting_node = BindingGroupSettingNode::new(
+        let bg_setting = BindingGroupSetting::new(
             device,
             uniform_buffers,
             attributes.storage_buffers,
@@ -253,18 +256,18 @@ impl ViewNode {
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &T::vertex_attributes(0),
         }];
-        let (dynamic_node, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
-            let node = super::DynamicBindingGroupNode::new(device, attributes.dynamic_uniforms);
+        let (dy_uniform_bg, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
+            let dy_bg = super::DynamicUniformBindingGroup::new(device, attributes.dynamic_uniforms);
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: None,
-                bind_group_layouts: &[&setting_node.bind_group_layout, &node.bind_group_layout],
+                bind_group_layouts: &[&bg_setting.bind_group_layout, &dy_bg.bind_group_layout],
                 push_constant_ranges: &[],
             });
-            (Some(node), pipeline_layout)
+            (Some(dy_bg), pipeline_layout)
         } else {
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: None,
-                bind_group_layouts: &[&setting_node.bind_group_layout],
+                bind_group_layouts: &[&bg_setting.bind_group_layout],
                 push_constant_ranges: &[],
             });
             (None, pipeline_layout)
@@ -291,7 +294,7 @@ impl ViewNode {
             primitive: wgpu::PrimitiveState {
                 topology: attributes.primitive_topology,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: attributes.cull_mode,
                 polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
             },
@@ -306,8 +309,8 @@ impl ViewNode {
             vertex_buf,
             index_buf,
             index_count: index_data.len(),
-            setting_node,
-            dynamic_node,
+            bg_setting,
+            dy_uniform_bg,
             pipeline,
             clear_color: crate::utils::alpha_color(),
         }
@@ -357,18 +360,18 @@ impl ViewNode {
         self.draw_rpass_by_offset(&mut rpass, offset_index, 1);
     }
 
-    fn set_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
+    pub fn set_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         rpass.set_pipeline(&self.pipeline);
-        rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
+        rpass.set_bind_group(0, &self.bg_setting.bind_group, &[]);
         rpass.set_index_buffer(self.index_buf.slice(..), wgpu::IndexFormat::Uint32);
         rpass.set_vertex_buffer(0, self.vertex_buf.buffer.slice(..));
     }
 
-    fn draw_rpass_by_offset<'a, 'b: 'a>(
+    pub fn draw_rpass_by_offset<'a, 'b: 'a>(
         &'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32, instance_count: u32,
     ) {
         self.set_rpass(rpass);
-        if let Some(node) = &self.dynamic_node {
+        if let Some(node) = &self.dy_uniform_bg {
             rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);
         }
         rpass.draw_indexed(0..self.index_count as u32, 0, 0..instance_count);

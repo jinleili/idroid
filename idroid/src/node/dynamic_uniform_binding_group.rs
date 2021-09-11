@@ -2,12 +2,12 @@ use crate::buffer::BufferObj;
 use std::vec::Vec;
 
 #[allow(dead_code)]
-pub struct DynamicBindingGroupNode {
+pub struct DynamicUniformBindingGroup {
     pub bind_group_layout: wgpu::BindGroupLayout,
     pub bind_group: wgpu::BindGroup,
 }
 
-impl DynamicBindingGroupNode {
+impl DynamicUniformBindingGroup {
     pub fn new(device: &wgpu::Device, uniforms: Vec<(&BufferObj, wgpu::ShaderStages)>) -> Self {
         let mut layouts: Vec<wgpu::BindGroupLayoutEntry> = vec![];
         let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
@@ -22,7 +22,8 @@ impl DynamicBindingGroupNode {
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Uniform,
                     has_dynamic_offset: true,
-                    min_binding_size: wgpu::BufferSize::new(0),
+                    // min_binding_size: buffer_obj.0.min_binding_size,
+                    min_binding_size: None,
                 },
                 count: None,
             });
@@ -35,7 +36,10 @@ impl DynamicBindingGroupNode {
                 resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
                     buffer: &buffer_obj.0.buffer,
                     offset: 0,
-                    size: wgpu::BufferSize::new(256),
+                    // size: buffer_obj.0.min_binding_size,
+                    size: wgpu::BufferSize::new(
+                        device.limits().min_uniform_buffer_offset_alignment as wgpu::BufferAddress,
+                    ),
                 }),
             });
             b_index += 1;
@@ -49,6 +53,6 @@ impl DynamicBindingGroupNode {
             label: None,
         });
 
-        DynamicBindingGroupNode { bind_group_layout, bind_group }
+        DynamicUniformBindingGroup { bind_group_layout, bind_group }
     }
 }

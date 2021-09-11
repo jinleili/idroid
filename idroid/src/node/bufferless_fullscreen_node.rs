@@ -1,9 +1,9 @@
-use crate::{node::BindingGroupSettingNode, BufferObj};
+use crate::{node::BindingGroupSetting, BufferObj};
 use wgpu::{PrimitiveTopology, ShaderModule, ShaderStages, StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
 pub struct BufferlessFullscreenNode {
-    setting_node: BindingGroupSettingNode,
+    bg_setting: BindingGroupSetting,
     pipeline: wgpu::RenderPipeline,
 }
 
@@ -22,10 +22,10 @@ impl BufferlessFullscreenNode {
             }
             stages
         };
-        let setting_node = BindingGroupSettingNode::new(device, uniforms, storage_buffers, textures, samplers, stages);
+        let bg_setting = BindingGroupSetting::new(device, uniforms, storage_buffers, textures, samplers, stages);
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[&setting_node.bind_group_layout],
+            bind_group_layouts: &[&bg_setting.bind_group_layout],
             push_constant_ranges: &[],
         });
         let pipeline_vertex_buffers = [];
@@ -54,14 +54,14 @@ impl BufferlessFullscreenNode {
             multisample: wgpu::MultisampleState::default(),
         });
 
-        Self { setting_node, pipeline }
+        Self { bg_setting, pipeline }
     }
 
     pub fn draw(
         &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: None,
+            label: Some("bufferless rpass"),
             color_attachments: &[wgpu::RenderPassColorAttachment {
                 view: frame_view,
                 resolve_target: None,
@@ -74,7 +74,7 @@ impl BufferlessFullscreenNode {
 
     pub fn draw_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         rpass.set_pipeline(&self.pipeline);
-        rpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
+        rpass.set_bind_group(0, &self.bg_setting.bind_group, &[]);
         rpass.draw(0..3, 0..1);
     }
 }

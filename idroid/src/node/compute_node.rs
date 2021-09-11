@@ -1,6 +1,6 @@
 use wgpu::{PushConstantRange, ShaderModule, StorageTextureAccess};
 
-use super::BindingGroupSettingNode;
+use super::{BindingGroupSetting, DynamicUniformBindingGroup};
 use crate::{buffer::BufferObj, AnyTexture};
 
 use core::ops::Range;
@@ -8,21 +8,23 @@ use std::vec::Vec;
 
 #[allow(dead_code)]
 pub struct ComputeNode {
-    pub setting_node: BindingGroupSettingNode,
+    pub bg_setting: BindingGroupSetting,
+    pub dy_uniform_bg: Option<DynamicUniformBindingGroup>,
+    pub pipeline_layout: wgpu::PipelineLayout,
     pub pipeline: wgpu::ComputePipeline,
-    pub threadgroup_count: (u32, u32, u32),
+    pub group_count: (u32, u32, u32),
 }
 
 #[allow(dead_code)]
 impl ComputeNode {
     pub fn new(
-        device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
+        device: &wgpu::Device, group_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
         storage_buffers: Vec<&BufferObj>, inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>,
         shader_module: &ShaderModule,
     ) -> Self {
         ComputeNode::new_with_push_constants(
             device,
-            threadgroup_count,
+            group_count,
             uniforms,
             storage_buffers,
             inout_tv,
@@ -31,8 +33,35 @@ impl ComputeNode {
         )
     }
 
+    pub fn new_with_dynamic_uniforms(
+        device: &wgpu::Device, group_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
+        dynamic_uniforms: Vec<(&BufferObj, wgpu::ShaderStages)>, storage_buffers: Vec<&BufferObj>,
+        inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
+    ) -> Self {
+        let mut visibilitys: Vec<wgpu::ShaderStages> = vec![];
+        for _ in 0..(uniforms.len() + storage_buffers.len() + inout_tv.len()) {
+            visibilitys.push(wgpu::ShaderStages::COMPUTE);
+        }
+        let bg_setting = BindingGroupSetting::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
+        let dy_uniform_bg = DynamicUniformBindingGroup::new(device, dynamic_uniforms);
+
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: None,
+            bind_group_layouts: &[&bg_setting.bind_group_layout, &dy_uniform_bg.bind_group_layout],
+            push_constant_ranges: &[],
+        });
+        let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+            label: None,
+            layout: Some(&pipeline_layout),
+            module: shader_module,
+            entry_point: "main",
+        });
+
+        ComputeNode { bg_setting, dy_uniform_bg: Some(dy_uniform_bg), pipeline_layout, pipeline, group_count }
+    }
+
     pub fn new_with_push_constants(
-        device: &wgpu::Device, threadgroup_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
+        device: &wgpu::Device, group_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
         storage_buffers: Vec<&BufferObj>, inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>,
         shader_module: &ShaderModule, push_constants: Option<Vec<(wgpu::ShaderStages, Range<u32>)>>,
     ) -> Self {
@@ -40,8 +69,7 @@ impl ComputeNode {
         for _ in 0..(uniforms.len() + storage_buffers.len() + inout_tv.len()) {
             visibilitys.push(wgpu::ShaderStages::COMPUTE);
         }
-        let setting_node =
-            BindingGroupSettingNode::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
+        let bg_setting = BindingGroupSetting::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
 
         let mut ranges: Vec<PushConstantRange> = vec![];
         if let Some(constants) = push_constants {
@@ -52,7 +80,7 @@ impl ComputeNode {
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[&setting_node.bind_group_layout],
+            bind_group_layouts: &[&bg_setting.bind_group_layout],
             push_constant_ranges: &ranges,
         });
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
@@ -62,17 +90,34 @@ impl ComputeNode {
             entry_point: "main",
         });
 
-        ComputeNode { setting_node, pipeline, threadgroup_count }
+        ComputeNode { bg_setting, dy_uniform_bg: None, pipeline_layout, pipeline, group_count }
     }
 
     pub fn compute(&self, encoder: &mut wgpu::CommandEncoder) {
-        let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
-        self.dispatch(&mut cpass);
+        self.compute_by_offsets(encoder, None);
     }
 
     pub fn dispatch<'a, 'b: 'a>(&'b self, cpass: &mut wgpu::ComputePass<'a>) {
+        self.dispatch_by_offsets(cpass, None);
+    }
+
+    pub fn compute_by_offsets(&self, encoder: &mut wgpu::CommandEncoder, offsets: Option<Vec<&[wgpu::DynamicOffset]>>) {
+        let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
+        self.dispatch_by_offsets(&mut cpass, offsets);
+    }
+
+    pub fn dispatch_by_offsets<'a, 'b: 'a>(
+        &'b self, cpass: &mut wgpu::ComputePass<'a>, offsets: Option<Vec<&[wgpu::DynamicOffset]>>,
+    ) {
         cpass.set_pipeline(&self.pipeline);
-        cpass.set_bind_group(0, &self.setting_node.bind_group, &[]);
-        cpass.dispatch(self.threadgroup_count.0, self.threadgroup_count.1, self.threadgroup_count.2);
+        cpass.set_bind_group(0, &self.bg_setting.bind_group, &[]);
+        if let Some(offsets) = offsets {
+            for os in offsets {
+                cpass.set_bind_group(1, &self.dy_uniform_bg.as_ref().unwrap().bind_group, os);
+                cpass.dispatch(self.group_count.0, self.group_count.1, self.group_count.2);
+            }
+        } else {
+            cpass.dispatch(self.group_count.0, self.group_count.1, self.group_count.2);
+        }
     }
 }

@@ -3,13 +3,13 @@ use std::vec::Vec;
 use wgpu::{StorageTextureAccess, TextureFormat};
 
 #[allow(dead_code)]
-pub struct BindingGroupSettingNode {
+pub struct BindingGroupSetting {
     pub bind_group_layout: wgpu::BindGroupLayout,
     pub bind_group: wgpu::BindGroup,
 }
 
 #[allow(dead_code)]
-impl BindingGroupSettingNode {
+impl BindingGroupSetting {
     pub fn new(
         device: &wgpu::Device, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, samplers: Vec<&wgpu::Sampler>,
@@ -101,7 +101,7 @@ impl BindingGroupSettingNode {
             label: None,
         });
 
-        BindingGroupSettingNode { bind_group_layout, bind_group }
+        BindingGroupSetting { bind_group_layout, bind_group }
     }
 }
 

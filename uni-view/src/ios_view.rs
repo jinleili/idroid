@@ -1,19 +1,15 @@
 use crate::ffi::strings::c_char_to_string;
 use libc::c_void;
-use std::marker::{Send, Sync};
+use std::marker::Sync;
 use std::os::raw::c_char;
 
 extern crate objc;
-use self::objc::{
-    rc::StrongPtr,
-    runtime::{Class, Object},
-    *,
-};
+use self::objc::{runtime::Object, *};
 extern crate core_graphics;
 use self::core_graphics::{base::CGFloat, geometry::CGRect};
 
 #[repr(C)]
-pub struct AppViewObj {
+pub struct IOSObj {
     pub view: *mut Object,
     pub metal_layer: *mut c_void,
     pub maximum_frames: i32,
@@ -45,7 +41,7 @@ pub struct AppView {
 unsafe impl Sync for AppView {}
 
 impl AppView {
-    pub fn new(obj: AppViewObj) -> Self {
+    pub fn new(obj: IOSObj) -> Self {
         let scale_factor = get_scale_factor(obj.view);
         let s: CGRect = unsafe { msg_send![obj.view, frame] };
         let physical = crate::ViewSize {
@@ -54,10 +50,9 @@ impl AppView {
         };
 
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
-        let surface = unsafe { instance.create_surface_from_layer(obj.metal_layer) };
-        let surface = unsafe { wgpu::Surface::from_layer(obj.metal_layer) };
-
+        let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
         let (device, queue) = pollster::block_on(request_device(&instance, &surface));
+
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             // iOS 上这个纹理格式肯定是可以使用的： wgpu::TextureFormat::Bgra8Unorm
@@ -139,23 +134,35 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .unwrap();
 
     let adapter_features = adapter.features();
+
+    let base_dir = crate::fs::application_root_dir();
+    let trace_path = std::path::PathBuf::from(&base_dir).join("WGPU_TRACE_IOS");
     // iOS device can not support BC compressed texture, A8(iPhone 6, mini 4) and above support ASTC, All support ETC2
     let optional_features = wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR | wgpu::Features::TEXTURE_COMPRESSION_ETC2;
-    adapter
+    let res = adapter
         .request_device(
             &wgpu::DeviceDescriptor {
                 label: None,
-                features: optional_features | adapter_features,
+                features: (optional_features & adapter_features) | adapter_features,
+                // features: adapter_features,
                 limits: wgpu::Limits {
-                    max_dynamic_storage_buffers_per_pipeline_layout: 16,
+                    // increase max_dynamic_storage_buffers_per_pipeline_layout will cause crash
+                    max_dynamic_storage_buffers_per_pipeline_layout: 4,
+                    // value larger than 8 will cause crash
                     max_storage_buffers_per_shader_stage: 8,
-                    max_storage_textures_per_shader_stage: 8,
+                    // value larger than 6 will cause crash
+                    max_storage_textures_per_shader_stage: 6,
                     max_push_constant_size: 16,
                     ..Default::default()
                 },
             },
-            None,
+            Some(&trace_path),
         )
-        .await
-        .unwrap()
+        .await;
+    match res {
+        Err(err) => {
+            panic!("request_device failed: {:?}", err);
+        }
+        Ok(tuple) => tuple,
+    }
 }

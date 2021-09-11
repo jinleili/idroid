@@ -1,11 +1,11 @@
 mod compute_node;
 pub use compute_node::ComputeNode;
 
-mod binding_group_setting_node;
-pub use binding_group_setting_node::BindingGroupSettingNode;
+mod binding_group_setting;
+pub use binding_group_setting::BindingGroupSetting;
 
-mod dynamic_binding_group_node;
-pub use dynamic_binding_group_node::DynamicBindingGroupNode;
+mod dynamic_uniform_binding_group;
+pub use dynamic_uniform_binding_group::DynamicUniformBindingGroup;
 
 mod view_node;
 pub use view_node::{ViewNode, ViewNodeBuilder};

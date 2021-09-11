@@ -1,3 +1,4 @@
+#[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct TouchPoint {
     pub pos: super::Position,

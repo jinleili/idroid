@@ -1,9 +1,5 @@
 extern crate objc;
-use self::objc::{
-    rc::StrongPtr,
-    runtime::{Class, Object},
-    *,
-};
+use self::objc::{runtime::Object, *};
 extern crate objc_foundation;
 use self::objc_foundation::{INSString, NSString};
 
