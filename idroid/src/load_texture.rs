@@ -14,7 +14,12 @@ pub struct AnyTexture {
 pub fn from_path(
     image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsages, set_to_grayscale: bool,
 ) -> (AnyTexture, Sampler) {
-    let path = uni_view::fs::get_texture_file_path(image_path);
+    let path = if image_path.split("/").count() > 5 {
+        // is already a full path
+        PathBuf::from(image_path)
+    } else {
+        uni_view::fs::get_texture_file_path(image_path)
+    };
 
     let (texels, texture_extent, format) = load_from_path(path, set_to_grayscale);
     let pixel_bytes = single_pixel_bytes(format);

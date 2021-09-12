@@ -19,3 +19,16 @@ uni-view = { path="../uni-view" }
 nalgebra-glm = "*"
 image =  { version = "0.23", default-features = false, features = ["png"] }
 zerocopy = "0.5"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "=0.3.53", features = [
+    "Document",
+    "Navigator",
+    "Node",
+    "NodeList",
+    "HtmlCanvasElement",
+    "Location",
+    "Window",
+    "XmlHttpRequest",
+    "XmlHttpRequestResponseType",
+]}

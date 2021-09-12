@@ -48,7 +48,6 @@ impl AppView {
             width: (s.size.width as f32 * scale_factor) as u32,
             height: (s.size.height as f32 * scale_factor) as u32,
         };
-
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
         let surface = unsafe { instance.create_surface_from_core_animation_layer(obj.metal_layer) };
         let (device, queue) = pollster::block_on(request_device(&instance, &surface));
@@ -93,7 +92,6 @@ impl AppView {
 impl crate::GPUContext for AppView {
     fn resize_surface(&mut self) {
         let size = self.get_view_size();
-        println!("view_size: {:?}", size);
         self.config.width = size.width;
         self.config.height = size.height;
         self.surface.configure(&self.device, &self.config);
@@ -135,8 +133,8 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
 
     let adapter_features = adapter.features();
 
-    let base_dir = crate::fs::application_root_dir();
-    let trace_path = std::path::PathBuf::from(&base_dir).join("WGPU_TRACE_IOS");
+    // let base_dir = crate::fs::application_root_dir();
+    // let trace_path = std::path::PathBuf::from(&base_dir).join("WGPU_TRACE_IOS");
     // iOS device can not support BC compressed texture, A8(iPhone 6, mini 4) and above support ASTC, All support ETC2
     let optional_features = wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR | wgpu::Features::TEXTURE_COMPRESSION_ETC2;
     let res = adapter
@@ -148,7 +146,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                 limits: wgpu::Limits {
                     // increase max_dynamic_storage_buffers_per_pipeline_layout will cause crash
                     max_dynamic_storage_buffers_per_pipeline_layout: 4,
-                    // value larger than 8 will cause crash
+                    // iPhone 6+ : value larger than 8 will cause crash
                     max_storage_buffers_per_shader_stage: 8,
                     // value larger than 6 will cause crash
                     max_storage_textures_per_shader_stage: 6,
@@ -156,7 +154,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     ..Default::default()
                 },
             },
-            Some(&trace_path),
+            None,
         )
         .await;
     match res {
