@@ -28,9 +28,9 @@ impl AppView {
         let adapter = wgpu::util::initialize_adapter_from_env_or_default(&instance, backend, Some(&surface))
             .await
             .expect("No suitable GPU adapters found on the system!");
-        // adapter.features() include some native-only features
-        let adapter_features = adapter.features();
-        let required_features = if native_only { adapter.features() } else { wgpu::Features::empty() };
+
+        let all_features = adapter.features();
+        let required_features = wgpu::Features::empty();
         let optional_features = wgpu::Features::TEXTURE_COMPRESSION_BC
             | wgpu::Features::TEXTURE_COMPRESSION_ETC2
             | wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR;
@@ -43,7 +43,7 @@ impl AppView {
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: None,
-                    features: (optional_features & adapter_features) | required_features,
+                    features: (optional_features & all_features) | required_features,
                     limits: wgpu::Limits {
                         // Error in Adapter::request_device: Limit 'max_dynamic_storage_buffers_per_pipeline_layout' value 16 is better than allowed 4
                         max_dynamic_storage_buffers_per_pipeline_layout: 4,

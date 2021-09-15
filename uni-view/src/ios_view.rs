@@ -131,17 +131,19 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
         .await
         .unwrap();
 
-    let adapter_features = adapter.features();
-
-    // let base_dir = crate::fs::application_root_dir();
-    // let trace_path = std::path::PathBuf::from(&base_dir).join("WGPU_TRACE_IOS");
+    let all_features = adapter.features();
+    let request_features = wgpu::Features::MAPPABLE_PRIMARY_BUFFERS
+        | wgpu::Features::POLYGON_MODE_LINE
+        | wgpu::Features::VERTEX_WRITABLE_STORAGE;
     // iOS device can not support BC compressed texture, A8(iPhone 6, mini 4) and above support ASTC, All support ETC2
     let optional_features = wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR | wgpu::Features::TEXTURE_COMPRESSION_ETC2;
+    // let base_dir = crate::fs::application_root_dir();
+    // let trace_path = std::path::PathBuf::from(&base_dir).join("WGPU_TRACE_IOS");
     let res = adapter
         .request_device(
             &wgpu::DeviceDescriptor {
                 label: None,
-                features: (optional_features & adapter_features) | adapter_features,
+                features: (optional_features & all_features) | request_features,
                 // features: adapter_features,
                 limits: wgpu::Limits {
                     // increase max_dynamic_storage_buffers_per_pipeline_layout will cause crash

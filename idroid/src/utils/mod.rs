@@ -30,7 +30,7 @@ fn alpha_blend() -> wgpu::BlendComponent {
     wgpu::BlendComponent {
         src_factor: wgpu::BlendFactor::One,
         dst_factor: wgpu::BlendFactor::One,
-        operation: wgpu::BlendOperation::Add,
+        operation: wgpu::BlendOperation::Max,
     }
 }
 
