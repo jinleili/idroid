@@ -1,37 +1,21 @@
-use crate::{node::BindingGroupSetting, BufferObj};
-use wgpu::{PrimitiveTopology, ShaderModule, ShaderStages, StorageTextureAccess, TextureFormat};
+use crate::{AnyTexture, BufferObj};
+use wgpu::{PrimitiveTopology, ShaderModule, TextureFormat};
 
 #[allow(dead_code)]
 pub struct BufferlessFullscreenNode {
-    bg_setting: BindingGroupSetting,
+    bind_group: wgpu::BindGroup,
     pipeline: wgpu::RenderPipeline,
 }
 
 impl BufferlessFullscreenNode {
     pub fn new(
         device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
-        textures: Vec<(&crate::AnyTexture, Option<StorageTextureAccess>)>, samplers: Vec<&wgpu::Sampler>,
-        visibilities: Option<Vec<ShaderStages>>, shader_module: &ShaderModule,
+        textures: Vec<&crate::AnyTexture>, samplers: Vec<&wgpu::Sampler>, shader_module: &ShaderModule,
     ) -> Self {
-        let stages: Vec<ShaderStages> = if let Some(states) = visibilities {
-            states
-        } else {
-            let mut stages = vec![];
-            for _ in 0..(uniforms.len() + storage_buffers.len() + textures.len() + samplers.len()) {
-                stages.push(ShaderStages::FRAGMENT);
-            }
-            stages
-        };
-        let bg_setting = BindingGroupSetting::new(device, uniforms, storage_buffers, textures, samplers, stages);
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[&bg_setting.bind_group_layout],
-            push_constant_ranges: &[],
-        });
         let pipeline_vertex_buffers = [];
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("bufferless fullscreen pipeline"),
-            layout: Some(&pipeline_layout),
+            layout: None,
             vertex: wgpu::VertexState { module: shader_module, entry_point: "main", buffers: &pipeline_vertex_buffers },
             fragment: Some(wgpu::FragmentState {
                 module: shader_module,
@@ -54,7 +38,16 @@ impl BufferlessFullscreenNode {
             multisample: wgpu::MultisampleState::default(),
         });
 
-        Self { bg_setting, pipeline }
+        let bind_group = create_bind_group(
+            device,
+            uniforms,
+            storage_buffers,
+            textures,
+            samplers,
+            &pipeline.get_bind_group_layout(0),
+        );
+
+        Self { bind_group, pipeline }
     }
 
     pub fn draw(
@@ -74,7 +67,41 @@ impl BufferlessFullscreenNode {
 
     pub fn draw_rpass<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>) {
         rpass.set_pipeline(&self.pipeline);
-        rpass.set_bind_group(0, &self.bg_setting.bind_group, &[]);
+        rpass.set_bind_group(0, &self.bind_group, &[]);
         rpass.draw(0..3, 0..1);
     }
+}
+
+pub fn create_bind_group(
+    device: &wgpu::Device, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>, textures: Vec<&AnyTexture>,
+    samplers: Vec<&wgpu::Sampler>, bind_group_layout: &wgpu::BindGroupLayout,
+) -> wgpu::BindGroup {
+    let mut entries: Vec<wgpu::BindGroupEntry> = vec![];
+    let mut b_index = 0_u32;
+    for i in 0..uniforms.len() {
+        let buffer_obj = uniforms[i];
+        entries.push(wgpu::BindGroupEntry { binding: b_index, resource: buffer_obj.buffer.as_entire_binding() });
+        b_index += 1;
+    }
+
+    for i in 0..storage_buffers.len() {
+        let buffer_obj = storage_buffers[i];
+        entries.push(wgpu::BindGroupEntry { binding: b_index, resource: buffer_obj.buffer.as_entire_binding() });
+        b_index += 1;
+    }
+
+    for i in 0..textures.len() {
+        entries.push(wgpu::BindGroupEntry {
+            binding: b_index,
+            resource: wgpu::BindingResource::TextureView(&textures[i].tex_view),
+        });
+        b_index += 1;
+    }
+
+    for i in 0..samplers.len() {
+        entries.push(wgpu::BindGroupEntry { binding: b_index, resource: wgpu::BindingResource::Sampler(samplers[i]) });
+        b_index += 1;
+    }
+
+    device.create_bind_group(&wgpu::BindGroupDescriptor { layout: bind_group_layout, entries: &entries, label: None })
 }

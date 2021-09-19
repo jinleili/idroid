@@ -337,7 +337,7 @@ pub fn bilinear_sampler(device: &wgpu::Device) -> Sampler {
         address_mode_w: wgpu::AddressMode::ClampToEdge,
         mag_filter: wgpu::FilterMode::Linear,
         min_filter: wgpu::FilterMode::Linear,
-        mipmap_filter: wgpu::FilterMode::Nearest,
+        mipmap_filter: wgpu::FilterMode::Linear,
         // iOS 上设置了 compare 值会 crash
         // compare: Some(wgpu::CompareFunction::LessEqual),
         // compare: wgpu::CompareFunction::Undefined,

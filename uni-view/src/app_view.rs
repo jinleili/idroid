@@ -19,7 +19,7 @@ pub struct AppView {
 }
 
 impl AppView {
-    pub async fn new(view: winit::window::Window, native_only: bool) -> Self {
+    pub async fn new(view: winit::window::Window, _native_only: bool) -> Self {
         let scale_factor = view.scale_factor();
         let backend = wgpu::util::backend_bits_from_env().unwrap_or(wgpu::Backends::PRIMARY);
         let instance = wgpu::Instance::new(backend);

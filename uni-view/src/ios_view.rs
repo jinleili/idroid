@@ -42,6 +42,9 @@ unsafe impl Sync for AppView {}
 
 impl AppView {
     pub fn new(obj: IOSObj) -> Self {
+        // hook up rust logging
+        env_logger::init();
+
         let scale_factor = get_scale_factor(obj.view);
         let s: CGRect = unsafe { msg_send![obj.view, frame] };
         let physical = crate::ViewSize {
@@ -144,7 +147,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
             &wgpu::DeviceDescriptor {
                 label: None,
                 features: (optional_features & all_features) | request_features,
-                // features: adapter_features,
+                // features: wgpu::Features::empty(),
                 limits: wgpu::Limits {
                     // increase max_dynamic_storage_buffers_per_pipeline_layout will cause crash
                     max_dynamic_storage_buffers_per_pipeline_layout: 4,

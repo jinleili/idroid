@@ -101,19 +101,19 @@ impl ComputeNode {
         self.dispatch_by_offsets(cpass, None);
     }
 
-    pub fn compute_by_offsets(&self, encoder: &mut wgpu::CommandEncoder, offsets: Option<Vec<&[wgpu::DynamicOffset]>>) {
+    pub fn compute_by_offsets(&self, encoder: &mut wgpu::CommandEncoder, offsets: Option<Vec<Vec<wgpu::DynamicOffset>>>) {
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
         self.dispatch_by_offsets(&mut cpass, offsets);
     }
 
     pub fn dispatch_by_offsets<'a, 'b: 'a>(
-        &'b self, cpass: &mut wgpu::ComputePass<'a>, offsets: Option<Vec<&[wgpu::DynamicOffset]>>,
+        &'b self, cpass: &mut wgpu::ComputePass<'a>, offsets: Option<Vec<Vec<wgpu::DynamicOffset>>>,
     ) {
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &self.bg_setting.bind_group, &[]);
         if let Some(offsets) = offsets {
             for os in offsets {
-                cpass.set_bind_group(1, &self.dy_uniform_bg.as_ref().unwrap().bind_group, os);
+                cpass.set_bind_group(1, &self.dy_uniform_bg.as_ref().unwrap().bind_group, &os);
                 cpass.dispatch(self.group_count.0, self.group_count.1, self.group_count.2);
             }
         } else {
