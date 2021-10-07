@@ -115,7 +115,7 @@ impl crate::GPUContext for AppView {
         (touch_point_x * self.scale_factor / size.width as f32, touch_point_y * self.scale_factor / size.height as f32)
     }
 
-    fn get_current_frame_view(&self) -> (wgpu::SurfaceFrame, wgpu::TextureView) {
+    fn get_current_frame_view(&self) -> (wgpu::SurfaceTexture, wgpu::TextureView) {
         self.create_current_frame_view(&self.device, &self.surface, &self.config)
     }
 }

@@ -11,8 +11,11 @@ impl BufferlessFullscreenNode {
     pub fn new(
         device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<&crate::AnyTexture>, samplers: Vec<&wgpu::Sampler>, shader_module: &ShaderModule,
+        color_blend_state: Option<wgpu::BlendState>,
     ) -> Self {
         let pipeline_vertex_buffers = [];
+        let blend_state =
+            if color_blend_state.is_some() { color_blend_state } else { Some(crate::utils::default_blend()) };
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("bufferless fullscreen pipeline"),
             layout: None,
@@ -22,7 +25,7 @@ impl BufferlessFullscreenNode {
                 entry_point: "main",
                 targets: &[wgpu::ColorTargetState {
                     format,
-                    blend: Some(crate::utils::default_blend()),
+                    blend: blend_state,
                     write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),

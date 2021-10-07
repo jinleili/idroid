@@ -35,7 +35,7 @@ impl ComputeNode {
 
     pub fn new_with_dynamic_uniforms(
         device: &wgpu::Device, group_count: (u32, u32, u32), uniforms: Vec<&BufferObj>,
-        dynamic_uniforms: Vec<(&BufferObj, wgpu::ShaderStages)>, storage_buffers: Vec<&BufferObj>,
+        dynamic_uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         inout_tv: Vec<(&AnyTexture, Option<StorageTextureAccess>)>, shader_module: &ShaderModule,
     ) -> Self {
         let mut visibilitys: Vec<wgpu::ShaderStages> = vec![];
@@ -43,7 +43,11 @@ impl ComputeNode {
             visibilitys.push(wgpu::ShaderStages::COMPUTE);
         }
         let bg_setting = BindingGroupSetting::new(device, uniforms, storage_buffers, inout_tv, vec![], visibilitys);
-        let dy_uniform_bg = DynamicUniformBindingGroup::new(device, dynamic_uniforms);
+        let mut dy_uniforms: Vec<(&BufferObj, wgpu::ShaderStages)> = vec![];
+        for obj in dynamic_uniforms {
+            dy_uniforms.push((obj, wgpu::ShaderStages::COMPUTE));
+        }
+        let dy_uniform_bg = DynamicUniformBindingGroup::new(device, dy_uniforms);
 
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
@@ -101,7 +105,9 @@ impl ComputeNode {
         self.dispatch_by_offsets(cpass, None);
     }
 
-    pub fn compute_by_offsets(&self, encoder: &mut wgpu::CommandEncoder, offsets: Option<Vec<Vec<wgpu::DynamicOffset>>>) {
+    pub fn compute_by_offsets(
+        &self, encoder: &mut wgpu::CommandEncoder, offsets: Option<Vec<Vec<wgpu::DynamicOffset>>>,
+    ) {
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
         self.dispatch_by_offsets(&mut cpass, offsets);
     }

@@ -483,9 +483,9 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
 name = "env_logger"
-version = "0.8.4"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a19187fea3ac7e84da7dacf48de0c45d63c6a76f9490dae389aead16c243fce3"
+checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
 dependencies = [
  "atty",
  "humantime",
@@ -868,7 +868,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.6.0"
-source = "git+https://github.com/gfx-rs/naga?rev=130f802#130f802c89d488b719a0e494f3e1ea9ba6f5ba92"
+source = "git+https://github.com/gfx-rs/naga?rev=52d74e9#52d74e91a4b062d317304250b5461890913d3bb8"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -1687,7 +1687,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.10.1"
-source = "git+https://github.com/gfx-rs/wgpu?rev=e8c236cd#e8c236cd71cf7ee9ea5e4533e01b88692fc15991"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "arrayvec",
  "js-sys",
@@ -1706,7 +1706,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.10.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=e8c236cd#e8c236cd71cf7ee9ea5e4533e01b88692fc15991"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1727,7 +1727,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.10.1"
-source = "git+https://github.com/gfx-rs/wgpu?rev=e8c236cd#e8c236cd71cf7ee9ea5e4533e01b88692fc15991"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "arrayvec",
  "ash",
@@ -1749,6 +1749,7 @@ dependencies = [
  "naga",
  "objc",
  "parking_lot",
+ "profiling",
  "range-alloc",
  "raw-window-handle",
  "renderdoc-sys",
@@ -1760,7 +1761,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.10.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=e8c236cd#e8c236cd71cf7ee9ea5e4533e01b88692fc15991"
+source = "git+https://github.com/gfx-rs/wgpu?rev=5092fb7e#5092fb7ea5d3e0dedd87da0cd30e0ecdeb3603d2"
 dependencies = [
  "bitflags",
 ]
@@ -1875,9 +1876,9 @@ checksum = "d2d7d3948613f75c98fd9328cfdcc45acc4d360655289d0a7d4ec931392200a3"
 
 [[package]]
 name = "zerocopy"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e59ec1d2457bd6c0dd89b50e7d9d6b0b647809bf3f0a59ac85557046950b7b2"
+checksum = "ae0f717764196a220d8c58500e3a3595e2c9054f95d66267f9fd5f6e74ad0fec"
 dependencies = [
  "byteorder",
  "zerocopy-derive",

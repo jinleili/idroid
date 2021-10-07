@@ -42,6 +42,11 @@ fn color_blend() -> wgpu::BlendComponent {
     }
 }
 
+#[allow(dead_code)]
+pub fn replace_blend() -> wgpu::BlendState {
+    wgpu::BlendState { color: wgpu::BlendComponent::REPLACE, alpha: wgpu::BlendComponent::REPLACE }
+}
+
 // alpha 颜色混合的一种常用设置
 // https://www.cnblogs.com/heitao/p/6974203.html
 // src_factor：表示的是当前值的因子，dst_factor：表示缓冲区旧值的混合因子

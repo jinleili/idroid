@@ -19,7 +19,7 @@ pub struct AppView {
 }
 
 impl AppView {
-    pub async fn new(view: winit::window::Window, _native_only: bool) -> Self {
+    pub async fn new(view: winit::window::Window, native_only: bool) -> Self {
         let scale_factor = view.scale_factor();
         let backend = wgpu::util::backend_bits_from_env().unwrap_or(wgpu::Backends::PRIMARY);
         let instance = wgpu::Instance::new(backend);
@@ -30,7 +30,11 @@ impl AppView {
             .expect("No suitable GPU adapters found on the system!");
 
         let all_features = adapter.features();
-        let required_features = wgpu::Features::empty();
+        let required_features = if native_only {
+            wgpu::Features::VERTEX_WRITABLE_STORAGE
+        } else { 
+            wgpu::Features::empty()
+        };
         let optional_features = wgpu::Features::TEXTURE_COMPRESSION_BC
             | wgpu::Features::TEXTURE_COMPRESSION_ETC2
             | wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR;
@@ -119,7 +123,7 @@ impl crate::GPUContext for AppView {
         (touch_point_x * self.scale_factor / size.width as f32, touch_point_y * self.scale_factor / size.height as f32)
     }
 
-    fn get_current_frame_view(&self) -> (wgpu::SurfaceFrame, wgpu::TextureView) {
+    fn get_current_frame_view(&self) -> (wgpu::SurfaceTexture, wgpu::TextureView) {
         self.create_current_frame_view(&self.device, &self.surface, &self.config)
     }
 }

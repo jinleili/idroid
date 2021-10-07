@@ -12,13 +12,12 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="e8c236cd"}
-# wgpu = { path = "../../../wgpu-rs" }
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="5092fb7e"}
 uni-view = { path="../uni-view" }
 
 nalgebra-glm = "*"
 image =  { version = "0.23", default-features = false, features = ["png"] }
-zerocopy = "0.5"
+zerocopy = "0.6"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "=0.3.53", features = [

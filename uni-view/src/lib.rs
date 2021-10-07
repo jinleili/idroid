@@ -41,18 +41,18 @@ pub trait GPUContext {
     fn get_view_size(&self) -> ViewSize;
     fn resize_surface(&mut self);
     fn normalize_touch_point(&self, touch_point_x: f32, touch_point_y: f32) -> (f32, f32);
-    fn get_current_frame_view(&self) -> (wgpu::SurfaceFrame, wgpu::TextureView);
+    fn get_current_frame_view(&self) -> (wgpu::SurfaceTexture, wgpu::TextureView);
     fn create_current_frame_view(
         &self, device: &wgpu::Device, surface: &wgpu::Surface, config: &wgpu::SurfaceConfiguration,
-    ) -> (wgpu::SurfaceFrame, wgpu::TextureView) {
-        let frame = match surface.get_current_frame() {
+    ) -> (wgpu::SurfaceTexture, wgpu::TextureView) {
+        let frame = match surface.get_current_texture() {
             Ok(frame) => frame,
             Err(_) => {
                 surface.configure(&device, &config);
-                surface.get_current_frame().expect("Failed to acquire next surface texture!")
+                surface.get_current_texture().expect("Failed to acquire next swap chain texture!")
             }
         };
-        let view = frame.output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         // frame cannot be drop early
         (frame, view)
     }

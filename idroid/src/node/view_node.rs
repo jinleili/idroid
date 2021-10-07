@@ -12,6 +12,7 @@ use zerocopy::AsBytes;
 pub struct NodeAttributes<'a, T: Pos> {
     pub view_size: Size<f32>,
     pub vertices_and_indices: Option<(Vec<T>, Vec<u32>)>,
+    pub vertex_buffer_layouts: Option<Vec<wgpu::VertexBufferLayout<'a>>>,
     pub uniform_buffers: Vec<&'a BufferObj>,
     pub storage_buffers: Vec<&'a BufferObj>,
     pub tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>,
@@ -21,6 +22,7 @@ pub struct NodeAttributes<'a, T: Pos> {
 
     pub tex_rect: Option<crate::math::Rect>,
     pub corlor_format: Option<wgpu::TextureFormat>,
+    pub color_blend_state: Option<wgpu::BlendState>,
     pub primitive_topology: wgpu::PrimitiveTopology,
     pub cull_mode: Option<wgpu::Face>,
     pub use_depth_stencil: bool,
@@ -53,6 +55,7 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
             attributes: NodeAttributes {
                 view_size: (1.0, 1.0).into(),
                 vertices_and_indices: None,
+                vertex_buffer_layouts: None,
                 uniform_buffers: vec![],
                 storage_buffers: vec![],
                 tex_views,
@@ -60,6 +63,7 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
                 dynamic_uniforms: vec![],
                 tex_rect: None,
                 corlor_format: None,
+                color_blend_state: Some(crate::utils::default_blend()),
                 primitive_topology: wgpu::PrimitiveTopology::TriangleList,
                 cull_mode: Some(wgpu::Face::Back),
                 use_depth_stencil: false,
@@ -81,6 +85,11 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
 
     pub fn with_vertices_and_indices(mut self, vertices_and_indices: (Vec<T>, Vec<u32>)) -> Self {
         self.vertices_and_indices = Some(vertices_and_indices);
+        self
+    }
+
+    pub fn with_vertex_buffer_layouts(mut self, layouts: Vec<wgpu::VertexBufferLayout<'a>>) -> Self {
+        self.vertex_buffer_layouts = Some(layouts);
         self
     }
 
@@ -121,6 +130,11 @@ impl<'a, T: Pos + AsBytes> ViewNodeBuilder<'a, T> {
 
     pub fn with_color_format(mut self, format: wgpu::TextureFormat) -> Self {
         self.corlor_format = Some(format);
+        self
+    }
+
+    pub fn with_color_blend_state(mut self, blend_state: Option<wgpu::BlendState>) -> Self {
+        self.color_blend_state = blend_state;
         self
     }
 
@@ -251,11 +265,16 @@ impl ViewNode {
             usage: wgpu::BufferUsages::INDEX,
         });
 
-        let pipeline_vertex_buffers = [wgpu::VertexBufferLayout {
-            array_stride: std::mem::size_of::<T>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &T::vertex_attributes(0),
-        }];
+        let default_layout_attributes = T::vertex_attributes(0);
+        let vertex_buffer_layouts = if let Some(layouts) = attributes.vertex_buffer_layouts {
+            layouts
+        } else {
+            vec![wgpu::VertexBufferLayout {
+                array_stride: std::mem::size_of::<T>() as wgpu::BufferAddress,
+                step_mode: wgpu::VertexStepMode::Vertex,
+                attributes: &default_layout_attributes,
+            }]
+        };
         let (dy_uniform_bg, pipeline_layout) = if attributes.dynamic_uniforms.len() > 0 {
             let dy_bg = super::DynamicUniformBindingGroup::new(device, attributes.dynamic_uniforms);
             let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -280,14 +299,14 @@ impl ViewNode {
             vertex: wgpu::VertexState {
                 module: &attributes.shader_module,
                 entry_point: "main",
-                buffers: &pipeline_vertex_buffers,
+                buffers: &vertex_buffer_layouts,
             },
             fragment: Some(wgpu::FragmentState {
                 module: &attributes.shader_module,
                 entry_point: "main",
                 targets: &[wgpu::ColorTargetState {
                     format: corlor_format,
-                    blend: Some(crate::utils::default_blend()),
+                    blend: attributes.color_blend_state,
                     write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),

@@ -67,8 +67,10 @@ pub fn fullscreen_factor(viewport_size: Size<f32>) -> (f32, f32, f32) {
 }
 
 #[allow(dead_code)]
-pub fn ortho_default_mvp() -> [[f32; 4]; 4] {
-    let p_matrix: glm::TMat4<f32> = glm::ortho(-1.0, 1.0, -1.0, 1.0, -100.0, 100.0);
+pub fn ortho_default_mvp(viewport_size: Size<f32>) -> [[f32; 4]; 4] {
+    let factor = fullscreen_factor(viewport_size);
+    let p_matrix: glm::TMat4<f32> =
+        glm::ortho(-1.0 * factor.1, 1.0 * factor.1, -1.0 * factor.2, 1.0 * factor.2, -100.0, 100.0);
     let vm_matrix = glm::TMat4::identity();
     (p_matrix * vm_matrix).into()
 }
