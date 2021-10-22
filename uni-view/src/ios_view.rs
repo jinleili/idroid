@@ -126,13 +126,10 @@ fn get_scale_factor(obj: *mut Object) -> f32 {
 }
 
 async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (wgpu::Device, wgpu::Queue) {
-    let adapter = instance
-        .request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::default(),
-            compatible_surface: Some(surface),
-        })
+    let backend = wgpu::util::backend_bits_from_env().unwrap_or(wgpu::Backends::METAL);
+    let adapter = wgpu::util::initialize_adapter_from_env_or_default(&instance, backend, Some(&surface))
         .await
-        .unwrap();
+        .expect("No suitable GPU adapters found on the system!");
 
     let all_features = adapter.features();
     let request_features = wgpu::Features::MAPPABLE_PRIMARY_BUFFERS

@@ -11,7 +11,7 @@ impl BufferlessFullscreenNode {
     pub fn new(
         device: &wgpu::Device, format: TextureFormat, uniforms: Vec<&BufferObj>, storage_buffers: Vec<&BufferObj>,
         textures: Vec<&crate::AnyTexture>, samplers: Vec<&wgpu::Sampler>, shader_module: &ShaderModule,
-        color_blend_state: Option<wgpu::BlendState>,
+        color_blend_state: Option<wgpu::BlendState>, use_depth_stencil: bool,
     ) -> Self {
         let pipeline_vertex_buffers = [];
         let blend_state =
@@ -23,11 +23,7 @@ impl BufferlessFullscreenNode {
             fragment: Some(wgpu::FragmentState {
                 module: shader_module,
                 entry_point: "main",
-                targets: &[wgpu::ColorTargetState {
-                    format,
-                    blend: blend_state,
-                    write_mask: wgpu::ColorWrites::ALL,
-                }],
+                targets: &[wgpu::ColorTargetState { format, blend: blend_state, write_mask: wgpu::ColorWrites::ALL }],
             }),
             // the bufferless vertices are in clock-wise order
             primitive: wgpu::PrimitiveState {
@@ -37,7 +33,7 @@ impl BufferlessFullscreenNode {
                 polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
             },
-            depth_stencil: None,
+            depth_stencil: if use_depth_stencil { Some(crate::depth_stencil::create_state()) } else { None },
             multisample: wgpu::MultisampleState::default(),
         });
 

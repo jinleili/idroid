@@ -2,7 +2,7 @@
 name = "uni-view"
 version = "0.2.6"
 authors = ["Li Jinlei <grenlight@icloud.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 libc = "*"

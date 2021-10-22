@@ -30,11 +30,8 @@ impl AppView {
             .expect("No suitable GPU adapters found on the system!");
 
         let all_features = adapter.features();
-        let required_features = if native_only {
-            wgpu::Features::VERTEX_WRITABLE_STORAGE
-        } else { 
-            wgpu::Features::empty()
-        };
+        let required_features =
+            if native_only { wgpu::Features::VERTEX_WRITABLE_STORAGE } else { wgpu::Features::empty() };
         let optional_features = wgpu::Features::TEXTURE_COMPRESSION_BC
             | wgpu::Features::TEXTURE_COMPRESSION_ETC2
             | wgpu::Features::TEXTURE_COMPRESSION_ASTC_LDR;
