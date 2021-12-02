@@ -5,14 +5,13 @@ authors = ["li jinlei <grenlight@icloud.com>"]
 edition = "2021"
 
 [lib]
-name = "idroid"
-crate-type = ["rlib", "staticlib"]
+# crate-type = ["rlib", "staticlib"]
 # [target.'cfg(target_os = "android")'.lib]
 # crate-type = ["cdylib"]
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="5092fb7e"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="c6d1491b"}
 uni-view = { path="../uni-view" }
 
 nalgebra-glm = "*"

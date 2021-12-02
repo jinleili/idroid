@@ -327,6 +327,7 @@ impl ViewNode {
             // ??????
             depth_stencil: if attributes.use_depth_stencil { Some(crate::depth_stencil::create_state()) } else { None },
             multisample: wgpu::MultisampleState::default(),
+            multiview: None,
         });
 
         ViewNode {

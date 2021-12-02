@@ -4,9 +4,11 @@ version = "0.2.6"
 authors = ["Li Jinlei <grenlight@icloud.com>"]
 edition = "2021"
 
+[lib]
+
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="5092fb7e"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="c6d1491b"}
 lazy_static = "*"
 log = "0.4"
 
@@ -15,11 +17,11 @@ pollster = "0.2"
 env_logger = "0.9"
 
 [target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux", target_arch = "wasm32"))'.dependencies]
-winit = { version = "0.25", features = ["web-sys"] }
-raw-window-handle = "0.3"
+winit = { version = "0.26" }
+raw-window-handle = "0.4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2.76" 
+wasm-bindgen = "0.2.76"
 js-sys = "0.3.50"
 wasm-bindgen-futures = "0.4.23"
 web-sys = { version = "=0.3.53", features = [

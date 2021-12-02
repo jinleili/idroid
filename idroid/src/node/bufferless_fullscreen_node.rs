@@ -35,6 +35,7 @@ impl BufferlessFullscreenNode {
             },
             depth_stencil: if use_depth_stencil { Some(crate::depth_stencil::create_state()) } else { None },
             multisample: wgpu::MultisampleState::default(),
+            multiview: None,
         });
 
         let bind_group = create_bind_group(

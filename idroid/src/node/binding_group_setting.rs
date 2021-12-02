@@ -84,7 +84,7 @@ impl BindingGroupSetting {
             layouts.push(wgpu::BindGroupLayoutEntry {
                 binding: b_index,
                 visibility: visibilitys[b_index as usize],
-                ty: wgpu::BindingType::Sampler { comparison: false, filtering: true },
+                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                 count: None,
             });
             entries
