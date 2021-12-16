@@ -452,9 +452,8 @@ dependencies = [
 
 [[package]]
 name = "glow"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f04649123493bc2483cbef4daddb45d40bbdae5adb221a63a23efdb0cc99520"
+version = "0.11.1"
+source = "git+https://github.com/grovesNL/glow?rev=5851ca6#5851ca65e6b6f4f2c59683245c07de1843c85452"
 dependencies = [
  "js-sys",
  "slotmap",
@@ -754,7 +753,7 @@ dependencies = [
 [[package]]
 name = "naga"
 version = "0.7.1"
-source = "git+https://github.com/gfx-rs/naga?rev=29571cc#29571cc4cfbb28558948b1b31ad764f55b69f37b"
+source = "git+https://github.com/gfx-rs/naga?rev=8ffd6ba#8ffd6ba929b4b93c9564f08fe8bb34b23fa72a6f"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -1511,7 +1510,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "0.11.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c6d1491b#c6d1491bb17d6cdcd8ad418d42bd0e14d32201a4"
+source = "git+https://github.com/gfx-rs/wgpu?rev=1e593a6b#1e593a6bd3e60796d00604d803c77bfb41ef3232"
 dependencies = [
  "arrayvec",
  "js-sys",
@@ -1531,7 +1530,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "0.11.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c6d1491b#c6d1491bb17d6cdcd8ad418d42bd0e14d32201a4"
+source = "git+https://github.com/gfx-rs/wgpu?rev=1e593a6b#1e593a6bd3e60796d00604d803c77bfb41ef3232"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1553,7 +1552,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "0.11.2"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c6d1491b#c6d1491bb17d6cdcd8ad418d42bd0e14d32201a4"
+source = "git+https://github.com/gfx-rs/wgpu?rev=1e593a6b#1e593a6bd3e60796d00604d803c77bfb41ef3232"
 dependencies = [
  "arrayvec",
  "ash",
@@ -1590,7 +1589,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "0.11.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=c6d1491b#c6d1491bb17d6cdcd8ad418d42bd0e14d32201a4"
+source = "git+https://github.com/gfx-rs/wgpu?rev=1e593a6b#1e593a6bd3e60796d00604d803c77bfb41ef3232"
 dependencies = [
  "bitflags",
 ]

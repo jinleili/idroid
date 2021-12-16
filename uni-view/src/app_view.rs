@@ -51,6 +51,7 @@ impl AppView {
                         max_storage_buffers_per_shader_stage: 8,
                         max_storage_textures_per_shader_stage: 8,
                         max_push_constant_size: 16,
+                        max_compute_invocations_per_workgroup: 512,
                         ..Default::default()
                     },
                 },

@@ -58,7 +58,7 @@ impl ComputeNode {
             label: None,
             layout: Some(&pipeline_layout),
             module: shader_module,
-            entry_point: "main",
+            entry_point: "cs_main",
         });
 
         ComputeNode { bg_setting, dy_uniform_bg: Some(dy_uniform_bg), pipeline_layout, pipeline, group_count }
@@ -91,7 +91,7 @@ impl ComputeNode {
             label: None,
             layout: Some(&pipeline_layout),
             module: shader_module,
-            entry_point: "main",
+            entry_point: "cs_main",
         });
 
         ComputeNode { bg_setting, dy_uniform_bg: None, pipeline_layout, pipeline, group_count }

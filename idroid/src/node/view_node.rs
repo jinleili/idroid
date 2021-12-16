@@ -305,12 +305,12 @@ impl ViewNode {
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &attributes.shader_module,
-                entry_point: "main",
+                entry_point: "vs_main",
                 buffers: &vertex_buffer_layouts,
             },
             fragment: Some(wgpu::FragmentState {
                 module: &attributes.shader_module,
-                entry_point: "main",
+                entry_point: "fs_main",
                 targets: &[wgpu::ColorTargetState {
                     format: corlor_format,
                     blend: attributes.color_blend_state,

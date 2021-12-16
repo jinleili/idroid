@@ -19,10 +19,10 @@ impl BufferlessFullscreenNode {
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("bufferless fullscreen pipeline"),
             layout: None,
-            vertex: wgpu::VertexState { module: shader_module, entry_point: "main", buffers: &pipeline_vertex_buffers },
+            vertex: wgpu::VertexState { module: shader_module, entry_point: "vs_main", buffers: &pipeline_vertex_buffers },
             fragment: Some(wgpu::FragmentState {
                 module: shader_module,
-                entry_point: "main",
+                entry_point: "fs_main",
                 targets: &[wgpu::ColorTargetState { format, blend: blend_state, write_mask: wgpu::ColorWrites::ALL }],
             }),
             // the bufferless vertices are in clock-wise order
