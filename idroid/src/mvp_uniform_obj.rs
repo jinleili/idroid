@@ -51,9 +51,7 @@ impl MVPUniformObj {
     // 先将缩放质心移动到视图中心，执行缩放
     // 再将质心移到到实际位置
     // scale 小于 0 时，只按中心缩放
-    pub fn pintch_changed(
-        &mut self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, location: (f32, f32), scale: f32,
-    ) {
+    pub fn pintch_changed(&mut self, queue: &wgpu::Queue, location: (f32, f32), scale: f32) {
         if let Some(start_location) = self.pintch_start_location {
             let mut vm_matrix = self.base_mv_matrix;
             self.scale *= scale;
@@ -80,7 +78,11 @@ impl MVPUniformObj {
 
                 vm_matrix = glm::translate(&vm_matrix, &glm::vec3(offset_x + target_x, offset_y + target_y, 0.0));
             }
-            self.buffer.update_buffer(encoder, device, &MVPUniform { mvp_matrix: (self.p_matrix * vm_matrix).into() });
+            queue.write_buffer(
+                &self.buffer.buffer,
+                0,
+                MVPUniform { mvp_matrix: (self.p_matrix * vm_matrix).into() }.as_bytes(),
+            );
         }
     }
 }

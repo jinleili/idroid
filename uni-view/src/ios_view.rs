@@ -153,6 +153,7 @@ async fn request_device(instance: &wgpu::Instance, surface: &wgpu::Surface) -> (
                     // value larger than 6 will cause crash
                     max_storage_textures_per_shader_stage: 6,
                     max_push_constant_size: 16,
+                    max_compute_invocations_per_workgroup: 512,
                     ..Default::default()
                 },
             },

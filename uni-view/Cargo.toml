@@ -8,7 +8,7 @@ edition = "2021"
 
 [dependencies]
 libc = "*"
-wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="1e593a6b"}
+wgpu = {git = "https://github.com/gfx-rs/wgpu", rev="55cbbdea"}
 lazy_static = "*"
 log = "0.4"
 

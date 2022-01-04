@@ -61,47 +61,6 @@ impl BufferObj {
         BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsages::UNIFORM, label)
     }
 
-    pub fn update_buffer<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, data: &T)
-    where
-        T: 'static + AsBytes + Copy,
-    {
-        let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Temp Buffer"),
-            contents: data.as_bytes(),
-            usage: wgpu::BufferUsages::COPY_SRC,
-        });
-        encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
-    }
-
-    pub fn update_buffers_immediately<T>(&self, device: &wgpu::Device, queue: &wgpu::Queue, slice: &[T])
-    where
-        T: 'static + AsBytes + Copy,
-    {
-        let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Temp Buffer"),
-            contents: slice.as_bytes(),
-            usage: wgpu::BufferUsages::COPY_SRC,
-        });
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
-        queue.submit(Some(encoder.finish()));
-    }
-
-    pub fn update_buffers<T>(&self, encoder: &mut wgpu::CommandEncoder, device: &wgpu::Device, slice: &[T])
-    where
-        T: 'static + AsBytes + Copy,
-    {
-        // 此处想要省掉 staging_buffer, 只能使用 map_write 这个 future 接口：
-        // You can also map buffers but that requires polling the device
-        // 但是专家 @kvark 说不可行: (2020/04/30)Writing to buffers directly is not currently feasible since you can't have part of a buffer used by GPU when changing it on CPU
-        let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Temp Buffer"),
-            contents: slice.as_bytes(),
-            usage: wgpu::BufferUsages::COPY_SRC,
-        });
-        encoder.copy_buffer_to_buffer(&temp_buf, 0, &self.buffer, 0, self.size);
-    }
-
     pub fn create_buffer<T>(
         device: &wgpu::Device, slice: Option<&[T]>, item: Option<&T>, usage: wgpu::BufferUsages,
         label: Option<&'static str>,

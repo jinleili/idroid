@@ -345,16 +345,17 @@ impl ViewNode {
 
     // 视口的宽高发生变化
     pub fn resize(
-        &mut self, device: &wgpu::Device, encoder: &mut wgpu::CommandEncoder, tex_rect: Option<crate::math::Rect>,
+        &mut self, queue: &wgpu::Queue, tex_rect: Option<crate::math::Rect>,
     ) {
-        if self.vertex_buf.is_some() {
-            if let Some(rect) = tex_rect {
+        if let Some(buf) = &self.vertex_buf {
+            let vertex_data = if let Some(rect) = tex_rect {
                 let (vertex_data, _) = Plane::new(1, 1).generate_vertices_by_texcoord(rect);
-                self.vertex_buf.as_ref().unwrap().update_buffers(encoder, device, &vertex_data);
+                vertex_data
             } else {
                 let (vertex_data, _) = Plane::new(1, 1).generate_vertices();
-                self.vertex_buf.as_ref().unwrap().update_buffers(encoder, device, &vertex_data);
+                vertex_data
             };
+            queue.write_buffer(&buf.buffer, 0, vertex_data.as_bytes())
         }
     }
 
