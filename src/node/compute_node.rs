@@ -120,10 +120,10 @@ impl ComputeNode {
         if let Some(offsets) = offsets {
             for os in offsets {
                 cpass.set_bind_group(1, &self.dy_uniform_bg.as_ref().unwrap().bind_group, &os);
-                cpass.dispatch(self.group_count.0, self.group_count.1, self.group_count.2);
+                cpass.dispatch_workgroups(self.group_count.0, self.group_count.1, self.group_count.2);
             }
         } else {
-            cpass.dispatch(self.group_count.0, self.group_count.1, self.group_count.2);
+            cpass.dispatch_workgroups(self.group_count.0, self.group_count.1, self.group_count.2);
         }
     }
 }

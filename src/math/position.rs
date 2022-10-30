@@ -60,7 +60,10 @@ impl Position {
 
     // 基于斜率及距离，计算点的坐标
     pub fn new_by_slope_n_dis(&self, slope: f32, distance: f32) -> Self {
-        Position::new(self.x + distance * slope.cos(), self.y + distance * slope.sin())
+        Position::new(
+            self.x + distance * slope.cos(),
+            self.y + distance * slope.sin(),
+        )
     }
 
     // 求矢量的模
@@ -133,6 +136,12 @@ impl From<[f32; 2]> for Position {
 impl From<&[f32; 2]> for Position {
     fn from(vs: &[f32; 2]) -> Self {
         Position::new(vs[0], vs[1])
+    }
+}
+
+impl From<(f32, f32)> for Position {
+    fn from(vs: (f32, f32)) -> Self {
+        Position::new(vs.0, vs.1)
     }
 }
 

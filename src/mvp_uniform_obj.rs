@@ -1,15 +1,15 @@
 use crate::buffer::BufferObj;
 use crate::math::Size;
+use bytemuck::{Pod, Zeroable};
 use nalgebra_glm as glm;
-use zerocopy::{AsBytes, FromBytes};
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct MVPUniform {
     pub mvp_matrix: [[f32; 4]; 4],
 }
 #[repr(C)]
-#[derive(Clone, Copy, Debug, AsBytes, FromBytes)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct MVPUniform2 {
     pub p_matrix: [[f32; 4]; 4],
     pub mv_matrix: [[f32; 4]; 4],
@@ -17,7 +17,9 @@ pub struct MVPUniform2 {
 
 impl MVPUniform {
     pub fn zero() -> Self {
-        MVPUniform { mvp_matrix: [[0.0; 4]; 4] }
+        MVPUniform {
+            mvp_matrix: [[0.0; 4]; 4],
+        }
     }
 }
 
@@ -32,13 +34,22 @@ pub struct MVPUniformObj {
 
 impl MVPUniformObj {
     pub fn new(viewport_size: Size<f32>, device: &wgpu::Device) -> Self {
-        let (p_matrix, base_mv_matrix, _factor) = crate::utils::matrix_helper::perspective_mvp(viewport_size);
+        let (p_matrix, base_mv_matrix, _factor) =
+            crate::utils::matrix_helper::perspective_mvp(viewport_size);
         let buffer = BufferObj::create_uniform_buffer(
             device,
-            &MVPUniform { mvp_matrix: (p_matrix * base_mv_matrix).into() },
+            &MVPUniform {
+                mvp_matrix: (p_matrix * base_mv_matrix).into(),
+            },
             Some("MVPUniformObj"),
         );
-        MVPUniformObj { buffer, p_matrix, base_mv_matrix, scale: 1.0, pintch_start_location: None }
+        MVPUniformObj {
+            buffer,
+            p_matrix,
+            base_mv_matrix,
+            scale: 1.0,
+            pintch_start_location: None,
+        }
     }
 
     pub fn pintch_start(&mut self, location: (f32, f32), _scale: f32) {
@@ -74,14 +85,24 @@ impl MVPUniformObj {
                 vm_matrix = glm::translate(&vm_matrix, &glm::vec3(-offset_x, -offset_y, 0.0));
                 vm_matrix = glm::scale(&vm_matrix, &glm::vec3(self.scale, self.scale, 1.0));
                 // 平移到 pintch changed 质心
-                println!("translate x: {}, y: {}, scale: {}", offset_x + target_x, offset_y + target_y, self.scale,);
+                println!(
+                    "translate x: {}, y: {}, scale: {}",
+                    offset_x + target_x,
+                    offset_y + target_y,
+                    self.scale,
+                );
 
-                vm_matrix = glm::translate(&vm_matrix, &glm::vec3(offset_x + target_x, offset_y + target_y, 0.0));
+                vm_matrix = glm::translate(
+                    &vm_matrix,
+                    &glm::vec3(offset_x + target_x, offset_y + target_y, 0.0),
+                );
             }
             queue.write_buffer(
                 &self.buffer.buffer,
                 0,
-                MVPUniform { mvp_matrix: (self.p_matrix * vm_matrix).into() }.as_bytes(),
+                bytemuck::bytes_of(&MVPUniform {
+                    mvp_matrix: (self.p_matrix * vm_matrix).into(),
+                }),
             );
         }
     }

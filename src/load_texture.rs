@@ -1,7 +1,6 @@
 use image::GenericImageView;
 use std::{num::NonZeroU32, path::PathBuf};
 use wgpu::{Extent3d, Sampler, Texture, TextureFormat, TextureView};
-use zerocopy::AsBytes;
 
 pub struct AnyTexture {
     pub size: Extent3d,
@@ -12,15 +11,17 @@ pub struct AnyTexture {
 }
 #[allow(dead_code)]
 pub fn from_path(
-    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsages, set_to_grayscale: bool,
+    image_path: &str,
+    app_view: &crate::AppSurface,
+    usage: wgpu::TextureUsages,
+    set_to_grayscale: bool,
 ) -> (AnyTexture, Sampler) {
     let path = if image_path.split("/").count() > 5 {
         // is already a full path
         PathBuf::from(image_path)
     } else {
-        uni_view::fs::get_texture_file_path(image_path)
+        app_surface::fs::get_texture_file_path(image_path)
     };
-
     let (texels, texture_extent, format) = load_from_path(path, set_to_grayscale);
     let pixel_bytes = single_pixel_bytes(format);
 
@@ -63,9 +64,12 @@ pub fn from_path(
 // from webgpu spec: R8 | R16 is not supported for storage use.
 #[allow(dead_code)]
 pub fn into_format_r32float(
-    image_path: &str, app_view: &crate::AppView, usage: wgpu::TextureUsages, label: Option<&'static str>,
+    image_path: &str,
+    app_view: &crate::AppSurface,
+    usage: wgpu::TextureUsages,
+    label: Option<&'static str>,
 ) -> AnyTexture {
-    let path = uni_view::fs::get_texture_file_path(image_path);
+    let path = app_surface::fs::get_texture_file_path(image_path);
 
     let (texels, texture_extent) = load_by_luma(path);
     let pixel_bytes = 4;
@@ -88,7 +92,7 @@ pub fn into_format_r32float(
             origin: wgpu::Origin3d::ZERO,
             aspect: wgpu::TextureAspect::All,
         },
-        &new_texels.as_bytes(),
+        bytemuck::cast_slice(&new_texels),
         wgpu::ImageDataLayout {
             offset: 0,
             bytes_per_row: Some(NonZeroU32::new(pixel_bytes * texture_extent.width).unwrap()),
@@ -107,8 +111,13 @@ pub fn into_format_r32float(
 }
 
 #[allow(dead_code)]
-pub fn update_by_path(image_path: &str, app_view: &crate::AppView, texture: &Texture, set_to_grayscale: bool) {
-    let path = uni_view::fs::get_texture_file_path(image_path);
+pub fn update_by_path(
+    image_path: &str,
+    app_view: &crate::AppSurface,
+    texture: &Texture,
+    set_to_grayscale: bool,
+) {
+    let path = app_surface::fs::get_texture_file_path(image_path);
 
     let (texels, texture_extent, format) = load_from_path(path, set_to_grayscale);
     let pixel_bytes = single_pixel_bytes(format);
@@ -132,10 +141,20 @@ pub fn update_by_path(image_path: &str, app_view: &crate::AppView, texture: &Tex
 
 #[allow(dead_code)]
 pub fn from_buffer(
-    buffer: &wgpu::Buffer, app_view: &crate::AppView, encoder: &mut wgpu::CommandEncoder, width: u32, height: u32,
-    pixel_size: u32, format: TextureFormat, usage: wgpu::TextureUsages,
+    buffer: &wgpu::Buffer,
+    app_view: &crate::AppSurface,
+    encoder: &mut wgpu::CommandEncoder,
+    width: u32,
+    height: u32,
+    pixel_size: u32,
+    format: TextureFormat,
+    usage: wgpu::TextureUsages,
 ) -> (AnyTexture, Sampler) {
-    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
+    let texture_extent = wgpu::Extent3d {
+        width,
+        height,
+        depth_or_array_layers: 1,
+    };
     let texture = app_view.device.create_texture(&wgpu::TextureDescriptor {
         size: texture_extent,
         mip_level_count: 1,
@@ -176,21 +195,25 @@ pub fn from_buffer(
     (any_tex, default_sampler(&app_view.device))
 }
 
-fn load_from_path(path: PathBuf, set_to_grayscale: bool) -> (Vec<u8>, wgpu::Extent3d, TextureFormat) {
+fn load_from_path(
+    path: PathBuf,
+    set_to_grayscale: bool,
+) -> (Vec<u8>, wgpu::Extent3d, TextureFormat) {
     let img = image::open(&path.as_path()).unwrap();
     let (width, height) = img.dimensions();
-    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
+    let texture_extent = wgpu::Extent3d {
+        width,
+        height,
+        depth_or_array_layers: 1,
+    };
 
     let (format, texels) = if set_to_grayscale {
         // webgpu spec: R8 | R16 is not supported for storage use.
         // (TextureFormat::R8Unorm, DynamicImage::ImageLuma16(img.into_luma8()).into_bytes())
         (TextureFormat::R8Unorm, img.into_luma8().into_raw())
     } else {
-        // get TextureFormat from image
-        let color_type = img.color();
-        match color_type {
+        match img.color() {
             image::ColorType::L8 => (TextureFormat::R8Unorm, img.into_bytes()),
-            // no rgb format without alpha channels in the webgpu spec, so, need to convert.
             image::ColorType::Rgb8 | image::ColorType::Rgba8 => {
                 (TextureFormat::Rgba8Unorm, img.into_rgba8().into_raw())
             }
@@ -204,14 +227,22 @@ fn load_from_path(path: PathBuf, set_to_grayscale: bool) -> (Vec<u8>, wgpu::Exte
 fn load_by_luma(path: PathBuf) -> (Vec<u8>, wgpu::Extent3d) {
     let img = image::open(&path.as_path()).unwrap();
     let (width, height) = img.dimensions();
-    let texture_extent = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
+    let texture_extent = wgpu::Extent3d {
+        width,
+        height,
+        depth_or_array_layers: 1,
+    };
 
     (img.to_luma8().into_raw(), texture_extent)
 }
 
 pub fn empty(
-    device: &wgpu::Device, format: TextureFormat, extent: Extent3d, view_dimension: Option<wgpu::TextureViewDimension>,
-    usage: Option<wgpu::TextureUsages>, label: Option<&'static str>,
+    device: &wgpu::Device,
+    format: TextureFormat,
+    extent: Extent3d,
+    view_dimension: Option<wgpu::TextureViewDimension>,
+    usage: Option<wgpu::TextureUsages>,
+    label: Option<&'static str>,
 ) -> AnyTexture {
     let usage = if let Some(u) = usage {
         u
@@ -221,7 +252,11 @@ pub fn empty(
             | wgpu::TextureUsages::TEXTURE_BINDING
             | wgpu::TextureUsages::STORAGE_BINDING
     };
-    let view_dimension = if let Some(vd) = view_dimension { vd } else { wgpu::TextureViewDimension::D2 };
+    let view_dimension = if let Some(vd) = view_dimension {
+        vd
+    } else {
+        wgpu::TextureViewDimension::D2
+    };
     let (tex_dimension, array_layer_count) = if view_dimension == wgpu::TextureViewDimension::D3 {
         (wgpu::TextureDimension::D3, 1)
     } else {
@@ -253,7 +288,13 @@ pub fn empty(
     let texture_view = texture.create_view(&tex_view_descriptor);
     // let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-    AnyTexture { size: extent, tex: texture, tex_view: texture_view, view_dimension, format }
+    AnyTexture {
+        size: extent,
+        tex: texture,
+        tex_view: texture_view,
+        view_dimension,
+        format,
+    }
 }
 
 // 32位浮点纹理
@@ -262,7 +303,11 @@ pub fn empty_f32_view(device: &wgpu::Device, width: u32, height: u32) -> AnyText
     crate::load_texture::empty(
         device,
         TextureFormat::Rgba32Float,
-        wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
+        wgpu::Extent3d {
+            width,
+            height,
+            depth_or_array_layers: 1,
+        },
         None,
         None,
         None,
@@ -346,21 +391,33 @@ pub fn bilinear_sampler(device: &wgpu::Device) -> Sampler {
 }
 
 fn single_pixel_bytes(format: TextureFormat) -> u32 {
-    let format_val = format as u32;
-    if format_val < 4 {
-        1
-    } else if format_val < 11 {
-        2
-    } else if format_val == 36 {
-        3
-    } else if format_val < 26 || format_val == 35 || format_val == 37 {
-        4
-    } else if format_val < 32 {
-        8
-    } else if format_val < 35 {
-        16
-    } else {
-        // The format that hasn't matched yet
-        0
+    match format {
+        TextureFormat::R8Sint
+        | TextureFormat::R8Snorm
+        | TextureFormat::R8Uint
+        | TextureFormat::R8Unorm => 1,
+        TextureFormat::R16Float
+        | TextureFormat::R16Sint
+        | TextureFormat::R16Snorm
+        | TextureFormat::R16Uint
+        | TextureFormat::R16Unorm
+        | TextureFormat::Rg8Sint
+        | TextureFormat::Rg8Snorm
+        | TextureFormat::Rg8Uint
+        | TextureFormat::Rg8Unorm => 2,
+        TextureFormat::Rgba8Sint
+        | TextureFormat::Rgba8Uint
+        | TextureFormat::Bgra8Unorm
+        | TextureFormat::Bgra8UnormSrgb
+        | TextureFormat::Rgba8Snorm
+        | TextureFormat::Rgba8Unorm
+        | TextureFormat::Rgba8UnormSrgb => 4,
+        TextureFormat::Rgba16Float
+        | TextureFormat::Rgba16Sint
+        | TextureFormat::Rgba16Snorm
+        | TextureFormat::Rgba16Uint
+        | TextureFormat::Rgba16Unorm => 8,
+        TextureFormat::Rgba32Float | TextureFormat::Rgba32Sint | TextureFormat::Rgba32Uint => 16,
+        _ => 0,
     }
 }

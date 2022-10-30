@@ -1,5 +1,5 @@
+use bytemuck::Pod;
 use wgpu::util::DeviceExt;
-use zerocopy::AsBytes;
 
 pub struct BufferObj {
     pub buffer: wgpu::Buffer,
@@ -13,7 +13,7 @@ pub struct BufferObj {
 impl BufferObj {
     pub fn create_storage_buffer<T>(device: &wgpu::Device, slice: &[T], label: Option<&'static str>) -> Self
     where
-        T: 'static + AsBytes + Copy,
+        T: 'static + Pod + Copy,
     {
         BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsages::STORAGE, label)
     }
@@ -49,14 +49,14 @@ impl BufferObj {
 
     pub fn create_uniform_buffer<T>(device: &wgpu::Device, uniform: &T, label: Option<&'static str>) -> Self
     where
-        T: 'static + AsBytes + Copy,
+        T: 'static + Pod + Copy,
     {
         BufferObj::create_buffer(device, None, Some(uniform), wgpu::BufferUsages::UNIFORM, label)
     }
 
     pub fn create_uniforms_buffer<T>(device: &wgpu::Device, slice: &[T], label: Option<&'static str>) -> Self
     where
-        T: 'static + AsBytes + Copy,
+        T: 'static + Pod + Copy,
     {
         BufferObj::create_buffer(device, Some(slice), None, wgpu::BufferUsages::UNIFORM, label)
     }
@@ -66,14 +66,14 @@ impl BufferObj {
         label: Option<&'static str>,
     ) -> Self
     where
-        T: 'static + AsBytes + Copy,
+        T: 'static + Pod + Copy,
     {
         let mut size = std::mem::size_of::<T>() as wgpu::BufferAddress;
         let data: &[u8] = if let Some(slice) = slice {
             size *= slice.len() as wgpu::BufferAddress;
-            slice.as_bytes()
+            bytemuck::cast_slice(&slice)
         } else {
-            item.unwrap().as_bytes()
+            bytemuck::bytes_of(item.unwrap())
         };
         // 移除staging buffer
         // 移动GPU通常是统一内存架构。这一内存架构下，CPU可以直接访问GPU所使用的内存

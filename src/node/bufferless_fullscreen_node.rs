@@ -27,7 +27,11 @@ impl BufferlessFullscreenNode {
             fragment: Some(wgpu::FragmentState {
                 module: shader_module,
                 entry_point: "fs_main",
-                targets: &[wgpu::ColorTargetState { format, blend: blend_state, write_mask: wgpu::ColorWrites::ALL }],
+                targets: &[Some(wgpu::ColorTargetState {
+                    format,
+                    blend: blend_state,
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
             }),
             // the bufferless vertices are in clock-wise order
             primitive: wgpu::PrimitiveState {
@@ -59,11 +63,11 @@ impl BufferlessFullscreenNode {
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("bufferless rpass"),
-            color_attachments: &[wgpu::RenderPassColorAttachment {
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: frame_view,
                 resolve_target: None,
                 ops: wgpu::Operations { load: load_op, store: true },
-            }],
+            })],
             depth_stencil_attachment: None,
         });
         self.draw_rpass(&mut rpass);

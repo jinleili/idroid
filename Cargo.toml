@@ -1,16 +1,33 @@
-[workspace]
-resolver = "2"
-members = [
-    "idroid",
-    "uni-view",
-]
+[package]
+name = "idroid"
+version = "0.2.6"
+authors = ["jinleili"]
+edition = "2021"
+rust-version = "1.64"
 
-# patch doc: https://doc.rust-lang.org/cargo/reference/manifest.html#the-patch-section
-# [patch."https://github.com/gfx-rs/wgpu"]
-# wgn = {git = "https://github.com/grenlight/wgpu", package = "wgpu-native", rev = "7a57b4590b8a0ea1f608d54b901f09593f0f3d3c"}
-# wgc = {git = "https://github.com/grenlight/wgpu", package = "wgpu-core", rev = "7a57b4590b8a0ea1f608d54b901f09593f0f3d3c"}
+[lib]
+crate-type = ["rlib", "cdylib", "staticlib"]
+# [target.'cfg(target_os = "android")'.lib]
+# crate-type = ["cdylib"]
 
-# [patch.crates-io]
-# gfx-backend-vulkan = { git = "https://github.com/gfx-rs/gfx",  rev = "4130c574ce274f4afd114005046cc10380805f7e" }
-# gfx-hal = { git = "https://github.com/gfx-rs/gfx", rev = "4130c574ce274f4afd114005046cc10380805f7e"}
+[dependencies]
+libc = "*"
+app-surface = { path = "../wgpu-on-app/app-surface" }
+wgpu = "0.14"
 
+image = { version = "0.24", default-features = false, features = ["png"] }
+bytemuck = { version = "1.12", features = ["derive"] }
+nalgebra-glm = "*"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "0.3.60", features = [
+    "Document",
+    "Navigator",
+    "Node",
+    "NodeList",
+    "HtmlCanvasElement",
+    "Location",
+    "Window",
+    "XmlHttpRequest",
+    "XmlHttpRequestResponseType"
+] }

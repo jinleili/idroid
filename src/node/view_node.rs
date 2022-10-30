@@ -3,13 +3,12 @@ use crate::math::{Position, Rect, Size};
 use crate::node::BindingGroupSetting;
 use crate::vertex::Vertex;
 use crate::{AnyTexture, BufferObj, MVPUniform};
+use bytemuck::Pod;
+use std::ops::{Deref, DerefMut};
 use wgpu::util::DeviceExt;
 use wgpu::StorageTextureAccess;
 
-use std::ops::{Deref, DerefMut};
-use zerocopy::AsBytes;
-
-pub struct NodeAttributes<'a, T: Vertex> {
+pub struct NodeAttributes<'a, T: Vertex + Pod> {
     pub view_size: Size<f32>,
     pub vertices_and_indices: Option<(Vec<T>, Vec<u32>)>,
     pub vertex_buffer_layouts: Option<Vec<wgpu::VertexBufferLayout<'a>>>,
@@ -30,26 +29,27 @@ pub struct NodeAttributes<'a, T: Vertex> {
     pub shader_stages: Vec<wgpu::ShaderStages>,
 }
 
-pub struct ViewNodeBuilder<'a, T: Vertex + AsBytes> {
+pub struct ViewNodeBuilder<'a, T: Vertex + Pod> {
     pub attributes: NodeAttributes<'a, T>,
 }
 
-impl<'a, T: Vertex + AsBytes> Deref for ViewNodeBuilder<'a, T> {
+impl<'a, T: Vertex + Pod> Deref for ViewNodeBuilder<'a, T> {
     type Target = NodeAttributes<'a, T>;
     fn deref(&self) -> &NodeAttributes<'a, T> {
         &self.attributes
     }
 }
 
-impl<'a, T: Vertex + AsBytes> DerefMut for ViewNodeBuilder<'a, T> {
+impl<'a, T: Vertex + Pod> DerefMut for ViewNodeBuilder<'a, T> {
     fn deref_mut(&mut self) -> &mut NodeAttributes<'a, T> {
         &mut self.attributes
     }
 }
 
-impl<'a, T: Vertex + AsBytes> ViewNodeBuilder<'a, T> {
+impl<'a, T: Vertex + Pod> ViewNodeBuilder<'a, T> {
     pub fn new(
-        tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>, shader_module: &'a wgpu::ShaderModule,
+        tex_views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>,
+        shader_module: &'a wgpu::ShaderModule,
     ) -> Self {
         ViewNodeBuilder {
             attributes: NodeAttributes {
@@ -88,7 +88,10 @@ impl<'a, T: Vertex + AsBytes> ViewNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_vertex_buffer_layouts(mut self, layouts: Vec<wgpu::VertexBufferLayout<'a>>) -> Self {
+    pub fn with_vertex_buffer_layouts(
+        mut self,
+        layouts: Vec<wgpu::VertexBufferLayout<'a>>,
+    ) -> Self {
         self.vertex_buffer_layouts = Some(layouts);
         self
     }
@@ -103,7 +106,10 @@ impl<'a, T: Vertex + AsBytes> ViewNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_dynamic_uniforms(mut self, uniforms: Vec<(&'a BufferObj, wgpu::ShaderStages)>) -> Self {
+    pub fn with_dynamic_uniforms(
+        mut self,
+        uniforms: Vec<(&'a BufferObj, wgpu::ShaderStages)>,
+    ) -> Self {
         self.dynamic_uniforms = uniforms;
         self
     }
@@ -113,7 +119,10 @@ impl<'a, T: Vertex + AsBytes> ViewNodeBuilder<'a, T> {
         self
     }
 
-    pub fn with_tex_views(mut self, views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>) -> Self {
+    pub fn with_tex_views(
+        mut self,
+        views: Vec<(&'a AnyTexture, Option<StorageTextureAccess>)>,
+    ) -> Self {
         self.tex_views = views;
         self
     }
@@ -151,7 +160,10 @@ impl<'a, T: Vertex + AsBytes> ViewNodeBuilder<'a, T> {
     pub fn build(self, device: &wgpu::Device) -> ViewNode {
         debug_assert!(
             self.shader_stages.len()
-                >= self.uniform_buffers.len() + self.samplers.len() + self.storage_buffers.len() + self.tex_views.len(),
+                >= self.uniform_buffers.len()
+                    + self.samplers.len()
+                    + self.storage_buffers.len()
+                    + self.tex_views.len(),
             "shader_stages count less than binding resource count"
         );
         ViewNode::frome_attributes::<T>(self.attributes, device)
@@ -173,16 +185,25 @@ pub struct ViewNode {
 
 #[allow(dead_code)]
 impl ViewNode {
-    fn frome_attributes<T: Vertex + AsBytes>(attributes: NodeAttributes<T>, device: &wgpu::Device) -> Self {
-        let corlor_format =
-            if let Some(format) = attributes.corlor_format { format } else { wgpu::TextureFormat::Bgra8Unorm };
+    fn frome_attributes<T: Vertex + Pod>(
+        attributes: NodeAttributes<T>,
+        device: &wgpu::Device,
+    ) -> Self {
+        let corlor_format = if let Some(format) = attributes.corlor_format {
+            format
+        } else {
+            wgpu::TextureFormat::Bgra8UnormSrgb
+        };
 
         let stages: Vec<wgpu::ShaderStages> = if attributes.shader_stages.len() > 0 {
             attributes.shader_stages
         } else {
             let mut stages: Vec<wgpu::ShaderStages> = vec![wgpu::ShaderStages::VERTEX];
-            let uniform_buffers_len =
-                if attributes.uniform_buffers.len() > 0 { attributes.uniform_buffers.len() } else { 1 };
+            let uniform_buffers_len = if attributes.uniform_buffers.len() > 0 {
+                attributes.uniform_buffers.len()
+            } else {
+                1
+            };
             for _ in 0..(uniform_buffers_len
                 + attributes.storage_buffers.len()
                 + attributes.tex_views.len()
@@ -204,14 +225,18 @@ impl ViewNode {
             vec![]
         };
         // 如果没有设置 mvp, 且设置了 view_size, 则设置一个全屏的 mvp
-        let (p_matrix, vm_matrix, _factor) = crate::matrix_helper::perspective_mvp(attributes.view_size);
-        let mvp = MVPUniform { mvp_matrix: (p_matrix * vm_matrix).into() };
-        let mvp_buf = BufferObj::create_uniform_buffer(device, &mvp, Some("mvp uniform"));
-        let uniform_buffers = if attributes.uniform_buffers.len() == 0 && attributes.view_size.width > 0.0 {
-            vec![&mvp_buf]
-        } else {
-            attributes.uniform_buffers
+        let (p_matrix, vm_matrix, _factor) =
+            crate::matrix_helper::perspective_mvp(attributes.view_size);
+        let mvp = MVPUniform {
+            mvp_matrix: (p_matrix * vm_matrix).into(),
         };
+        let mvp_buf = BufferObj::create_uniform_buffer(device, &mvp, Some("mvp uniform"));
+        let uniform_buffers =
+            if attributes.uniform_buffers.len() == 0 && attributes.view_size.width > 0.0 {
+                vec![&mvp_buf]
+            } else {
+                attributes.uniform_buffers
+            };
         let bg_setting = BindingGroupSetting::new(
             device,
             uniform_buffers,
@@ -226,7 +251,7 @@ impl ViewNode {
             let vertex_buf = if std::mem::size_of_val(&vi.0[0]) > 0 {
                 Some(BufferObj::create_buffer(
                     device,
-                    Some(&vi.0.as_bytes()),
+                    Some(&vi.0),
                     None,
                     wgpu::BufferUsages::VERTEX,
                     Some("vertex_buf"),
@@ -243,7 +268,7 @@ impl ViewNode {
                 let (vertex_data, index_data) = plane.generate_vertices_by_texcoord2(rect, None);
                 let vertex_buf = BufferObj::create_buffer(
                     device,
-                    Some(&vertex_data.as_bytes()),
+                    Some(&vertex_data),
                     None,
                     wgpu::BufferUsages::VERTEX,
                     Some("vertex_buf"),
@@ -254,7 +279,7 @@ impl ViewNode {
                 let (vertex_data, index_data) = plane.generate_vertices();
                 let vertex_buf = BufferObj::create_buffer(
                     device,
-                    Some(&vertex_data.as_bytes()),
+                    Some(&vertex_data),
                     None,
                     wgpu::BufferUsages::VERTEX,
                     Some("vertex_buf"),
@@ -264,7 +289,7 @@ impl ViewNode {
         };
         let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Index Buffer"),
-            contents: &index_data.as_bytes(),
+            contents: bytemuck::cast_slice(&index_data),
             usage: wgpu::BufferUsages::INDEX,
         });
 
@@ -311,11 +336,11 @@ impl ViewNode {
             fragment: Some(wgpu::FragmentState {
                 module: &attributes.shader_module,
                 entry_point: "fs_main",
-                targets: &[wgpu::ColorTargetState {
+                targets: &[Some(wgpu::ColorTargetState {
                     format: corlor_format,
                     blend: attributes.color_blend_state,
                     write_mask: wgpu::ColorWrites::ALL,
-                }],
+                })],
             }),
             primitive: wgpu::PrimitiveState {
                 topology: attributes.primitive_topology,
@@ -325,7 +350,11 @@ impl ViewNode {
                 ..Default::default()
             },
             // ??????
-            depth_stencil: if attributes.use_depth_stencil { Some(crate::depth_stencil::create_state()) } else { None },
+            depth_stencil: if attributes.use_depth_stencil {
+                Some(crate::depth_stencil::create_state())
+            } else {
+                None
+            },
             multisample: wgpu::MultisampleState::default(),
             multiview: None,
         });
@@ -344,9 +373,7 @@ impl ViewNode {
     }
 
     // 视口的宽高发生变化
-    pub fn resize(
-        &mut self, queue: &wgpu::Queue, tex_rect: Option<crate::math::Rect>,
-    ) {
+    pub fn resize(&mut self, queue: &wgpu::Queue, tex_rect: Option<crate::math::Rect>) {
         if let Some(buf) = &self.vertex_buf {
             let vertex_data = if let Some(rect) = tex_rect {
                 let (vertex_data, _) = Plane::new(1, 1).generate_vertices_by_texcoord(rect);
@@ -355,7 +382,7 @@ impl ViewNode {
                 let (vertex_data, _) = Plane::new(1, 1).generate_vertices();
                 vertex_data
             };
-            queue.write_buffer(&buf.buffer, 0, vertex_data.as_bytes())
+            queue.write_buffer(&buf.buffer, 0, bytemuck::cast_slice(&vertex_data))
         }
     }
 
@@ -363,27 +390,40 @@ impl ViewNode {
         self.draw_rpass_by_offset(rpass, 0, 1);
     }
 
-    pub fn draw_by_instance_count<'a, 'b: 'a>(&'b self, rpass: &mut wgpu::RenderPass<'b>, instance_count: u32) {
+    pub fn draw_by_instance_count<'a, 'b: 'a>(
+        &'b self,
+        rpass: &mut wgpu::RenderPass<'b>,
+        instance_count: u32,
+    ) {
         self.draw_rpass_by_offset(rpass, 0, instance_count);
     }
 
     pub fn begin_render_pass(
-        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
+        &self,
+        frame_view: &wgpu::TextureView,
+        encoder: &mut wgpu::CommandEncoder,
+        load_op: wgpu::LoadOp<wgpu::Color>,
     ) {
         self.begin_rpass_by_offset(frame_view, encoder, load_op, 0);
     }
 
     pub fn begin_rpass_by_offset(
-        &self, frame_view: &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, load_op: wgpu::LoadOp<wgpu::Color>,
+        &self,
+        frame_view: &wgpu::TextureView,
+        encoder: &mut wgpu::CommandEncoder,
+        load_op: wgpu::LoadOp<wgpu::Color>,
         offset_index: u32,
     ) {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
-            color_attachments: &[wgpu::RenderPassColorAttachment {
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: frame_view,
                 resolve_target: None,
-                ops: wgpu::Operations { load: load_op, store: true },
-            }],
+                ops: wgpu::Operations {
+                    load: load_op,
+                    store: true,
+                },
+            })],
             depth_stencil_attachment: None,
         });
         self.set_rpass(&mut rpass);
@@ -400,11 +440,18 @@ impl ViewNode {
     }
 
     pub fn draw_rpass_by_offset<'a, 'b: 'a>(
-        &'b self, rpass: &mut wgpu::RenderPass<'b>, offset_index: u32, instance_count: u32,
+        &'b self,
+        rpass: &mut wgpu::RenderPass<'b>,
+        offset_index: u32,
+        instance_count: u32,
     ) {
         self.set_rpass(rpass);
         if let Some(node) = &self.dy_uniform_bg {
-            rpass.set_bind_group(1, &node.bind_group, &[256 * offset_index as wgpu::DynamicOffset]);
+            rpass.set_bind_group(
+                1,
+                &node.bind_group,
+                &[256 * offset_index as wgpu::DynamicOffset],
+            );
         }
         rpass.draw_indexed(0..self.index_count as u32, 0, 0..instance_count);
     }

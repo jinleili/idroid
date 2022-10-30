@@ -13,20 +13,48 @@ pub struct Rect {
 impl Rect {
     pub fn new(width: f32, height: f32, center_to: Position) -> Self {
         let x = center_to.x - width / 2.0;
-        let y = center_to.y + height / 2.0;
-        Rect { x, y, width, height, origin: Position::new(x, y), size: (width, height).into() }
+        let y = center_to.y - height / 2.0;
+        Rect {
+            x,
+            y,
+            width,
+            height,
+            origin: Position::new(x, y),
+            size: (width, height).into(),
+        }
     }
 
     pub fn get_standard_new() -> Self {
-        Rect { x: 0.0, y: 0.0, width: 1.0, height: 1.0, origin: Position::zero(), size: (1.0, 1.0).into() }
+        Rect {
+            x: 0.0,
+            y: 0.0,
+            width: 1.0,
+            height: 1.0,
+            origin: Position::zero(),
+            size: (1.0, 1.0).into(),
+        }
     }
 
     pub fn from_origin_n_size(x: f32, y: f32, width: f32, height: f32) -> Self {
-        Rect { x, y, width, height, origin: Position::new(x, y), size: (width, height).into() }
+        Rect {
+            x,
+            y,
+            width,
+            height,
+            origin: Position::new(x, y),
+            size: (width, height).into(),
+        }
     }
 
     pub fn zero() -> Self {
-        Rect { x: 0.0, y: 0.0, width: 0.0, height: 0.0, origin: Position::zero(), size: (0.0, 0.0).into() }
+        Rect {
+            x: 0.0,
+            y: 0.0,
+            width: 0.0,
+            height: 0.0,
+            origin: Position::zero(),
+            size: (0.0, 0.0).into(),
+        }
     }
 
     // 将像素坐标转换成NDC空间中的坐标
@@ -42,7 +70,14 @@ impl Rect {
         let width = self.width / half_w;
         let height = self.height / half_h;
 
-        Rect { x, y, width, height, origin: Position::new(x, y), size: (width, height).into() }
+        Rect {
+            x,
+            y,
+            width,
+            height,
+            origin: Position::new(x, y),
+            size: (width, height).into(),
+        }
     }
 
     pub fn center_x(&self) -> f32 {
@@ -70,7 +105,11 @@ impl Rect {
         let x_right = self.center_x();
         let y_top = self.center_y();
         let y_bottom = -self.center_y();
-        if ortho_point.x >= x_left && ortho_point.x <= x_right && ortho_point.y >= y_bottom && ortho_point.y <= y_top {
+        if ortho_point.x >= x_left
+            && ortho_point.x <= x_right
+            && ortho_point.y >= y_bottom
+            && ortho_point.y <= y_top
+        {
             true
         } else {
             false
